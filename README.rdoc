@@ -1,0 +1,72 @@
+= RDF::N3 reader/writer
+
+Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.
+
+== DESCRIPTION:
+
+RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
+
+== FEATURES:
+RDF::N3 parses Notation-3, Turtle and N-Triples into statements or triples. It also serializes to Turtle.
+
+* Fully compliant N3-rdf parser (N3-rdf level)
+
+Install with 'gem install rdf-n3'
+
+Based on original parser by Patrick Sinclair (metade)
+
+== Usage:
+Instantiate a parser and parse source, specifying type and base-URL
+
+  RDF::N3::Reader.open("etc/foaf.n3") do |reader|
+    reader.each_statement do |statement|
+      puts statement.inspect
+    end
+  end
+
+== Dependencies
+  * [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.1.6)
+  * [Treetop](http://rubygems.org/gems/treetop) (>= 1.4.0) -- For generating parser only, not necessary for runtime
+
+== Resources:
+* Distiller[http://kellogg-assoc/distiller]
+* RDoc[http://rdoc.info/projects/gkellogg/rdf-n3]
+* History[http://github.com/gkellogg/rdf-n3/blob/master/History.txt]
+* "N3 Specification"[http://www.w3.org/DesignIssues/Notation3.html]
+* "N3 Primer"[http://www.w3.org/2000/10/swap/Primer.html]
+* Turtle[http://www.w3.org/TeamSubmission/turtle/]
+* "RDF Tests"[http://www.w3.org/2000/10/rdf-tests/rdfcore/allTestCases.html]
+* "W3C Turtle Test suite"[http://www.w3.org/2000/10/swap/test/regression.n3]
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2009-2010 Gregg Kellogg
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+== FEEDBACK
+
+* gregg@kellogg-assoc.com
+* rubygems.org/rdf-n3
+* github.com/gkellogg/rdf-n3
+* gkellogg.lighthouseapp.com for bug reports
+* public-rdf-ruby mailing list on w3.org
