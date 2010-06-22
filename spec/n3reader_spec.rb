@@ -411,24 +411,6 @@ describe "RDF::N3::Reader" do
         )
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
       end
-      
-      it "should bind named namespace" do
-        n3doc = "@prefix ns: <http://the/namespace#> ."
-        @parser.parse(n3doc, "http://a/b")
-        @parser.graph.nsbinding.should == {"ns" => Namespace.new("http://the/namespace#", "ns")}
-      end
-      
-      it "should bind empty prefix to <%> by default" do
-        n3doc = "@prefix : <#> ."
-        @parser.parse(n3doc, "http://the.document.itself")
-        @parser.graph.nsbinding.should == {"" => Namespace.new("http://the.document.itself#", "")}
-      end
-
-      it "should be able to bind _ as namespace" do
-        n3 = %(@prefix _: <http://underscore/> . _:a a _:p.)
-        nt = %(<http://underscore/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://underscore/p> .)
-        parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
-      end
     end
     
     describe "keywords" do
@@ -443,7 +425,7 @@ describe "RDF::N3::Reader" do
       ].each do |n3|
         it "should require @ if keywords set to empty for '#{n3}'" do
           lambda do
-            @parser.parse("@keywords . #{n3}", "http://a/b")
+            parse("@keywords . #{n3}", "http://a/b")
           end.should raise_error(/unqualified keyword '\w+' used without @keyword directive/)
         end
       end
@@ -457,7 +439,7 @@ describe "RDF::N3::Reader" do
         %(:c :a t)  => %(<http://a/b#c> <http://a/b#a> <http://a/b#t> .),
       }.each_pair do |n3, nt|
         it "should use default_ns for '#{n3}'" do
-          @parser.parse("@keywords . #{n3}", "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
+          parse("@keywords . #{n3}", :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
         end
       end
 
@@ -896,9 +878,9 @@ describe "RDF::N3::Reader" do
 <http://www.w3.org/2000/10/rdf-tests/rdfcore/xmlbase/test001.nt> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#NT-Document> .
 <http://www.w3.org/2000/10/rdf-tests/rdfcore/xmlbase/test001.rdf> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#RDF-XML-Document> .
 EOF
-    @parser.parse(sampledoc, "http://www.w3.org/2000/10/rdf-tests/rdfcore/amp-in-url/Manifest.rdf")
+    graph = parse(sampledoc, :base_uri => "http://www.w3.org/2000/10/rdf-tests/rdfcore/amp-in-url/Manifest.rdf")
 
-    @parser.graph.should be_equivalent_graph(sampledoc,
+    graph.should be_equivalent_graph(sampledoc,
       :about => "http://www.w3.org/2000/10/rdf-tests/rdfcore/amp-in-url/Manifest.rdf",
       :trace => @debug, :compare => :array
     )
