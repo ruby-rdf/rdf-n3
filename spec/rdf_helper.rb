@@ -1,9 +1,14 @@
+autoload :YAML, "yaml"
+autoload :CGI, 'cgi'
+
+RDFCORE_DIR = File.join(File.dirname(__FILE__), 'rdfcore')
+RDFCORE_TEST = "http://www.w3.org/2000/10/rdf-tests/rdfcore/Manifest.rdf"
+
 module RdfHelper
   # Class representing test cases in format http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#
+
   class TestCase
-    include Matchers
-    MF_NS = Namespace.new("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#", "mf")
-    QT_NS = Namespace.new("http://www.w3.org/2001/sw/DataAccess/tests/test-query#", "qt")
+    class QT < RDF::Vocabulary("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#"); end
     
     attr_accessor :about
     attr_accessor :approval
@@ -23,52 +28,38 @@ module RdfHelper
     attr_accessor :warning
     attr_accessor :parser
     attr_accessor :compare
+    attr_accessor :debug
     
-    def initialize(triples, uri_prefix, test_dir, options = {})
-      case options[:test_type]
-      when :mf
-        parse_mf(triples, uri_prefix, test_dir, options[:graph])
-      else
-        parse_w3c(triples, uri_prefix, test_dir)
-      end
-    end
-    
-    def parse_w3c(triples, uri_prefix, test_dir)
-      triples.each do |statement|
-        next if statement.subject.is_a?(BNode)
-        
-        if statement.is_type?
-          self.rdf_type = statement.object.short_name
-        elsif statement.predicate.short_name =~ /Document\Z/i
-          puts "#{statement.predicate.short_name}: #{statement.object.inspect}" if $DEBUG
-          self.send("#{statement.predicate.short_name}=", statement.object.to_s.sub(uri_prefix, test_dir))
-          puts "#{statement.predicate.short_name}: " + self.send("#{statement.predicate.short_name}") if $DEBUG
-          if statement.predicate.short_name == "inputDocument"
-            self.about ||= statement.object
-            self.name ||= statement.subject.short_name
+    def initialize(statements, uri_prefix, test_dir, options = {})
+      statements.each do |statement|
+        next if statement.subject.is_a?(RDF::Node)
+        pred = statement.predicate.to_s.split(/[\#\/]/).last
+        obj  = statement.object.is_a?(RDF::Literal) ? statement.object.value : statement.object.to_s
+
+        puts "#{pred}: #{obj}" if $DEBUG
+        if statement.predicate == RDF.type
+          self.rdf_type = obj.to_s.split(/[\#\/]/).last
+          #puts statement.subject.to_s
+        elsif pred =~ /Document\Z/i
+          puts "sub #{uri_prefix} in #{obj} for #{test_dir}" if $DEBUG
+          about = obj.dup
+          obj.sub!(uri_prefix, test_dir)
+          puts " => #{obj}" if $DEBUG
+          self.send("#{pred}=", obj)
+          if pred == "inputDocument"
+            self.about ||= about
+            self.name ||= statement.subject.to_s.split(/[\#\/]/).last
           end
-        elsif statement.predicate.short_name == "referenceOutput"
-          puts "referenceOutput: #{statement.object.inspect}" if $DEBUG
-          outputDocument = statement.object.to_s.sub(uri_prefix, test_dir)
-          puts "referenceOutput: " + self.send("#{statement.predicate.short_name}") if $DEBUG
-        elsif self.respond_to?("#{statement.predicate.short_name}=")
-          self.send("#{statement.predicate.short_name}=", statement.object.to_s)
+        elsif pred == "referenceOutput"
+          puts "referenceOutput: #{obj}" if $DEBUG
+          outputDocument = obj.sub(uri_prefix, test_dir)
+          puts "referenceOutput: " + self.send(pred) if $DEBUG
+        elsif self.respond_to?("#{pred}=")
+          self.send("#{pred}=", obj)
         end
       end
     end
 
-    def parse_mf(subject, uri_prefix, test_dir, graph)
-      props = graph.properties(subject)
-      @name = (props[MF_NS.name.to_s] || []).first.to_s
-      @description =  (props[RDFS_NS.comment.to_s] || []).first.to_s
-      @outputDocument = (props[MF_NS.result.to_s] || []).first
-      @outputDocument = @outputDocument.to_s.sub(uri_prefix, test_dir) if @outputDocument
-      action = (props[MF_NS.action.to_s] || []).first
-      a_props = graph.properties(action)
-      @about = (a_props[QT_NS.data.to_s] || []).first
-      @inputDocument = @about.to_s.sub(uri_prefix, test_dir)
-    end
-    
     def inspect
       "[Test Case " + %w(
         about
@@ -100,27 +91,17 @@ module RdfHelper
       rdf_string = input
 
       # Run
-      @parser = Parser.new
-      yield(rdf_string, @parser)
+      graph = yield(rdf_string)
 
       return unless output
 
-      case self.compare
-      when :none
-        # Don't check output, just parse to graph
-      when :array
-        @parser.graph.should be_equivalent_graph(self.output, self)
-      else
-        output_parser = Parser.new
-        output_fmt = output_parser.detect_format(self.output, self.outputDocument)
-        output_parser.parse(self.output, about, :type => output_fmt)
-
-        @parser.graph.should be_equivalent_graph(output_parser, self)
-      end
+      output_graph = RDF::Graph.load(self.outputDocument)
+      puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if $DEBUG
+      graph.should Matchers::be_equivalent_graph(output_graph, self)
     end
 
     def trace
-      @parser.debug.to_a.join("\n")
+      (@debug || []).to_a.join("\n")
     end
     
     def self.parse_test_cases(test_uri = nil, test_dir = nil)
@@ -137,64 +118,57 @@ module RdfHelper
       @positive_entailment_tests = []
       @negative_entailment_tests = []
 
-      manifest = File.read(File.join(test_dir, test))
-      parser = Parser.new
-      begin
-        puts "parse <#{test_uri}>" if $DEBUG
-        parser.parse(manifest, test_uri)
-      rescue
-        raise "Parse error: #{$!}\n\t#{parser.debug.join("\t\n")}\n\n"
-      end
-      graph = parser.graph
-      
-      uri_base = Addressable::URI.join(test_uri, ".").to_s
+      unless File.file?(File.join(test_dir, test.sub("rdf", "yml")))
+        graph = RDF::Graph.load(File.join(test_dir, test), :base_uri => test_uri)
+        uri_base = Addressable::URI.join(test_uri, ".").to_s
 
-      # If this is a turtle test (type mf:Manifest) parse with
-      # alternative test case
-      case graph.type_of(test_uri).first
-      when MF_NS.Manifest
-        # Get test entries
-        entries = graph.triples(Triple.new(test_uri, MF_NS.entries, nil)) || []
-        entries = entries.first
-        raise "No entires found for MF Manifest" unless entries.is_a?(Triple)
-        
-        @test_cases = graph.seq(entries.object).map do |subject|
-          TestCase.new(subject, uri_base, test_dir, :test_type => :mf, :graph => graph)
-        end
-      else
         # One of:
         #   http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema
         #   http://www.w3.org/2000/10/swap/test.n3#
         #   http://www.w3.org/2004/11/n3test#
         # Group by subject
-        test_hash = graph.triples.inject({}) do |hash, st|
-          a = hash[st.subject] ||= []
-          a << st
-          hash
+        @test_cases = graph.subjects.map do |subj|
+          t = TestCase.new(graph.query(:subject => subj), uri_base, test_dir)
+          t.name ? t : nil
+        end.
+          compact.
+          sort_by{|t| t.name.to_s}
+      else
+        # Read tests from Manifest.yml
+        self.from_yaml(File.join(test_dir, test.sub("rdf", "yml")))
+      end
+
+      @test_cases.each do |tc|
+        next if tc.status && tc.status != "APPROVED"
+        case tc.rdf_type
+        when "PositiveParserTest" then @positive_parser_tests << tc
+        when "NegativeParserTest" then @negative_parser_tests << tc
+        when "PositiveEntailmentTest" then @positive_entailment_tests << tc
+        when "NegativeEntailmentTest" then @negative_entailment_tests << tc
+        else puts "Unknown test type: #{tc.rdf_type}"
         end
-
-        @test_cases = test_hash.values.map do |statements|
-          TestCase.new(statements, uri_base, test_dir)
-        end
-     end.
-      compact.
-      sort_by{|t| t.name.to_s}
-
-
-     @test_cases.each do |tc|
-       next if tc.status && tc.status != "APPROVED"
-       case tc.rdf_type
-       when "PositiveParserTest" then @positive_parser_tests << tc
-       when "NegativeParserTest" then @negative_parser_tests << tc
-       when "PositiveEntailmentTest" then @positive_entailment_tests << tc
-       when "NegativeEntailmentTest" then @negative_entailment_tests << tc
-       end
-     end
+      end
     end
     def self.test_cases(test_uri = nil, test_dir = nil);                parse_test_cases(test_uri, test_dir); @test_cases; end
     def self.positive_parser_tests(test_uri = nil, test_dir = nil);     parse_test_cases(test_uri, test_dir); @positive_parser_tests; end
     def self.negative_parser_tests(test_uri = nil, test_dir = nil);     parse_test_cases(test_uri, test_dir); @negative_parser_tests; end
     def self.positive_entailment_tests(test_uri = nil, test_dir = nil); parse_test_cases(test_uri, test_dir); @positive_entailment_tests; end
     def self.negative_entailment_tests(test_uri = nil, test_dir = nil); parse_test_cases(test_uri, test_dir); @negative_entailment_tests; end
+    
+    def self.to_yaml(test_uri, test_dir, file)
+      test_cases = self.test_cases(test_uri, test_dir)
+      File.open(file, 'w') do |out|
+        YAML.dump(test_cases, out )
+      end
+    end
+    
+    def self.from_yaml(file)
+      YAML::add_private_type("RdfHelper::TestCase") do |type, val|
+        TestCase.new( val )
+      end
+      File.open(file, 'r') do |input|
+        @test_cases = YAML.load(input)
+      end
+    end
   end
 end
