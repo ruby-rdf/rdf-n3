@@ -1,4 +1,4 @@
-$:.unshift(File.dirname(__FILE__)) unless $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '..')))
 require 'rdf'
 
 module RDF
@@ -20,10 +20,13 @@ module RDF
   #
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   module N3
-    require 'n3/format'
-    require 'n3/vocab'
-    require 'n3/patches/array_hacks'
-    require 'n3/patches/rdf_escape'
+    require 'rdf/n3/format'
+    require 'rdf/n3/vocab'
+    require 'rdf/n3/patches/array_hacks'
+    require 'rdf/n3/patches/literal_hacks'
+    require 'rdf/n3/patches/qname_hacks'
+    require 'rdf/n3/patches/rdf_escape'
+    require 'rdf/n3/patches/uri_hacks'
     autoload :Reader,  'rdf/n3/reader'
     autoload :VERSION, 'rdf/n3/version'
   end
