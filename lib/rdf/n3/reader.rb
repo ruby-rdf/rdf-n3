@@ -1,6 +1,8 @@
-require 'nokogiri'  # FIXME: Implement using different modules as in RDF::TriX
+require 'treetop'
 
-module RDF::RDFXML
+Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar"))
+
+module RDF::N3
   ##
   # A Notation-3/Turtle parser in Ruby
   #
@@ -23,55 +25,72 @@ module RDF::RDFXML
       $},
       Regexp::EXTENDED)
   
-    XML_LITERAL = RDF['XMLLiteral']
-    
     ##
     # Initializes the N3 reader instance.
     #
-    # @param  [IO, File, String]::       input
-    # @param  [Hash{Symbol => Object}]:: options
-    # <em>options[:debug]</em>:: Array to place debug messages
-    # <em>options[:strict]</em>:: Raise Error if true, continue with lax parsing, otherwise
-    # <em>options[:base_uri]</em>:: Base URI to use for relative URIs.
+    # @param  [IO, File, String]       input
+    # @option options [Array] :debug Array to place debug messages
+    # @option options [Boolean] :strict Raise Error if true, continue with lax parsing, otherwise
+    # @option options [Boolean] :base_uri (nil) Base URI to use for relative URIs.
+    # @return [reader]
     # @yield  [reader]
     # @yieldparam [Reader] reader
     # @raise [Error]:: Raises RDF::ReaderError if _strict_
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @graph = RDF::Graph.new
         @debug = options[:debug]
         @strict = options[:strict]
-        @base_uri = options[:base_uri]
-        @base_uri = RDF::URI.parse(@base_uri) if @base_uri.is_a?(String)
-        @nsbinding = {}
+        @uri_mappings = {}
+        @uri = uri(options[:base_uri], nil, true)
 
-        @doc = stream.respond_to?(:read) ? (stream.rewind; stream.read) : stream
-        @default_ns = @base_uri if @base_uri
+        @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
+        @default_ns = uri("#{options[:base_uri]}#", nil, false) if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
-        
-        document = parser.parse(@doc)
-        unless document
-          puts parser.inspect if $DEBUG
-          reason = parser.failure_reason
-          raise RDF::ReaderError.new(reason)
-        end
-
-        process_statements(document)
         
         block.call(self) if block_given?
       end
     end
 
+    ##
+    # Iterates the given block for each RDF statement in the input.
+    #
+    # @yield  [statement]
+    # @yieldparam [RDF::Statement] statement
+    # @return [void]
+    def each_statement(&block)
+      @callback = block
+
+      parser = N3GrammerParser.new
+      document = parser.parse(@doc)
+      unless document
+        puts parser.inspect if $DEBUG
+        reason = parser.failure_reason
+        raise RDF::ReaderError, reason
+      end
+
+      process_statements(document)
+    end
+
+    ##
+    # Iterates the given block for each RDF triple in the input.
+    #
+    # @yield  [subject, predicate, object]
+    # @yieldparam [RDF::Resource] subject
+    # @yieldparam [RDF::URI]      predicate
+    # @yieldparam [RDF::Value]    object
+    # @return [void]
+    def each_triple(&block)
+      each_statement do |statement|
+        block.call(*statement.to_triple)
+      end
+    end
+    
     private
 
     # Keep track of allocated BNodes
     def bnode(value = nil)
-      if value
-        @bnode_cache ||= {}
-        @bnode_cache[value.to_s] ||= RDF::Node.new(value)
-      else
-        RDF::Node.new
-      end
+      @bnode_cache ||= {}
+      @bnode_cache[value.to_s] ||= RDF::Node.new(value)
     end
 
     # Add debug event to debug array, if specified
@@ -79,8 +98,8 @@ module RDF::RDFXML
     # @param [XML Node, any] node:: XML Node or string for showing context
     # @param [String] message::
     def add_debug(node, message)
-      puts "#{node_path(node)}: #{message}" if $DEBUG
-      @debug << "#{node_path(node)}: #{message}" if @debug.is_a?(Array)
+      puts "#{node}: #{message}" if $DEBUG
+      @debug << "#{node}: #{message}" if @debug.is_a?(Array)
     end
 
     # add a statement, object can be literal or URI or bnode
@@ -94,19 +113,18 @@ module RDF::RDFXML
     def add_triple(node, subject, predicate, object)
       statement = RDF::Statement.new(subject, predicate, object)
       add_debug(node, "statement: #{statement}")
-      @graph << statement
-      statement
-    rescue RDF::ReaderError => e
-      add_debug(node, "add_triple raised #{e.class}: #{e.message}")
-      puts e.backtrace if $DEBUG
-      raise if @strict
+      @callback.call(statement)
     end
 
     def namespace(uri, prefix)
+      uri = uri.to_s
+      if uri == "#"
+        uri = @default_ns
+      elsif !uri.match(/[\/\#]$/)
+        uri += "#"
+      end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
-      uri = @default_ns if uri == '#'
-      @nsbinding[prefix] = uri
-      add_debug("namesspace", "ns #{prefix}: <#{uri}>")
+      @uri_mappings[prefix] = RDF::URI.intern(uri)
     end
 
     def process_statements(document)
@@ -207,13 +225,13 @@ module RDF::RDFXML
       add_debug(*verb.info("process_verb"))
       case verb.text_value
       when "a"
-        # If "a" is a keyword, then it's RDF_TYPE, otherwise it's expanded from the default namespace
+        # If "a" is a keyword, then it's rdf:type, otherwise it's expanded from the default namespace
         if @keywords.nil? || @keywords.include?("a")
-          RDF_TYPE
+          RDF.type
         else
           build_uri("a")
         end
-      when "@a"           then RDF::RDF.type
+      when "@a"           then RDF.type
       when "="            then RDF::OWL.sameAs
       when "=>"           then RDF::OWL.implies
       when "<="           then RDF::OWL.implies
@@ -325,13 +343,7 @@ module RDF::RDFXML
     
     def process_uri(uri, normalize = true)
       uri = uri.text_value if uri.respond_to?(:text_value)
-      # Use non-normalized URI from @default_ns when constructing URIs
-      if uri.match(/^\#/) && @default_ns
-        @default_ns.join(uri.rdf_escape)
-      else
-        base_uri = @default_ns || @uri
-        base_uri.join(uri).normalize!
-      end
+      uri(@uri, uri.rdf_escape, normalize)
     end
     
     def process_properties(properties)
@@ -376,7 +388,7 @@ module RDF::RDFXML
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
       # FIXME: RDF::Literal doesn't work properly with rdf encoding
-      lit = RDF::Literal.new(string.elements[1].text_value.rdf_unescape, :language => language)
+      lit = RDF::Literal.new(string.elements[1].text_value.rdf_unescape, :language => language, :datatype => encoding)
       # FIXME: No lit.valid?
       #raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_n3} "#{lit.contents}") if @strict && !lit.valid?
       lit
@@ -400,16 +412,20 @@ module RDF::RDFXML
         add_debug("", "build_uri(#{prefix.inspect}, #{localname.inspect})")
       end
 
-      uri = if @nsbinding[prefix]
-        RDF::URI.new(@nsbinding[prefix] + localname.to_s.rdf_escape)
+      uri = if @uri_mappings[prefix]
+        add_debug(*expression.info("build_uri: (ns): #{@uri_mappings[prefix]}, #{localname.to_s.rdf_escape}")) if expression.respond_to?(:info)
+        ns(prefix, localname.to_s.rdf_escape)
       elsif prefix == '_'
-        self.bnode(localname)
+        add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
+        bnode(localname)
       elsif prefix == "rdf"
+        add_debug(*expression.info("build_uri: (rdf)")) if expression.respond_to?(:info)
         # A special case
         RDF::RDF[localname.to_s.rdf_escape]
       else
-        @default_ns ||= "#{@uri}#"
-        RDF::URI.new(@default_ns + localname.to_s.rdf_escape)
+        add_debug(*expression.info("build_uri: (default_ns)")) if expression.respond_to?(:info)
+        @default_ns ||= uri("#{@uri}#", nil)
+        ns(nil, localname.to_s.rdf_escape)
       end
       add_debug(*expression.info("build_uri: #{uri.inspect}")) if expression.respond_to?(:info)
       uri
@@ -420,6 +436,24 @@ module RDF::RDFXML
       unless (@keywords || %w(a is of has)).include?(kw)
         raise RDF::ReaderError, "unqualified keyword '#{kw}' used without @keyword directive" if @strict
       end
+    end
+    
+    # Create normalized or unnormalized URIs
+    def uri(value, append, normalize = true)
+      value = case value
+      when Addressable::URI then value
+      else Addressable::URI.parse(value.to_s)
+      end
+      
+      value = value.join(append) if append
+      value.normalize! if normalize
+      RDF::URI.intern(value)
+    end
+    
+    def ns(prefix, suffix)
+      prefix = prefix.nil? ? @default_ns.to_s : @uri_mappings[prefix].to_s
+      suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
+      RDF::URI.intern(prefix + suffix)
     end
   end
 end
@@ -435,7 +469,7 @@ module Treetop
         else
           ["@#{self.interval.first}", "#{ctx}[" +
           self.singleton_methods(true).map do |mm|
-            v = self.send(m)
+            v = self.send(mm)
             v = v.text_value if v.is_a?(SyntaxNode)
             "#{mm}='#{v}'"
           end.join(", ") +
