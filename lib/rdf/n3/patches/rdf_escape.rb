@@ -114,7 +114,7 @@ class String
     string = self.gsub(UNESCAPE_RE) do |c|
       case c[1,1]
       when 'U'
-        raise RdfException, "Long Unicode escapes no supported in Ruby 1.8" unless defined?(::Encoding)
+        raise RDF::ReaderError, "Long Unicode escapes no supported in Ruby 1.8" unless defined?(::Encoding)
         eval(c.sub(/\\U00(\h+)/, '"\u{\1}"'))
       when 'u'
         bytes = [c[2, 2].to_i(16), c[4, 2].to_i(16)]
@@ -126,6 +126,6 @@ class String
     string.force_encoding(Encoding::UTF_8) if defined?(::Encoding)
     string
   rescue Iconv::Failure => e
-    raise RdfException, "Caught #{e.class}: #{e}"
+    raise RDF::ReaderError, "Caught #{e.class}: #{e}"
   end
-end
+end unless String.method_defined?(:rdf_escape)
