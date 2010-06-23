@@ -425,7 +425,7 @@ describe "RDF::N3::Reader" do
       ].each do |n3|
         it "should require @ if keywords set to empty for '#{n3}'" do
           lambda do
-            parse("@keywords . #{n3}", "http://a/b")
+            parse("@keywords . #{n3}", :base_uri => "http://a/b")
           end.should raise_error(/unqualified keyword '\w+' used without @keyword directive/)
         end
       end
@@ -460,7 +460,7 @@ describe "RDF::N3::Reader" do
         n3 = %(@keywords foo.)
         lambda do
           parse(n3, :base_uri => "http://a/b")
-        end.should raise_error(ParserException, "undefined keywords used: foo")
+        end.should raise_error(RDF::ReaderError, "undefined keywords used: foo")
       end
     end
     
@@ -472,8 +472,8 @@ describe "RDF::N3::Reader" do
         _:a a :p.
         )
         nt = %(
-        <http://underscore/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> :p .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> :p .
+        <http://underscore/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#p> .
+        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#p> .
         )
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
@@ -807,28 +807,28 @@ describe "RDF::N3::Reader" do
     end
 
     describe "with AggregateGraph tests" do
-      subject { Graph.new }
-
       describe "with a type" do
-        before(:each) do
-          subject.parse(%(
+        it "should have 3 namespaces" do
+          n3 = %(
           @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
           @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
           @prefix : <http://test/> .
           :foo a rdfs:Class.
           :bar :d :c.
           :a :d :c.
-          ), "http://a/b")
-        end
-        
-        it "should have 3 namespaces" do
-          subject.nsbinding.keys.length.should == 3
+          )
+          nt = %(
+          <http://test/foo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> .
+          <http://test/bar> <http://test/d> <http://test/c> .
+          <http://test/a> <http://test/d> <http://test/c> .
+          )
+          parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
         end
       end
     
       describe "with blank clause" do
-        before(:each) do
-          subject.parse(%(
+        it "should have 4 namespaces" do
+          n3 = %(
           @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
           @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
           @prefix : <http://test/> .
@@ -836,32 +836,38 @@ describe "RDF::N3::Reader" do
           :foo a rdfs:Resource.
           :bar rdfs:isDefinedBy [ a log:Formula ].
           :a :d :e.
-          ), "http://a/b")
-        end
-        
-        it "should have 4 namespaces" do
-          subject.nsbinding.keys.length.should == 4
+          )
+          nt = %(
+          <http://test/foo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Resource> .
+          _:g2160128180 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/log#Formula> .
+          <http://test/bar> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> _:g2160128180 .
+          <http://test/a> <http://test/d> <http://test/e> .
+          )
+          parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
         end
       end
     
       describe "with empty subject" do
         before(:each) do
-          subject.parse(%(
+          @graph = parse(%(
           @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
           @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
           @prefix log: <http://www.w3.org/2000/10/swap/log#>.
           @prefix : <http://test/> .
           <> a log:N3Document.
-          ), "http://test/")
+          ), :base_uri => "http://test/")
         end
         
         it "should have 4 namespaces" do
-          subject.nsbinding.keys.length.should == 4
+          nt = %(
+          <http://test/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/log#N3Document> .
+          )
+          @graph.should be_equivalent_graph(nt, :about => "http://test/", :trace => @debug)
         end
         
         it "should have default subject" do
-          subject.size.should == 1
-          subject.triples.first.subject.should == "http://test/"
+          @graph.size.should == 1
+          @graph.statements.first.subject.to_s.should == "http://test/"
         end
       end
     end
@@ -889,7 +895,7 @@ EOF
   def parse(input, options = {})
     @debug = []
     graph = RDF::Graph.new
-    RDF::N3::Reader.new(input, options.merge(:debug => @debug)).each do |statement|
+    RDF::N3::Reader.new(input, options.merge(:debug => @debug, :strict => true)).each do |statement|
       graph << statement
     end
     graph
