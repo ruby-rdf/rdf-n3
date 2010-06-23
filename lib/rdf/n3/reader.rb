@@ -191,7 +191,7 @@ module RDF::N3
 
     def process_anonnode(anonnode)
       add_debug(*anonnode.info("process_anonnode"))
-      bnode = self.bnode
+      bnode = RDF::Node.new
       
       if anonnode.respond_to?(:property_list)
         properties = process_properties(anonnode.property_list)
@@ -207,7 +207,7 @@ module RDF::N3
         first_bnode = bnode
         objects.each do |object|
           add_triple("anonnode", first_bnode, RDF.first, object)
-          rest_bnode = self.bnode
+          rest_bnode = RDF::Node.new
           add_triple("anonnode", first_bnode, RDF.rest, rest_bnode)
           first_bnode = rest_bnode
         end
@@ -233,8 +233,8 @@ module RDF::N3
         end
       when "@a"           then RDF.type
       when "="            then RDF::OWL.sameAs
-      when "=>"           then RDF::OWL.implies
-      when "<="           then RDF::OWL.implies
+      when "=>"           then RDF::LOG.implies
+      when "<="           then RDF::LOG.implies
       when /^(@?is)\s+.*\s+(@?of)$/
         keyword_check("is") if $1 == "is"
         keyword_check("of") if $2 == "of"
@@ -276,7 +276,7 @@ module RDF::N3
         if @keywords && !@keywords.include?(barename)
           build_uri(barename)
         else
-          RDF::Literal.new(barename.delete("@"), :datatype => XSD.boolean)
+          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean)
         end
       elsif expression.respond_to?(:barename)
         add_debug(*expression.info("process_expression(barename)"))
@@ -284,8 +284,8 @@ module RDF::N3
         
         # Should only happen if @keywords is defined, and text_value is not a defined keyword
         case barename
-        when "true"   then RDF::Literal.new("true", :datatype => XSD.boolean)
-        when "false"  then RDF::Literal.new("false", :datatype => XSD.boolean)
+        when "true"   then RDF::Literal.new("true", :datatype => RDF::XSD.boolean)
+        when "false"  then RDF::Literal.new("false", :datatype => RDF::XSD.boolean)
         else
           # create URI using barename, unless it's in defined set, in which case it's an error
           raise RDF::ReaderError, %Q(Keyword "#{barename}" used as expression) if @keywords && @keywords.include?(barename)
@@ -320,7 +320,7 @@ module RDF::N3
       # ]
       path_list.each do |p|
         reverse, pred = p
-        bnode = self.bnode
+        bnode = RDF::Node.new
         if reverse
           add_triple("path(#{reverse})", bnode, pred, object)
         else
@@ -389,15 +389,14 @@ module RDF::N3
       #puts string.elements[1].text_value.dump
       # FIXME: RDF::Literal doesn't work properly with rdf encoding
       lit = RDF::Literal.new(string.elements[1].text_value.rdf_unescape, :language => language, :datatype => encoding)
-      # FIXME: No lit.valid?
-      #raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_n3} "#{lit.contents}") if @strict && !lit.valid?
+      raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_s} "#{lit.value}") if @strict && !lit.valid?
       lit
     end
     
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
-      RDF::Literal.new(string.elements[1].text_value.rdf_unescape, :datatype => RDF::XSD[object.numericliteral])
+      RDF::Literal.new(object.text_value.rdf_unescape, :datatype => RDF::XSD[object.numericliteral])
     end
     
     def build_uri(expression)
@@ -422,6 +421,10 @@ module RDF::N3
         add_debug(*expression.info("build_uri: (rdf)")) if expression.respond_to?(:info)
         # A special case
         RDF::RDF[localname.to_s.rdf_escape]
+      elsif prefix == "xsd"
+        add_debug(*expression.info("build_uri: (xsd)")) if expression.respond_to?(:info)
+        # A special case
+        RDF::XSD[localname.to_s.rdf_escape]
       else
         add_debug(*expression.info("build_uri: (default_ns)")) if expression.respond_to?(:info)
         @default_ns ||= uri("#{@uri}#", nil)
