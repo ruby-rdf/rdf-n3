@@ -1,17 +1,16 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
-include RdfContext
 
-describe "N3 parser" do
+describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c swap tests" do
     require 'rdf_helper'
 
     def self.positive_tests
-      RdfHelper::TestCase.positive_parser_tests(SWAP_TEST, SWAP_DIR) rescue []
+      RdfHelper::TestCase.positive_parser_tests(SWAP_TEST, SWAP_DIR)
     end
 
     def self.negative_tests
-      RdfHelper::TestCase.negative_parser_tests(SWAP_TEST, SWAP_DIR) rescue []
+      RdfHelper::TestCase.negative_parser_tests(SWAP_TEST, SWAP_DIR)
     end
 
     # Negative parser tests should raise errors.
@@ -20,11 +19,19 @@ describe "N3 parser" do
         #next unless t.about.uri.to_s =~ /rdfms-rdf-names-use/
         #next unless t.name =~ /11/
         #puts t.inspect
-        specify "#{t.name}: #{t.about.uri.to_s} against #{t.outputDocument}" do
+        specify "#{t.name}: #{t.about} against #{t.outputDocument}" do
           begin
-            t.run_test do |rdf_string, parser|
+            t.run_test do |rdf_string|
               t.name.should_not == "n3_10012"  # Too many bnodes makes graph compare unfeasable
-              parser.parse(rdf_string, t.about.uri.to_s, :strict => true, :debug => [])
+              t.debug = []
+              g = RDF::Graph.new
+              RDF::N3::Reader.new(rdf_string,
+                  :base_uri => t.about,
+                  :strict => true,
+                  :debug => t.debug).each do |statement|
+                g << statement
+              end
+              g
             end
           rescue #Spec::Expectations::ExpectationNotMetError => e
             if %w(n3_10003 n3_10004).include?(t.name)
@@ -48,7 +55,7 @@ describe "N3 parser" do
         #next unless t.about.uri.to_s =~ /rdfms-empty-property-elements/
         #next unless t.name =~ /1/
         #puts t.inspect
-        specify "#{t.name}: #{t.about.uri.to_s}" do
+        specify "#{t.name}: #{t.about}" do
           t.run_test do |rdf_string, parser|
             if !defined?(::Encoding) && %w(n3_10019 n3_10020).include?(t.name)
               pending("Not supported in Ruby 1.8")
@@ -56,8 +63,15 @@ describe "N3 parser" do
             end
             begin
               lambda do
-                parser.parse(rdf_string, t.about.uri.to_s, :strict => true, :debug => [])
-              end.should raise_error(RdfException)
+                t.debug = []
+                g = RDF::Graph.new
+                RDF::N3::Reader.new(rdf_string,
+                    :base_uri => t.about,
+                    :strict => true,
+                    :debug => t.debug).each do |statement|
+                  g << statement
+                end
+              end.should raise_error(RDF::ReaderError)
             rescue Spec::Expectations::ExpectationNotMetError => e
               if %w().include?(t.name)
                 pending("@forAll/@forEach not yet implemented")

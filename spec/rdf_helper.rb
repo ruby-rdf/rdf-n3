@@ -3,12 +3,19 @@ autoload :CGI, 'cgi'
 
 RDFCORE_DIR = File.join(File.dirname(__FILE__), 'rdfcore')
 RDFCORE_TEST = "http://www.w3.org/2000/10/rdf-tests/rdfcore/Manifest.rdf"
+SWAP_DIR = File.join(File.dirname(__FILE__), 'swap_test')
+SWAP_TEST = "http://www.w3.org/2000/10/swap/test/n3parser.tests"
+CWM_TEST = "http://www.w3.org/2000/10/swap/test/regression.n3"
+TURTLE_DIR = File.join(File.dirname(__FILE__), 'turtle')
+TURTLE_TEST = "http://www.w3.org/2001/sw/DataAccess/df1/tests/manifest.ttl"
+TURTLE_BAD_TEST = "http://www.w3.org/2001/sw/DataAccess/df1/tests/manifest-bad.ttl"
 
 module RdfHelper
   # Class representing test cases in format http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#
 
   class TestCase
-    class QT < RDF::Vocabulary("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#"); end
+    class MF < RDF::Vocabulary("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#"); end
+    class QT < RDF::Vocabulary("http://www.w3.org/2001/sw/DataAccess/tests/test-query#"); end
     
     attr_accessor :about
     attr_accessor :approval
@@ -112,14 +119,17 @@ module RdfHelper
 
       test = test_uri.to_s.split('/').last
       test_dir = test_dir + "/" unless test_dir.match(%r(/$))
+      ext = test.split(".").last
       
       @positive_parser_tests = []
       @negative_parser_tests = []
       @positive_entailment_tests = []
       @negative_entailment_tests = []
 
-      unless File.file?(File.join(test_dir, test.sub("rdf", "yml")))
-        graph = RDF::Graph.load(File.join(test_dir, test), :base_uri => test_uri)
+      unless File.file?(File.join(test_dir, test.sub(ext, "yml")))
+        load_opts = {:base_uri => test_uri}
+        load_opts[:format] = :n3 if ext == "tests" # For swap tests
+        graph = RDF::Graph.load(File.join(test_dir, test), load_opts)
         uri_base = Addressable::URI.join(test_uri, ".").to_s
 
         # One of:
@@ -135,7 +145,7 @@ module RdfHelper
           sort_by{|t| t.name.to_s}
       else
         # Read tests from Manifest.yml
-        self.from_yaml(File.join(test_dir, test.sub("rdf", "yml")))
+        self.from_yaml(File.join(test_dir, test.sub(ext, "yml")))
       end
 
       @test_cases.each do |tc|
@@ -145,7 +155,6 @@ module RdfHelper
         when "NegativeParserTest" then @negative_parser_tests << tc
         when "PositiveEntailmentTest" then @positive_entailment_tests << tc
         when "NegativeEntailmentTest" then @negative_entailment_tests << tc
-        else puts "Unknown test type: #{tc.rdf_type}"
         end
       end
     end
