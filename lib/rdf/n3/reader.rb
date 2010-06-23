@@ -442,13 +442,16 @@ module RDF::N3
     
     # Create normalized or unnormalized URIs
     def uri(value, append, normalize = true)
+      value = value.to_s.sub(/\#$/, "") if normalize
       value = case value
       when Addressable::URI then value
       else Addressable::URI.parse(value.to_s)
       end
       
       value = value.join(append) if append
-      value.normalize! if normalize
+      if normalize
+        value.normalize!
+      end
       RDF::URI.intern(value)
     end
     
