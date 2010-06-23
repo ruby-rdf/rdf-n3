@@ -1,3 +1,7 @@
+autoload :Date, 'date'
+autoload :DateTime, 'date'
+autoload :Time, 'time'
+
 module RDF
   class Literal
     ##
@@ -31,8 +35,8 @@ module RDF
     # Options is a hash passed to initialize
     def normalize(options = {})
       return unless valid?  # Only normalize valid value
-      
-      case datatype
+
+      @value = case datatype
       when XSD.boolean    then %(1 true).include?(@value.to_s.downcase) ? "true" : "false"
       when XSD.integer    then @value.to_i.to_s
       when XSD.decimal    then normalize_decimal(@value, options)
@@ -40,7 +44,7 @@ module RDF
       when XSD.time       then @value.is_a?(Time) ? @value.strftime("%H:%M:%S%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
       when XSD.dateTime   then @value.is_a?(DateTime) ? @value.strftime("%Y-%m-%dT%H:%M:%S%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
       when XSD.date       then @value.is_a?(Date) ? @value.strftime("%Y-%m-%d%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
-      when XSD.XMLLiteral then normalize_xml(@value, options)
+      when RDF.XMLLiteral then normalize_xmlliteral(@value, options)
       else                    @value.to_s
       end
     end
