@@ -24,6 +24,7 @@ module RDF
     require 'rdf/n3/vocab'
     require 'rdf/n3/patches/array_hacks'
     require 'rdf/n3/patches/literal_hacks'
+    require 'rdf/n3/patches/literal_normalization'
     require 'rdf/n3/patches/qname_hacks'
     require 'rdf/n3/patches/rdf_escape'
     require 'rdf/n3/patches/uri_hacks'

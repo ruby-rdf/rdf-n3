@@ -1,131 +1,53 @@
-# coding: utf-8
-require 'iconv'
-
-class String
-  #private
-  # "Borrowed" from JSON utf8_to_json
-  RDF_MAP = {
-    "\x0" => '\u0000',
-    "\x1" => '\u0001',
-    "\x2" => '\u0002',
-    "\x3" => '\u0003',
-    "\x4" => '\u0004',
-    "\x5" => '\u0005',
-    "\x6" => '\u0006',
-    "\x7" => '\u0007',
-    "\b"  =>  '\b',
-    "\t"  =>  '\t',
-    "\n"  =>  '\n',
-    "\xb" => '\u000B',
-    "\f"  =>  '\f',
-    "\r"  =>  '\r',
-    "\xe" => '\u000E',
-    "\xf" => '\u000F',
-    "\x10" => '\u0010',
-    "\x11" => '\u0011',
-    "\x12" => '\u0012',
-    "\x13" => '\u0013',
-    "\x14" => '\u0014',
-    "\x15" => '\u0015',
-    "\x16" => '\u0016',
-    "\x17" => '\u0017',
-    "\x18" => '\u0018',
-    "\x19" => '\u0019',
-    "\x1a" => '\u001A',
-    "\x1b" => '\u001B',
-    "\x1c" => '\u001C',
-    "\x1d" => '\u001D',
-    "\x1e" => '\u001E',
-    "\x1f" => '\u001F',
-    '"'   =>  '\"',
-    '\\'  =>  '\\\\',
-    '/'   =>  '/',
-  } # :nodoc:
-
-  if defined?(::Encoding)
-    # Funky way to define constant, but if parsed in 1.8 it generates an 'invalid regular expression' error otherwise
-    eval %(ESCAPE_RE = %r([\u{80}-\u{10ffff}]))
-  else
-    ESCAPE_RE = %r(
-                    [\xc2-\xdf][\x80-\xbf]    |
-                    [\xe0-\xef][\x80-\xbf]{2} |
-                    [\xf0-\xf4][\x80-\xbf]{3}
-                  )nx
-  end
-  
-  # Convert a UTF8 encoded Ruby string _string_ to an escaped string, encoded with
-  # UTF16 big endian characters as \U????, and return it.
-  #
-  # \\:: Backslash
-  # \':: Single quote
-  # \":: Double quot
-  # \n:: ASCII Linefeed
-  # \r:: ASCII Carriage Return
-  # \t:: ASCCII Horizontal Tab
-  # \uhhhh:: character in BMP with Unicode value U+hhhh
-  # \U00hhhhhh:: character in plane 1-16 with Unicode value U+hhhhhh
-  def rdf_escape
-    string = self + '' # XXX workaround: avoid buffer sharing
-    string.gsub!(/["\\\/\x0-\x1f]/) { RDF_MAP[$&] }
-    if defined?(::Encoding)
-      string.force_encoding(Encoding::UTF_8)
-      string.gsub!(ESCAPE_RE) { |c|
-                      s = c.dump.sub(/\"\\u\{(.+)\}\"/, '\1').upcase
-                      (s.length <= 4 ? "\\u0000"[0,6-s.length] : "\\U00000000"[0,10-s.length]) + s
-                    }
-      string.force_encoding(Encoding::ASCII_8BIT)
+class Array
+  # http://wiki.rubygarden.org/Ruby/page/show/ArrayPermute
+  # Permute an array, and call a block for each permutation
+  # Author: Paul Battley
+  def permute(prefixed=[])
+    if (length < 2)
+      # there are no elements left to permute
+      yield(prefixed + self)
     else
-      string.gsub!(ESCAPE_RE) { |c|
-                      s = Iconv.new('utf-16be', 'utf-8').iconv(c).unpack('H*').first.upcase
-                      "\\u" + s
-                    }
-    end
-    string
-  end
-  
-  # Unescape characters in strings.
-  RDF_UNESCAPE_MAP = Hash.new { |h, k| h[k] = k.chr }
-  RDF_UNESCAPE_MAP.update({
-    ?"  => '"',
-    ?\\ => '\\',
-    ?/  => '/',
-    ?b  => "\b",
-    ?f  => "\f",
-    ?n  => "\n",
-    ?r  => "\r",
-    ?t  => "\t",
-    ?u  => nil, 
-  })
-
-  if defined?(::Encoding)
-    UNESCAPE_RE = %r(
-      (?:\\[\\bfnrt"/])   # Escaped control characters, " and /
-      |(?:\\U00\h{6})     # 6 byte escaped Unicode
-      |(?:\\u\h{4})       # 4 byte escaped Unicode
-    )x
-  else
-    UNESCAPE_RE = %r((?:\\[\\bfnrt"/]|(?:\\u(?:[A-Fa-f\d]{4}))+|\\[\x20-\xff]))n
-  end
-  
-  # Reverse operation of escape
-  # From JSON parser
-  def rdf_unescape
-    return '' if self.empty?
-    string = self.gsub(UNESCAPE_RE) do |c|
-      case c[1,1]
-      when 'U'
-        raise RdfException, "Long Unicode escapes no supported in Ruby 1.8" unless defined?(::Encoding)
-        eval(c.sub(/\\U00(\h+)/, '"\u{\1}"'))
-      when 'u'
-        bytes = [c[2, 2].to_i(16), c[4, 2].to_i(16)]
-        Iconv.new('utf-8', 'utf-16').iconv(bytes.pack("C*"))
-      else
-        RDF_UNESCAPE_MAP[c[1]]
+      # recursively permute the remaining elements
+      each_with_index do |e, i|
+        (self[0,i]+self[(i+1)..-1]).permute(prefixed+[e]) { |a| yield a }
       end
     end
-    string.force_encoding(Encoding::UTF_8) if defined?(::Encoding)
-    string
-  rescue Iconv::Failure => e
-    raise RdfException, "Caught #{e.class}: #{e}"
-  end
-end unless String.method_defined?(:rdf_escape)
+  end unless Array.method_defined?(:permute)
+  
+  # Converts the array to a comma-separated sentence where the last element is joined by the connector word. Options:
+  # * <tt>:words_connector</tt> - The sign or word used to join the elements in arrays with two or more elements (default: ", ")
+  # * <tt>:two_words_connector</tt> - The sign or word used to join the elements in arrays with two elements (default: " and ")
+  # * <tt>:last_word_connector</tt> - The sign or word used to join the last element in arrays with three or more elements (default: ", and ")
+  def to_sentence(options = {})
+    default_words_connector     = ", "
+    default_two_words_connector = " and "
+    default_last_word_connector = ", and "
+
+    # Try to emulate to_senteces previous to 2.3
+    if options.has_key?(:connector) || options.has_key?(:skip_last_comma)
+      ::ActiveSupport::Deprecation.warn(":connector has been deprecated. Use :words_connector instead", caller) if options.has_key? :connector
+      ::ActiveSupport::Deprecation.warn(":skip_last_comma has been deprecated. Use :last_word_connector instead", caller) if options.has_key? :skip_last_comma
+
+      skip_last_comma = options.delete :skip_last_comma
+      if connector = options.delete(:connector)
+        options[:last_word_connector] ||= skip_last_comma ? connector : ", #{connector}"
+      else
+        options[:last_word_connector] ||= skip_last_comma ? default_two_words_connector : default_last_word_connector
+      end
+    end
+
+#    options.assert_valid_keys(:words_connector, :two_words_connector, :last_word_connector, :locale)
+    options = {:words_connector => default_words_connector, :two_words_connector => default_two_words_connector, :last_word_connector => default_last_word_connector}.merge(options)
+
+    case length
+      when 0
+        ""
+      when 1
+        self[0].to_s
+      when 2
+        "#{self[0]}#{options[:two_words_connector]}#{self[1]}"
+      else
+        "#{self[0...-1].join(options[:words_connector])}#{options[:last_word_connector]}#{self[-1]}"
+    end
+  end unless Array.method_defined?(:to_sentence)
+end
