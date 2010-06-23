@@ -4,7 +4,6 @@ module RDF::N3
   #
   # @example Obtaining an RDFa format class
   #   RDF::Format.for(:n3)            #=> RDF::N3::Format
-  #   RDF::Format.for(:ttl)           #=> RDF::N3::Format
   #   RDF::Format.for("etc/foaf.ttl")
   #   RDF::Format.for("etc/foaf.n3")
   #   RDF::Format.for(:file_name      => "etc/foaf.ttl")

@@ -2,6 +2,89 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "RDF::N3::Reader" do
+    context "discovery" do
+      {
+        "n3" => RDF::Reader.for(:n3),
+        "etc/foaf.n3" => RDF::Reader.for("etc/foaf.n3"),
+        "etc/foaf.ttl" => RDF::Reader.for("etc/foaf.ttl"),
+        "foaf.n3" => RDF::Reader.for(:file_name      => "foaf.n3"),
+        "foaf.ttl" => RDF::Reader.for(:file_name      => "foaf.ttl"),
+        ".n3" => RDF::Reader.for(:file_extension => "n3"),
+        ".ttl" => RDF::Reader.for(:file_extension => "ttl"),
+        "text/n3" => RDF::Reader.for(:content_type   => "text/n3"),
+        "text/turtle" => RDF::Reader.for(:content_type   => "text/turtle"),
+      }.each_pair do |label, format|
+        it "should discover '#{label}'" do
+          format.should == RDF::N3::Reader
+        end
+      end
+    end
+
+    context :interface do
+      before(:each) do
+        @sampledoc = <<-EOF;
+          @prefix dc: <http://purl.org/dc/elements/1.1/>.
+          @prefix po: <http://purl.org/ontology/po/>.
+          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+          _:broadcast
+           a po:Broadcast;
+           po:schedule_date """2008-06-24T12:00:00Z""";
+           po:broadcast_of _:version;
+           po:broadcast_on <http://www.bbc.co.uk/programmes/service/6music>;
+          .
+          _:version
+           a po:Version;
+          .
+          <http://www.bbc.co.uk/programmes/b0072l93>
+           dc:title """Nemone""";
+           a po:Brand;
+          .
+          <http://www.bbc.co.uk/programmes/b00c735d>
+           a po:Episode;
+           po:episode <http://www.bbc.co.uk/programmes/b0072l93>;
+           po:version _:version;
+           po:long_synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
+           dc:title """Nemone""";
+           po:synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
+          .
+          <http://www.bbc.co.uk/programmes/service/6music>
+           a po:Service;
+           dc:title """BBC 6 Music""";
+          .
+
+          #_:abcd a po:Episode.
+      EOF
+    end
+    
+    it "should yield reader" do
+      inner = mock("inner")
+      inner.should_receive(:called).with(RDF::N3::Reader)
+      RDF::N3::Reader.new(@sampledoc) do |reader|
+        inner.called(reader.class)
+      end
+    end
+    
+    it "should return reader" do
+      RDF::N3::Reader.new(@sampledoc).should be_a(RDF::N3::Reader)
+    end
+    
+    it "should yield statements" do
+      inner = mock("inner")
+      inner.should_receive(:called).with(RDF::Statement).exactly(15)
+      RDF::N3::Reader.new(@sampledoc).each_statement do |statement|
+        inner.called(statement.class)
+      end
+    end
+    
+    it "should yield triples" do
+      inner = mock("inner")
+      inner.should_receive(:called).exactly(15)
+      RDF::N3::Reader.new(@sampledoc).each_triple do |subject, predicate, object|
+        inner.called(subject.class, predicate.class, object.class)
+      end
+    end
+  end
+
   describe "with simple ntriples" do
     context "simple triple" do
       before(:each) do

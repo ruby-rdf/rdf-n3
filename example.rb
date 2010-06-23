@@ -3,7 +3,7 @@
 $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 
 require 'rubygems'
-require 'rdf/rdfa'
+require 'rdf/n3'
 
 data = <<-EOF;
   @prefix dc: <http://purl.org/dc/elements/1.1/>.
