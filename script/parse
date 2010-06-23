@@ -18,11 +18,14 @@ raise "Mode must be one of 'parse'" unless mode == "parse"
 $verbose = false
 $format = :ntriples
 base_uri  = "http://example.com"
+input = nil
+
 opts = GetoptLong.new(
   ["--debug", GetoptLong::NO_ARGUMENT],
   ["--verbose", GetoptLong::NO_ARGUMENT],
   ["--quiet", GetoptLong::NO_ARGUMENT],
   ["--format", GetoptLong::REQUIRED_ARGUMENT],
+  ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
   ["--uri", GetoptLong::REQUIRED_ARGUMENT]
 )
 opts.each do |opt, arg|
@@ -30,12 +33,13 @@ opts.each do |opt, arg|
   when '--verbose' then $verbose = true
   when '--quiet' then $quiet = true
   when '--debug' then $DEBUG = true
+  when '--execute' then input = arg
   when '--uri' then base_uri = arg
   end
 end
 
 if ARGV.empty?
-  s = $stdin.read
+  s = input ? input : $stdin.read
   parse(StringIO.new(s), base_uri)
 else
   ARGV.each do |test_file|
