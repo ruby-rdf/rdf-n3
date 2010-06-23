@@ -387,7 +387,6 @@ module RDF::N3
 
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
-      # FIXME: RDF::Literal doesn't work properly with rdf encoding
       lit = RDF::Literal.new(string.elements[1].text_value.rdf_unescape, :language => language, :datatype => encoding)
       raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_s} "#{lit.value}") if @strict && !lit.valid?
       lit

@@ -63,7 +63,7 @@ describe "RDF::N3::Reader" do
         n3 = %(@prefix : <http://example.org/foo#> . :a :b "\\U00015678another" .)
         if defined?(::Encoding)
           statement = parse(n3).statements.first
-          statement.object.to_s.should == '"\u{15678}another"'
+          statement.object.value.should == "\u{15678}another"
         else
           lambda { parse(n3) }.should raise_error(RDF::ReaderError, "Long Unicode escapes no supported in Ruby 1.8")
           pending("Not supported in Ruby 1.8")
