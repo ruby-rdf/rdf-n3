@@ -123,9 +123,16 @@ module RdfHelper
 
       return unless output
 
-      output_graph = RDF::Graph.load(self.outputDocument)
-      puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if $DEBUG
-      graph.should Matchers::be_equivalent_graph(output_graph, self)
+      case self.compare
+      when :none
+        # Don't check output, just parse to graph
+      when :array
+        @parser.graph.should be_equivalent_graph(self.output, self)
+      else
+        output_graph = RDF::Graph.load(self.outputDocument, :format => detect_format(self.outputDocument))
+        puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if $DEBUG
+        graph.should Matchers::be_equivalent_graph(output_graph, self)
+      end
     end
 
     def trace

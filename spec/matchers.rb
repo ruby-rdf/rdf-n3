@@ -9,7 +9,7 @@ module Matchers
       else
         # Figure out which parser to use
         g = RDF::Graph.new
-        reader_class = detect_format(graph)
+        reader_class = RDF::Reader.for(detect_format(graph))
         reader_class.new(graph, :base_uri => @info.about).each {|s| g << s}
         g
       end

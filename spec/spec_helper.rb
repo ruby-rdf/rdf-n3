@@ -41,10 +41,10 @@ def detect_format(stream)
     string = stream.to_s
   end
   case string
-  when /<\w+:RDF/ then RDF::RDFXML::Reader
-  when /<RDF/     then RDF::RDFXML::Reader
-  when /<html/i   then RDF::RDFa::Reader
-  when /@prefix/i then RDF::N3::Reader
-  else                 RDF::N3::Reader
+  when /<\w+:RDF/ then :rdfxml
+  when /<RDF/     then :rdfxml
+  when /<html/i   then :rdfa
+  when /@prefix/i then :n3
+  else                 :n3
   end
 end
