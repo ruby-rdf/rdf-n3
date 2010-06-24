@@ -34,6 +34,7 @@ opts.each do |opt, arg|
   when '--quiet' then $quiet = true
   when '--debug' then $DEBUG = true
   when '--execute' then input = arg
+  when '--format' then $format = arg
   when '--uri' then base_uri = arg
   end
 end

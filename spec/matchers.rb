@@ -58,4 +58,44 @@ module Matchers
   def be_equivalent_graph(expected, info = nil)
     BeEquivalentGraph.new(expected, info)
   end
+  
+  class MatchRE
+    Info = Struct.new(:about, :information, :trace, :inputDocument, :outputDocument)
+    def initialize(expected, info)
+      @info = if info.respond_to?(:about)
+        info
+      elsif info.is_a?(Hash)
+        identifier = info[:identifier] || info[:about]
+        trace = info[:trace]
+        trace = trace.join("\n") if trace.is_a?(Array)
+        Info.new(identifier, info[:information] || "", trace, info[:inputDocument], info[:outputDocument])
+      else
+        Info.new(info, info.to_s)
+      end
+      @expected = expected
+    end
+
+    def matches?(actual)
+      @actual = actual
+      @actual.to_s.match(@expected)
+    end
+
+    def failure_message_for_should
+      info = @info.respond_to?(:information) ? @info.information : @info.inspect
+      "Match failed"
+      "\n#{info + "\n" unless info.empty?}" +
+      (@info.inputDocument ? "Input file: #{@info.inputDocument}\n" : "") +
+      (@info.outputDocument ? "Output file: #{@info.outputDocument}\n" : "") +
+      "Expression: #{@expected}\n" +
+      "Unsorted Results:\n#{@actual}" +
+      (@info.trace ? "\nDebug:\n#{@info.trace}" : "")
+    end
+    def negative_failure_message
+      "Match succeeded\n"
+    end
+  end
+
+  def match_re(expected, info = nil)
+    MatchRE.new(expected, info)
+  end
 end

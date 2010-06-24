@@ -30,6 +30,6 @@ module RDF
     require 'rdf/n3/patches/uri_hacks'
     autoload :Reader,  'rdf/n3/reader'
     autoload :VERSION, 'rdf/n3/version'
-    autoload :Writer,  'rdf/n3/reader'
+    autoload :Writer,  'rdf/n3/writer'
   end
 end
