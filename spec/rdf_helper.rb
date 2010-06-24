@@ -78,7 +78,7 @@ module RdfHelper
 
     def parse_mf(subject, uri_prefix, test_dir, graph)
       props = graph.properties(subject)
-      @name = (props[MF.name.to_s] || []).first.to_s
+      @name = (props[MF['name'].to_s] || []).first.to_s
       @description =  (props[RDF::RDFS.comment.to_s] || []).first.to_s
       @outputDocument = (props[MF.result.to_s] || []).first
       @outputDocument = @outputDocument.to_s.sub(uri_prefix, test_dir) if @outputDocument
@@ -167,7 +167,6 @@ module RdfHelper
         when MF.Manifest
           # Get test entries
           entries = graph.query(:subject => t_uri, :predicate => MF["entries"]).to_a
-          puts "entries: #{entries.inspect}"
           entries = entries.first
           raise "No entires found for MF Manifest" unless entries.is_a?(RDF::Statement)
 
