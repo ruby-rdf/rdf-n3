@@ -38,6 +38,15 @@ module RdfHelper
     attr_accessor :debug
     
     def initialize(statements, uri_prefix, test_dir, options = {})
+      case options[:test_type]
+      when :mf
+        parse_mf(statements, uri_prefix, test_dir, options[:graph])
+      else
+        parse_w3c(statements, uri_prefix, test_dir)
+      end
+    end
+
+    def parse_w3c(statements, uri_prefix, test_dir)
       statements.each do |statement|
         next if statement.subject.is_a?(RDF::Node)
         pred = statement.predicate.to_s.split(/[\#\/]/).last
@@ -65,6 +74,18 @@ module RdfHelper
           self.send("#{pred}=", obj)
         end
       end
+    end
+
+    def parse_mf(subject, uri_prefix, test_dir, graph)
+      props = graph.properties(subject)
+      @name = (props[MF.name.to_s] || []).first.to_s
+      @description =  (props[RDF::RDFS.comment.to_s] || []).first.to_s
+      @outputDocument = (props[MF.result.to_s] || []).first
+      @outputDocument = @outputDocument.to_s.sub(uri_prefix, test_dir) if @outputDocument
+      action = (props[MF.action.to_s] || []).first
+      a_props = graph.properties(action)
+      @about = (a_props[QT.data.to_s] || []).first
+      @inputDocument = @about.to_s.sub(uri_prefix, test_dir)
     end
 
     def inspect
@@ -131,18 +152,34 @@ module RdfHelper
         load_opts[:format] = :n3 if ext == "tests" # For swap tests
         graph = RDF::Graph.load(File.join(test_dir, test), load_opts)
         uri_base = Addressable::URI.join(test_uri, ".").to_s
+        t_uri = RDF::URI.new(test_uri)
 
-        # One of:
-        #   http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema
-        #   http://www.w3.org/2000/10/swap/test.n3#
-        #   http://www.w3.org/2004/11/n3test#
-        # Group by subject
-        @test_cases = graph.subjects.map do |subj|
-          t = TestCase.new(graph.query(:subject => subj), uri_base, test_dir)
-          t.name ? t : nil
-        end.
-          compact.
-          sort_by{|t| t.name.to_s}
+        # If this is a turtle test (type mf:Manifest) parse with
+        # alternative test case
+        case graph.type_of(t_uri).first
+        when MF.Manifest
+          # Get test entries
+          entries = graph.query(:subject => t_uri, :predicate => MF["entries"]).to_a
+          puts "entries: #{entries.inspect}"
+          entries = entries.first
+          raise "No entires found for MF Manifest" unless entries.is_a?(RDF::Statement)
+
+          @test_cases = graph.seq(entries.object).map do |subject|
+            TestCase.new(subject, uri_base, test_dir, :test_type => :mf, :graph => graph)
+          end
+        else
+          # One of:
+          #   http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema
+          #   http://www.w3.org/2000/10/swap/test.n3#
+          #   http://www.w3.org/2004/11/n3test#
+          # Group by subject
+          @test_cases = graph.subjects.map do |subj|
+            t = TestCase.new(graph.query(:subject => subj), uri_base, test_dir)
+            t.name ? t : nil
+          end.
+            compact.
+            sort_by{|t| t.name.to_s}
+        end
       else
         # Read tests from Manifest.yml
         self.from_yaml(File.join(test_dir, test.sub(ext, "yml")))
