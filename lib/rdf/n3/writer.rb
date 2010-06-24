@@ -400,8 +400,8 @@ module RDF::N3
     def sort_properties(properties)
       properties.keys.each do |k|
         properties[k] = properties[k].sort do |a, b|
-          a_li = a.is_a?(RDF::URI) && a.qname.last =~ /^_\d+$/ ? a.to_i : a.to_s
-          b_li = b.is_a?(RDF::URI) && b.qname.last =~ /^_\d+$/ ? b.to_i : b.to_s
+          a_li = a.is_a?(RDF::URI) && a.qname && a.qname.last =~ /^_\d+$/ ? a.to_i : a.to_s
+          b_li = b.is_a?(RDF::URI) && b.qname && b.qname.last =~ /^_\d+$/ ? b.to_i : b.to_s
           
           a_li <=> b_li
         end

@@ -213,6 +213,7 @@ describe RDF::N3::Writer do
         else
           begin
             t.run_test do |rdf_string|
+              t.compare = :none
               serialize(rdf_string, t.about.to_s)
             end
           #rescue #Spec::Expectations::ExpectationNotMetError => e
