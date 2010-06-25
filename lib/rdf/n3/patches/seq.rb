@@ -1,4 +1,4 @@
-require 'rdf/rdfxml/patches/graph_properties'
+require 'rdf/n3/patches/graph_properties'
 module RDF
   class Graph
     # Returns ordered rdf:_n objects or rdf:first, rdf:rest for a given subject
