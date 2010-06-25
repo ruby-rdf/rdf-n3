@@ -1,2 +1,11 @@
+=== 0.0.2
+* N3 parsing and Turtle serialization substantially complete.
+  * A little more work needed on some tests and some lingering issues in RDF.rb to be resolved.
+* Added script/console and script/parse
+* Updates to reader to bring it in line with other readers. Implement uri() and ns() as helper functions for constructing URIs.
+* Literal_normalization to override RDF::Literal.initialize and create Literal#valid?
+* rdf_escape Literals when serializing via to_s
+* Remove trailing "#" from URIs when normalizing.
+
 === 0.0.1
 * First port from RdfContext version 0.5.4

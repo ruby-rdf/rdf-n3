@@ -18,12 +18,18 @@ Install with 'gem install rdf-n3'
 Based on original parser by Patrick Sinclair (metade)
 
 == Usage:
-Instantiate a parser and parse source, specifying type and base-URL
+Instantiate a reader from a local file:
 
   RDF::N3::Reader.open("etc/foaf.n3") do |reader|
     reader.each_statement do |statement|
       puts statement.inspect
     end
+  end
+
+Write a graph to a file:
+
+  RDF::N3::Writer.open("etc/test.n3") do |writer|
+    writer << graph
   end
 
 == Dependencies

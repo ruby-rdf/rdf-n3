@@ -20,7 +20,7 @@ module RDF::N3
   #   RDF::Writer.for(:content_type   => "text/turtle")
   #
   # @example Serializing RDF graph into an Turtle file
-  #   RDF::N3::Write.open("etc/test.n3") do |writer|
+  #   RDF::N3::Writer.open("etc/test.n3") do |writer|
   #     writer << graph
   #   end
   #

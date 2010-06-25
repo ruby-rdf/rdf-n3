@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rdf-n3}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2010-06-03}
+  s.date = %q{2010-06-24}
   s.description = %q{    RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
 }
   s.email = %q{gregg@kellogg-assoc.com}
@@ -30,15 +30,26 @@ Gem::Specification.new do |s|
      "lib/rdf/n3.rb",
      "lib/rdf/n3/format.rb",
      "lib/rdf/n3/patches/array_hacks.rb",
+     "lib/rdf/n3/patches/graph_properties.rb",
+     "lib/rdf/n3/patches/literal_hacks.rb",
+     "lib/rdf/n3/patches/literal_normalization.rb",
+     "lib/rdf/n3/patches/qname_hacks.rb",
      "lib/rdf/n3/patches/rdf_escape.rb",
+     "lib/rdf/n3/patches/seq.rb",
+     "lib/rdf/n3/patches/uri_hacks.rb",
      "lib/rdf/n3/reader.rb",
      "lib/rdf/n3/reader/n3_grammar.rb",
      "lib/rdf/n3/reader/n3_grammar.treetop",
      "lib/rdf/n3/version.rb",
-     "lib/rdf/n3/vocabulary.rb",
+     "lib/rdf/n3/vocab.rb",
      "lib/rdf/n3/writer.rb",
      "rdf-n3.gemspec",
+     "script/console",
+     "script/parse",
      "spec/cwm_spec.rb",
+     "spec/format_spec.rb",
+     "spec/literal_spec.rb",
+     "spec/matchers.rb",
      "spec/n3reader_spec.rb",
      "spec/rdf_helper.rb",
      "spec/rdfcore/Manifest.rdf",
@@ -395,7 +406,6 @@ Gem::Specification.new do |s|
      "spec/rdfcore/xmlsch-02/test003.rdf",
      "spec/spec.opts",
      "spec/spec_helper.rb",
-     "spec/swap_helper.rb",
      "spec/swap_spec.rb",
      "spec/swap_test/.DS_Store",
      "spec/swap_test/animal.rdf",
@@ -430,6 +440,7 @@ Gem::Specification.new do |s|
      "spec/swap_test/n3/n3parser.tests_n3_10019.nt",
      "spec/swap_test/n3/n3parser.tests_n3_10020.nt",
      "spec/swap_test/n3parser.tests",
+     "spec/swap_test/n3parser.yml",
      "spec/swap_test/nodeID/classes.n3",
      "spec/swap_test/nodeID/classes.ref.rdf",
      "spec/swap_test/nodeID/ex1.rdf",
@@ -469,6 +480,7 @@ Gem::Specification.new do |s|
      "spec/swap_test/ref/xml-syntax-basic-serialization.rdf",
      "spec/swap_test/ref/xmllit.nt",
      "spec/swap_test/regression.n3",
+     "spec/swap_test/regression.yml",
      "spec/swap_test/reluri-1.n3",
      "spec/swap_test/strquot.n3",
      "spec/swap_test/syntax/colon-in-uri.rdf",
@@ -505,7 +517,6 @@ Gem::Specification.new do |s|
      "spec/swap_test/xml-syntax/xml_prefix2.n3",
      "spec/swap_test/xml-syntax/xmlbase3.rdf",
      "spec/swap_test/xml-syntax/xmllit.rdf",
-     "spec/triple_spec.rb",
      "spec/turtle/README.txt",
      "spec/turtle/bad-00.ttl",
      "spec/turtle/bad-01.ttl",
@@ -594,7 +605,8 @@ Gem::Specification.new do |s|
      "spec/turtle/test-30.out",
      "spec/turtle/test-30.ttl",
      "spec/turtle_serializer_spec.rb",
-     "spec/turtle_spec.rb"
+     "spec/turtle_spec.rb",
+     "spec/writer_spec.rb"
   ]
   s.homepage = %q{http://github.com/gkellogg/rdf-rdfa}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -603,14 +615,16 @@ Gem::Specification.new do |s|
   s.summary = %q{Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.}
   s.test_files = [
     "spec/cwm_spec.rb",
+     "spec/format_spec.rb",
+     "spec/literal_spec.rb",
+     "spec/matchers.rb",
      "spec/n3reader_spec.rb",
      "spec/rdf_helper.rb",
      "spec/spec_helper.rb",
-     "spec/swap_helper.rb",
      "spec/swap_spec.rb",
-     "spec/triple_spec.rb",
      "spec/turtle_serializer_spec.rb",
-     "spec/turtle_spec.rb"
+     "spec/turtle_spec.rb",
+     "spec/writer_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
@@ -618,21 +632,30 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<rdf>, [">= 0.1.6"])
+      s.add_runtime_dependency(%q<rdf>, [">= 0.2.0"])
+      s.add_runtime_dependency(%q<treetop>, [">= 1.4.0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
       s.add_development_dependency(%q<rdf-spec>, [">= 0"])
-      s.add_development_dependency(%q<treetop>, [">= 1.4.0"])
+      s.add_development_dependency(%q<rdf-rdfxml>, [">= 0.2.0"])
+      s.add_development_dependency(%q<rdf-isomorphic>, [">= 0"])
+      s.add_development_dependency(%q<yard>, [">= 0"])
     else
-      s.add_dependency(%q<rdf>, [">= 0.1.6"])
+      s.add_dependency(%q<rdf>, [">= 0.2.0"])
+      s.add_dependency(%q<treetop>, [">= 1.4.0"])
       s.add_dependency(%q<rspec>, [">= 0"])
       s.add_dependency(%q<rdf-spec>, [">= 0"])
-      s.add_dependency(%q<treetop>, [">= 1.4.0"])
+      s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.0"])
+      s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
+      s.add_dependency(%q<yard>, [">= 0"])
     end
   else
-    s.add_dependency(%q<rdf>, [">= 0.1.6"])
+    s.add_dependency(%q<rdf>, [">= 0.2.0"])
+    s.add_dependency(%q<treetop>, [">= 1.4.0"])
     s.add_dependency(%q<rspec>, [">= 0"])
     s.add_dependency(%q<rdf-spec>, [">= 0"])
-    s.add_dependency(%q<treetop>, [">= 1.4.0"])
+    s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.0"])
+    s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
+    s.add_dependency(%q<yard>, [">= 0"])
   end
 end
 
