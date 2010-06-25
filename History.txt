@@ -1,3 +1,6 @@
+=== 0.0.3
+* Replace require against rdf/rdfxml/patches/* with rdf/n3/patches/*
+
 === 0.0.2
 * N3 parsing and Turtle serialization substantially complete.
   * A little more work needed on some tests and some lingering issues in RDF.rb to be resolved.
