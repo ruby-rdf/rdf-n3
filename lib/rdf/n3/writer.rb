@@ -1,4 +1,4 @@
-require 'rdf/rdfxml/patches/graph_properties'
+require 'rdf/n3/patches/graph_properties'
 
 module RDF::N3
   ##
