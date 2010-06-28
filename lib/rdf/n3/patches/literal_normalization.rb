@@ -17,9 +17,6 @@ module RDF; class Literal
   # @see   http://www.w3.org/TR/rdfa-core/#s_xml_literals
   # @since 0.2.1
   class XML < Literal
-    DATATYPE = RDF.XMLLiteral
-    GRAMMAR  = nil
-
     ##
     # @param  [Object] value
     # @option options [String] :lexical (nil)

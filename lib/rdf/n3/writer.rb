@@ -374,7 +374,7 @@ module RDF::N3
     end
     
     def label(node)
-      get_qname(node) || RDF::NTriples::Writer.serialize(node)
+      get_qname(node) || node.to_ntriples
     end
 
     def add_namespace(prefix, ns)

@@ -1,3 +1,6 @@
+=== 0.2.1
+* Compatible with RDF.rb 0.2.1
+
 === 0.0.3
 * Replace require against rdf/rdfxml/patches/* with rdf/n3/patches/*
 

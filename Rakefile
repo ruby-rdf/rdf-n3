@@ -17,7 +17,7 @@ begin
     gemspec.add_dependency('treetop',  '>= 1.4.0')
     gemspec.add_development_dependency('rspec')
     gemspec.add_development_dependency('rdf-spec', '>= 0.2.1')
-    gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.0')
+    gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.1')
     gemspec.add_development_dependency('rdf-isomorphic')
     gemspec.add_development_dependency('yard')
     gemspec.extra_rdoc_files     = %w(README.rdoc History.txt AUTHORS)
