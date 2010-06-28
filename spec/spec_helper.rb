@@ -4,6 +4,7 @@ $:.unshift File.dirname(__FILE__)
 require 'rubygems'
 require 'spec'
 require 'matchers'
+require 'bigdecimal'  # XXX Remove Me
 require 'rdf/n3'
 require 'rdf/ntriples'
 require 'rdf/spec'

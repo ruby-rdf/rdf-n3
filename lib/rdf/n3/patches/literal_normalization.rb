@@ -1,120 +1,150 @@
-autoload :Date, 'date'
-autoload :DateTime, 'date'
-autoload :Time, 'time'
+# Use Nokogiri or LibXML when available, and REXML otherwise:
+begin
+  require 'nokogiri'
+rescue LoadError => e
+  begin
+    require 'libxml'
+  rescue LoadError => e
+    :rexml
+  end
+end
 
-module RDF
-  class Literal
+module RDF; class Literal
+  ##
+  # An XML literal.
+  #
+  # @see   http://www.w3.org/TR/rdf-concepts/#section-XMLLiteral
+  # @see   http://www.w3.org/TR/rdfa-core/#s_xml_literals
+  # @since 0.2.1
+  class XML < Literal
+    DATATYPE = RDF.XMLLiteral
+    GRAMMAR  = nil
+
     ##
-    # Re-define initialize/new to call _normalize_ on value.
-    # @param  [Object]
+    # @param  [Object] value
+    # @option options [String] :lexical (nil)
+    # @option options [Hash] :namespaces (nil)
+    # @option options [Hash] :namespaces ({})
     # @option options [Symbol] :language (nil)
-    # @option options [URI]    :datatype (nil)
-    # @option options[Hash]    :namespaces ({})
-    def initialize_with_normalization(value, options = {})
-      initialize_without_normalization(value, options)
-      normalize(options)
-    end
-    
-    alias_method :initialize_without_normalization, :initialize
-    alias_method :initialize, :initialize_with_normalization
-
-    def valid?
-      case datatype
-      when XSD.boolean   then %w(1 true 0 false).include?(value.to_s.downcase)
-      when XSD.decimal   then !!value.to_s.match(/^[\+\-]?\d+(\.\d*)?$/)
-      when XSD.double    then !!value.to_s.match(/^[\+\-]?\d+(\.\d*([eE][\+\-]?\d+)?)?$/)
-      when XSD.integer   then !!value.to_s.match(/^[\+\-]?\d+$/)
-      else                    true
-      end
-    end
-
-    protected
-    
-    # Normalize literal value
-    #
-    # Options is a hash passed to initialize
-    def normalize(options = {})
-      return unless valid?  # Only normalize valid value
-
-      @value = case datatype
-      when XSD.boolean    then %(1 true).include?(@value.to_s.downcase) ? "true" : "false"
-      when XSD.integer    then @value.to_i.to_s
-      when XSD.decimal    then normalize_decimal(@value, options)
-      when XSD.double     then normalize_double(@value, options)
-      when XSD.time       then @value.is_a?(Time) ? @value.strftime("%H:%M:%S%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
-      when XSD.dateTime   then @value.is_a?(DateTime) ? @value.strftime("%Y-%m-%dT%H:%M:%S%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
-      when XSD.date       then @value.is_a?(Date) ? @value.strftime("%Y-%m-%d%Z").sub(/\+00:00|UTC/, "Z") : @value.to_s
-      when RDF.XMLLiteral then normalize_xmlliteral(@value, options)
-      else                    @value.to_s
-      end
-    end
-    
-    def normalize_decimal(contents, options)
-      # Can't use simple %f transformation do to special requirements from N3 tests in representation
-      i, f = contents.to_s.split(".")
-      f = f.to_s[0,16]  # Truncate after 15 decimal places
-      i.sub!(/^\+?0+(\d)$/, '\1')
-      f.sub!(/0*$/, '')
-      f = "0" if f.empty?
-      "#{i}.#{f}"
-    end
-    
-    def normalize_double(contents, options)
-      i, f, e = ("%.16E" % contents.to_f).split(/[\.E]/)
-      f.sub!(/0*$/, '')
-      f = "0" if f.empty?
-      e.sub!(/^\+?0+(\d)$/, '\1')
-      "#{i}.#{f}E#{e}"
-    end
-    
-    # Normalize an XML Literal, by adding necessary namespaces.
-    # This should be done as part of initialize
-    #
-    # namespaces is a hash of prefix => URIs
-    def normalize_xmlliteral(contents, options = {})
+    # @option options [Symbol] :library (:nokogiri, :libxml, or :rexml)
+    def initialize(value, options = {})
       options[:namespaces] ||= {}
 
-      begin
-        # Only normalize if Nokogiri is included
-        require 'nokogiri' unless defined?(Nokogiri)
-      rescue LoadError => e
-        contents.to_s   # No normalization
-      end
-      
-      if contents.is_a?(String)
-        ns_hash = {}
-        options[:namespaces].each_pair do |prefix, uri|
-          attr = prefix.to_s.empty? ? "xmlns" : "xmlns:#{prefix}"
-          ns_hash[attr] = uri.to_s
-        end
-        ns_strs = []
-        ns_hash.each_pair {|a, u| ns_strs << "#{a}=\"#{u}\""}
-
-        # Add inherited namespaces to created root element so that they're inherited to sub-elements
-        contents = Nokogiri::XML::Document.parse("<foo #{ns_strs.join(" ")}>#{contents}</foo>").root.children
+      @library = case options[:library]
+        when nil
+          case
+          when defined?(::Nokogiri) then :nokogiri
+          when defined?(::LibXML)   then :libxml
+          else                           :rexml
+          end
+        when :nokogiri, :libxml, :rexml
+          options[:library]
+        else
+          raise ArgumentError.new("expected :rexml, :libxml or :nokogiri, but got #{options[:library].inspect}")
       end
 
-      # Add already mapped namespaces and language
-      contents.map do |c|
-        if c.is_a?(Nokogiri::XML::Element)
-          c = Nokogiri::XML.parse(c.dup.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS)).root
-          # Gather namespaces from self and decendant nodes
-          c.traverse do |n|
-            ns = n.namespace
-            next unless ns
-            prefix = ns.prefix ? "xmlns:#{ns.prefix}" : "xmlns"
-            c[prefix] = ns.href.to_s unless c.namespaces[prefix]
-          end
-          
-          # Add lanuage
-          if options[:language] && c["lang"].to_s.empty?
-            c["xml:lang"] = options[:language]
-          end
-        end
-        c.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS)
-      end.join("")
+      @datatype = options[:datatype] || DATATYPE
+      @string   = options[:lexical] if options.has_key?(:lexical)
+      @object   = parse_value(value, options)
+      @string   = serialize_nodeset(@object)
     end
-  end
-  
-  class NormalizationError < IOError; end
-end
+
+    ##
+    # Converts the literal into its canonical lexical representation.
+    #
+    # @return [Literal]
+    # @see    http://www.w3.org/TR/xml-exc-c14n/
+    def canonicalize
+      # This is the opportunity to use exclusive canonicalization library
+      self
+    end
+
+    ##
+    # Returns the value as a string.
+    #
+    # @return [String]
+    def to_s
+      @string
+    end
+    
+    private
+    
+    def parse_value(value, options)
+      ns_hash = {}
+      options[:namespaces].each_pair do |prefix, uri|
+        attr = prefix.to_s.empty? ? "xmlns" : "xmlns:#{prefix}"
+        ns_hash[attr] = uri.to_s
+      end
+      ns_strs = []
+      ns_hash.each_pair {|a, u| ns_strs << "#{a}=\"#{u}\""}
+
+      case @library
+      when :nokogiri  then parse_value_nokogiri(value, ns_strs, options[:language])
+      when :libxml    then parse_value_libxml(value, ns_strs, options[:language])
+      when :rexml     then parse_value_rexml(value, ns_strs, options[:language])
+      else                 value.to_s
+      end
+    end
+    
+    def serialize_nodeset(object)
+      case @library
+      when :nokogiri  then serialize_nodeset_nokogiri(object)
+      when :libxml    then serialize_nodeset_libxml(object)
+      when :rexml     then serialize_nodeset_rexml(object)
+      else                 object
+      end
+    end
+    
+    # Nokogiri implementations
+    if defined?(::Nokogiri)
+      def parse_value_nokogiri(value, ns_strs, language)
+        return value if value.is_a?(Nokogiri::XML::NodeSet)
+        # Add inherited namespaces to created root element so that they're inherited to sub-elements
+        elements = Nokogiri::XML::Document.parse("<foo #{ns_strs.join(" ")}>#{value.to_s}</foo>").root.children
+
+        elements.map do |c|
+          if c.is_a?(Nokogiri::XML::Element)
+            c = Nokogiri::XML.parse(c.dup.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS)).root
+            # Gather namespaces from self and decendant nodes
+            c.traverse do |n|
+              ns = n.namespace
+              next unless ns
+              prefix = ns.prefix ? "xmlns:#{ns.prefix}" : "xmlns"
+              c[prefix] = ns.href.to_s unless c.namespaces[prefix]
+            end
+
+            # Add lanuage
+            if language && c["lang"].to_s.empty?
+              c["xml:lang"] = language
+            end
+          end
+          c
+        end
+      end
+    
+      def serialize_nodeset_nokogiri(object)
+        object.map {|c| c.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS)}.join("")
+      end
+    end   # Nokogiri
+    
+    if defined?(::LibXML)
+      def parse_value_libxml(value, ns_strs, language)
+        # Fixme
+      end
+
+      def serialize_nodeset_libxml(object)
+        # Fixme
+      end
+    end   # LibXML
+    
+    # REXML
+    def parse_value_rexml(value, ns_strs, language)
+      # Fixme
+    end
+
+    def serialize_nodeset_rexml(object)
+      # Fixme
+    end
+    
+  end # class XML
+end; end

@@ -374,7 +374,7 @@ module RDF::N3
     end
     
     def label(node)
-      get_qname(node) || (node.uri? ? "<#{node}>" : node.to_s)
+      get_qname(node) || RDF::NTriples::Writer.serialize(node)
     end
 
     def add_namespace(prefix, ns)
