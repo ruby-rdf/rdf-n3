@@ -148,7 +148,6 @@ describe "RDF::N3::Reader" do
           statement = parse(n3).statements.first
           statement.object.value.should == "\u{15678}another"
         else
-          lambda { parse(n3) }.should raise_error(RDF::ReaderError, "Long Unicode escapes no supported in Ruby 1.8")
           pending("Not supported in Ruby 1.8")
         end
       end
@@ -289,7 +288,7 @@ describe "RDF::N3::Reader" do
       end
     end
     
-    it "should create URIRefs" do
+    it "should create URIs" do
       n3doc = "<http://example.org/joe> <http://xmlns.com/foaf/0.1/knows> <http://example.org/jane> ."
       statement = parse(n3doc).statements.first
       statement.subject.class.should == RDF::URI
