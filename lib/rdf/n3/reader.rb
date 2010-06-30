@@ -41,7 +41,7 @@ module RDF::N3
         @debug = options[:debug]
         @strict = options[:strict]
         @uri_mappings = {}
-        @uri = uri(options[:base_uri], nil, true)
+        @uri = uri(options[:base_uri], nil, false)
 
         @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
         @default_ns = uri("#{options[:base_uri]}#", nil, false) if @uri
@@ -157,16 +157,15 @@ module RDF::N3
           if s.respond_to?(:nprefix)
             add_debug(*s.info("process_statements(namespace)"))
             keyword_check("prefix") if s.text_value.index("prefix") == 0
-            uri = process_uri(s.explicituri.uri, false)
+            uri = process_uri(s.explicituri.uri)
             namespace(uri, s.nprefix.text_value)
           elsif s.respond_to?(:base)
             add_debug(*s.info("process_statements(base)"))
             keyword_check("base") if s.text_value.index("base") == 0
             # Base, set or update document URI
             uri = s.explicituri.uri.text_value
-            @default_ns = process_uri(uri, false)  # Don't normalize
+            @default_ns = @uri = process_uri(uri)
             add_debug("@default_ns", "#{@default_ns.inspect}")
-            @uri = process_uri(uri)
             add_debug("@base", "#{@uri}")
             @uri
           elsif s.respond_to?(:keywords)
@@ -341,9 +340,9 @@ module RDF::N3
       end
     end
     
-    def process_uri(uri, normalize = true)
+    def process_uri(uri)
       uri = uri.text_value if uri.respond_to?(:text_value)
-      uri(@uri, RDF::NTriples::Reader.unescape(uri), normalize)
+      uri(@uri, RDF::NTriples::Reader.unescape(uri))
     end
     
     def process_properties(properties)
@@ -441,17 +440,11 @@ module RDF::N3
       end
     end
     
-    # Create normalized or unnormalized URIs
-    def uri(value, append, normalize = true)
-      value = value.to_s.sub(/\#$/, "") if normalize
-      value = case value
-      when Addressable::URI then value
-      else Addressable::URI.parse(value.to_s)
-      end
-      
+    # Create URIs
+    def uri(value, append, normalize = false)
+      value = RDF::URI.intern(value)
       value = value.join(append) if append
-      value.normalize! if normalize
-      RDF::URI.intern(value)
+      value
     end
     
     def ns(prefix, suffix)

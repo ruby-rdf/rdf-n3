@@ -337,7 +337,7 @@ describe "RDF::N3::Reader" do
       it "should use <> as a prefix and as a triple node" do
         n3 = %(@prefix : <> . <> a :a.)
         nt = %(
-        <http://a/b> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#a> .
+        <http://a/b> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/ba> .
         )
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
       end
@@ -450,8 +450,8 @@ describe "RDF::N3::Reader" do
       it "should set absolute base" do
         n3 = %(@base <http://foo/bar> . <> :a <b> . <#c> :d </e>.)
         nt = %(
-        <http://foo/bar> <http://foo/bara> <http://foo/b> .
-        <http://foo/bar#c> <http://foo/bard> <http://foo/e> .
+        <http://foo/bar> <http://foo/bar#a> <http://foo/b> .
+        <http://foo/bar#c> <http://foo/bar#d> <http://foo/e> .
         )
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
       end
