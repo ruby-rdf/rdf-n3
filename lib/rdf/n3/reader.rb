@@ -343,12 +343,7 @@ module RDF::N3
     
     def process_uri(uri, normalize = true)
       uri = uri.text_value if uri.respond_to?(:text_value)
-      if uri.match(/^\#/)
-        uri(@uri, RDF::NTriples::Writer.escape(uri), false) # This is probably bogus, but allows tests to pass
-      else
-        uri = RDF::NTriples::Writer.escape(uri) unless normalize # Addressable does it's own escaping when normalizing
-        uri(@uri, uri, normalize)
-      end
+      uri(@uri, RDF::NTriples::Reader.unescape(uri), normalize)
     end
     
     def process_properties(properties)
