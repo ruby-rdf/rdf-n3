@@ -342,7 +342,7 @@ module RDF::N3
     
     def process_uri(uri)
       uri = uri.text_value if uri.respond_to?(:text_value)
-      uri(@uri, RDF::NTriples::Reader.unescape(uri))
+      uri(@uri, RDF::NTriples.unescape(uri))
     end
     
     def process_properties(properties)
@@ -386,7 +386,7 @@ module RDF::N3
 
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
-      lit = RDF::Literal.new(RDF::NTriples::Reader.unescape(string.elements[1].text_value), :language => language, :datatype => encoding)
+      lit = RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :datatype => encoding)
       raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_s} "#{lit.value}") if @strict && !lit.valid?
       lit
     end
@@ -394,7 +394,7 @@ module RDF::N3
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
-      RDF::Literal.new(RDF::NTriples::Reader.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral])
+      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral])
     end
     
     def build_uri(expression)
@@ -402,7 +402,7 @@ module RDF::N3
       localname = expression.localname.text_value if expression.respond_to?(:localname)
       localname ||= (expression.respond_to?(:text_value) ? expression.text_value : expression).to_s.sub(/^:/, "")
       localname = nil if localname.empty? # In N3/Turtle "_:" is not named
-      escaped_localname = RDF::NTriples::Writer.escape(localname.to_s)
+      escaped_localname = RDF::NTriples.escape(localname.to_s)
 
       if expression.respond_to?(:info)
         add_debug(*expression.info("build_uri(#{prefix.inspect}, #{localname.inspect})"))
@@ -412,7 +412,7 @@ module RDF::N3
 
       uri = if @uri_mappings[prefix]
         add_debug(*expression.info("build_uri: (ns): #{@uri_mappings[prefix]}, #{escaped_localname}")) if expression.respond_to?(:info)
-        ns(prefix, RDF::NTriples::Writer.escape(localname.to_s))
+        ns(prefix, RDF::NTriples.escape(localname.to_s))
       elsif prefix == '_'
         add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
         bnode(localname)
