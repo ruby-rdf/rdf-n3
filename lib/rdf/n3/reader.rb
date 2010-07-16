@@ -281,7 +281,7 @@ module RDF::N3
         if @keywords && !@keywords.include?(barename)
           build_uri(barename)
         else
-          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean)
+          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => @strict, :canonicalize => true)
         end
       elsif expression.respond_to?(:barename)
         add_debug(*expression.info("process_expression(barename)"))
@@ -392,15 +392,13 @@ module RDF::N3
 
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
-      lit = RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :datatype => encoding)
-      raise RDF::ReaderError, %(Typed literal has an invalid lexical value: #{encoding.to_s} "#{lit.value}") if @strict && !lit.valid?
-      lit
+      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => @strict, :datatype => encoding, :canonicalize => true)
     end
     
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
-      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral])
+      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => @strict, :canonicalize => true)
     end
     
     def build_uri(expression)
