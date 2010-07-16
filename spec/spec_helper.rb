@@ -24,6 +24,13 @@ module RDF
         end
       end
     end
+    def dump
+      b = []
+      self.each_statement do |statement|
+        b << statement.to_triple.inspect
+      end
+      b.join("\n")
+    end
   end
 end
 

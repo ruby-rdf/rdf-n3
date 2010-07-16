@@ -1,3 +1,5 @@
+require 'rdf/isomorphic'
+
 module Matchers
   class BeEquivalentGraph
     Info = Struct.new(:about, :information, :trace, :compare, :inputDocument, :outputDocument)
@@ -31,7 +33,7 @@ module Matchers
 
     def matches?(actual)
       @actual = normalize(actual)
-      @actual == @expected
+      @actual.isomorphic_with?(@expected)
     end
 
     def failure_message_for_should
@@ -48,6 +50,8 @@ module Matchers
       (@info.outputDocument ? "Output file: #{@info.outputDocument}\n" : "") +
       "Unsorted Expected:\n#{@expected.to_ntriples}" +
       "Unsorted Results:\n#{@actual.to_ntriples}" +
+#      "Unsorted Expected Dump:\n#{@expected.dump}\n" +
+#      "Unsorted Results Dump:\n#{@actual.dump}" +
       (@info.trace ? "\nDebug:\n#{@info.trace}" : "")
     end
     def negative_failure_message
