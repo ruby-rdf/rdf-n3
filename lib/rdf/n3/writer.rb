@@ -379,8 +379,9 @@ module RDF::N3
 
     def add_namespace(prefix, ns)
       return if @namespaces.has_key?(prefix.to_s)
-      add_debug "add_namespace: '#{prefix}', <#{ns}>"
-      @namespaces[prefix.to_s] = ns.to_s
+      uri = (ns.respond_to?(:to_uri) ? ns.to_uri : ns).to_s
+      add_debug "add_namespace: '#{prefix}', <#{uri}>"
+      @namespaces[prefix.to_s] = uri
     end
 
     def reset

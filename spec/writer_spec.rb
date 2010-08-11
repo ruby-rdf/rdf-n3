@@ -184,10 +184,16 @@ describe RDF::N3::Writer do
           ]
         ] .
       )
+      #$verbose = true
       serialize(input, nil,
-        [%r(:a rdfs:domain \[\s*a owl:Class;\s+owl:unionOf\s+\(:b\s+:c\)\]\s*\.$)m],
+        [
+          %r(:a rdfs:domain \[\s*a owl:Class;\s+owl:unionOf\s+\(:b\s+:c\)\]\s*\.$)m,
+          %r(@prefix : <http://xmlns.com/foaf/0.1/> \.),
+          %r(@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \.),
+        ],
         :default_namespace => RDF::FOAF
       )
+      #$verbose = false
     end
   end
   
@@ -240,7 +246,10 @@ describe RDF::N3::Writer do
     result = RDF::N3::Writer.buffer(options.merge(:debug => @debug, :base_uri => base)) do |writer|
       writer << g
     end
-    puts result if $verbose
+    if $verbose
+      require 'cgi'
+      #puts CGI.escapeHTML(result)
+    end
     
     regexps.each do |re|
       result.should match_re(re, :about => base, :trace => @debug, :inputDocument => ntstr)
