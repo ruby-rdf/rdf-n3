@@ -428,6 +428,7 @@ module RDF::N3
     #
     # @param [String] message::
     def add_debug(message)
+      STDERR.puts message if $DEBUG
       @debug << message if @debug.is_a?(Array)
     end
 
