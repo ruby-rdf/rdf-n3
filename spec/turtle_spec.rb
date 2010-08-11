@@ -1,3 +1,4 @@
+$:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe RDF::N3::Reader do

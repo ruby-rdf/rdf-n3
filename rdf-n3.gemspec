@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2010-06-28}
+  s.date = %q{2010-07-15}
   s.description = %q{    RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
 }
   s.email = %q{gregg@kellogg-assoc.com}
@@ -608,7 +608,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/gkellogg/rdf-rdfa}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.}
   s.test_files = [
     "spec/cwm_spec.rb",
@@ -616,6 +616,7 @@ Gem::Specification.new do |s|
      "spec/literal_spec.rb",
      "spec/matchers.rb",
      "spec/n3reader_spec.rb",
+     "spec/rdf-iso-falure.rb",
      "spec/rdf_helper.rb",
      "spec/spec_helper.rb",
      "spec/swap_spec.rb",
@@ -627,7 +628,7 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rdf>, [">= 0.2.1"])
       s.add_runtime_dependency(%q<treetop>, [">= 1.4.0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])

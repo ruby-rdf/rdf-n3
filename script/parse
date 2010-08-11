@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -s
 require 'rubygems'
-$:.unshift(File.join(File.dirname(__FILE__), "..", 'lib'))
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require 'rdf/n3'
 require 'getoptlong'
 
