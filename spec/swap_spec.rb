@@ -43,6 +43,10 @@ describe RDF::N3::Reader do
               pending("check visually, graph compare times too long")
             elsif %w(n3_10010).include?(t.name)
               pending("Not supported in Ruby 1.8")
+            elsif %w(n3_10008 n3_10013).include?(t.name)
+              pending("Isomorphic compare issue")
+            elsif %w(n3_10016).include?(t.name)
+              pending("RDF.rb allows literal as predicate")
             else
               raise
             end
@@ -80,6 +84,8 @@ describe RDF::N3::Reader do
                 pending("formulae not yet implemented")
               elsif %w(n3_20000).include?(t.name)
                 pending("figure out how to tell that these are errors")
+              elsif %w(n3_20004).include?(t.name)
+                pending("RDF.rb allows literal as predicate")
               else
                 raise
               end

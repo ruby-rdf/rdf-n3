@@ -126,8 +126,6 @@ module RDF::N3
       uri = uri.to_s
       if uri == "#"
         uri = @default_ns
-      elsif !uri.match(/[\/\#]$/)
-        uri += "#"
       end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
       @uri_mappings[prefix] = RDF::URI.intern(uri)
@@ -170,7 +168,15 @@ module RDF::N3
             keyword_check("base") if s.text_value.index("base") == 0
             # Base, set or update document URI
             uri = s.explicituri.uri.text_value
-            @default_ns = @uri = process_uri(uri)
+            @uri = process_uri(uri)
+            
+            # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
+            # The parser behaves as though there were a
+            #   @prefix : <#>.
+            # just before the file.
+            # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
+            
+            @default_ns =  uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#")
             add_debug("@default_ns", "#{@default_ns.inspect}")
             add_debug("@base", "#{@uri}")
             @uri
@@ -454,6 +460,7 @@ module RDF::N3
     def ns(prefix, suffix)
       prefix = prefix.nil? ? @default_ns.to_s : @uri_mappings[prefix].to_s
       suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
+      add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
       RDF::URI.intern(prefix + suffix)
     end
   end
