@@ -6,7 +6,7 @@ module RDF
   # **`RDF::N3`** is an Notation-3 plugin for RDF.rb.
   #
   # @example Requiring the `RDF::N3` module
-  #   require 'rdf/rdfxml'
+  #   require 'rdf/n3'
   #
   # @example Parsing RDF statements from an N3 file
   #   RDF::N3::Reader.open("etc/foaf.n3") do |reader|
