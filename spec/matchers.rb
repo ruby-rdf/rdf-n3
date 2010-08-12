@@ -4,16 +4,37 @@ module Matchers
   class BeEquivalentGraph
     Info = Struct.new(:about, :information, :trace, :compare, :inputDocument, :outputDocument)
     def normalize(graph)
-      case graph
-      when RDF::Graph then graph
-      when IO, StringIO
-        RDF::Graph.new.load(graph, :base_uri => @info.about)
+      case @info.compare
+      when :array
+        array = case graph
+        when RDF::Graph
+          raise ":compare => :array used with Graph"
+        when Array
+          graph.sort
+        else
+          graph.to_s.split("\n").
+            map {|t| t.gsub(/^\s*(.*)\s*$/, '\1')}.
+            reject {|t2| t2.match(/^\s*$/)}.
+            compact.
+            sort.
+            uniq
+        end
+        
+        # Implement to_ntriples on array, to simplify logic later
+        def array.to_ntriples; self.join("\n") + "\n"; end
+        array
       else
-        # Figure out which parser to use
-        g = RDF::Graph.new
-        reader_class = RDF::Reader.for(detect_format(graph))
-        reader_class.new(graph, :base_uri => @info.about).each {|s| g << s}
-        g
+        case graph
+        when RDF::Graph then graph
+        when IO, StringIO
+          RDF::Graph.new.load(graph, :base_uri => @info.about)
+        else
+          # Figure out which parser to use
+          g = RDF::Graph.new
+          reader_class = RDF::Reader.for(detect_format(graph))
+          reader_class.new(graph, :base_uri => @info.about).each {|s| g << s}
+          g
+        end
       end
     end
     
@@ -33,7 +54,11 @@ module Matchers
 
     def matches?(actual)
       @actual = normalize(actual)
-      @actual.isomorphic_with?(@expected)
+      if @info.compare == :array
+        @actual == @expected
+      else
+        @actual.isomorphic_with?(@expected)
+      end
     end
 
     def failure_message_for_should
