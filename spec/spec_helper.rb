@@ -1,4 +1,5 @@
 $:.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$:.unshift(File.join(File.dirname(__FILE__), '..', '..', 'rdf-rdfxml', 'lib'))
 $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
@@ -36,6 +37,21 @@ end
 
 Spec::Runner.configure do |config|
   config.include(RDF::Spec::Matchers)
+end
+
+
+# Serialize graph and replace bnodes with predictable versions, return as sorted array  
+def normalize_bnodes(graph, anon = "a")
+  anon_ctx = {}
+  # Find and replace all BNodes within graph string
+  g_str = graph.to_ntriples
+  anon_entries = g_str.scan(/_:g\d+/).sort.uniq
+  anon_entries.each do |a|
+    anon_ctx[a] = "_:#{anon}"
+    anon = anon.succ
+  end
+  
+  g_str.gsub(/_:g\d+/) { |bn| anon_ctx[bn] }.split("\n").sort
 end
 
 # Heuristically detect the input stream
