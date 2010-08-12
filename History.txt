@@ -1,3 +1,13 @@
+=== 0.2.2
+* Ruby 1.9.2 compatibility
+* Added script/tc to run test cases
+* Fixed RDF.to_s != RDF.to_uri.to_s in writer, it worke for every other vocabulary
+* Handle XMLLiteral when value is a Nokogiri node set.
+* Simplify process_uri by not having a special case for ^# type URIs.
+* Unescape values when creating URIs.
+* URI normalization isn't required for N3, so removed.
+* Added Reader#rewind and #close as stubs because document is parsed on initialize and input is closed.
+
 === 0.2.1
 * Compatible with RDF.rb 0.2.1
 

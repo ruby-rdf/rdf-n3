@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rdf-n3}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2010-07-15}
+  s.date = %q{2010-08-11}
   s.description = %q{    RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
 }
   s.email = %q{gregg@kellogg-assoc.com}
@@ -44,6 +44,7 @@ Gem::Specification.new do |s|
      "rdf-n3.gemspec",
      "script/console",
      "script/parse",
+     "script/tc",
      "spec/cwm_spec.rb",
      "spec/format_spec.rb",
      "spec/literal_spec.rb",
@@ -616,7 +617,6 @@ Gem::Specification.new do |s|
      "spec/literal_spec.rb",
      "spec/matchers.rb",
      "spec/n3reader_spec.rb",
-     "spec/rdf-iso-falure.rb",
      "spec/rdf_helper.rb",
      "spec/spec_helper.rb",
      "spec/swap_spec.rb",
