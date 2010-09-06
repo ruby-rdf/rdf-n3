@@ -104,7 +104,7 @@ module RDF::N3
     # @see    #write_triple
     def write_epilogue
       @max_depth = @options[:max_depth] || 3
-      @base = @options[:base_uri]
+      @base_uri = @options[:base_uri]
       @debug = @options[:debug]
       @default_namespace = @options[:default_namespace]
 
@@ -129,7 +129,7 @@ module RDF::N3
     def start_document
       @started = true
       
-      write("#{indent}@base <#{@base}> .\n") if @base
+      write("#{indent}@base <#{@base_uri}> .\n") if @base_uri
       
       add_debug("start_document: #{@namespaces.inspect}")
       @namespaces.keys.sort.each do |prefix|
@@ -271,7 +271,7 @@ module RDF::N3
     
     def relativize(uri)
       uri = uri.to_s
-      @base ? uri.sub(/^#{@base}/, "") : uri
+      @base_uri ? uri.sub(@base_uri.to_s, "") : uri
     end
 
     def statement(subject)
@@ -342,8 +342,8 @@ module RDF::N3
     # Return a QName for the URI, or nil. Adds namespace of QName to defined namespaces
     def get_qname(uri)
       if uri.is_a?(RDF::URI)
-        md = uri.to_s.match(/^#{@base}(.*)$/) if @base
-        return "<#{md[1]}>" if md
+        md = relativize(uri)
+        return "<#{md}>" unless md == uri.to_s
 
         # Duplicate logic from URI#qname to remember namespace assigned
 
