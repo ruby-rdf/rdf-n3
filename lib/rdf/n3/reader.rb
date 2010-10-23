@@ -69,7 +69,7 @@ module RDF::N3
       parser = N3GrammerParser.new
       document = parser.parse(@doc)
       unless document
-        puts parser.inspect if $DEBUG
+        puts parser.inspect if ::RDF::N3::debug?
         reason = parser.failure_reason
         raise RDF::ReaderError, reason
       end
@@ -104,7 +104,7 @@ module RDF::N3
     # @param [XML Node, any] node:: XML Node or string for showing context
     # @param [String] message::
     def add_debug(node, message)
-      puts "#{node}: #{message}" if $DEBUG
+      puts "#{node}: #{message}" if ::RDF::N3::debug?
       @debug << "#{node}: #{message}" if @debug.is_a?(Array)
     end
 

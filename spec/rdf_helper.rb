@@ -52,24 +52,24 @@ module RdfHelper
         pred = statement.predicate.to_s.split(/[\#\/]/).last
         obj  = statement.object.is_a?(RDF::Literal) ? statement.object.value : statement.object.to_s
 
-        puts "#{pred}: #{obj}" if $DEBUG
+        puts "#{pred}: #{obj}" if ::RDF::N3::debug?
         if statement.predicate == RDF.type
           self.rdf_type = obj.to_s.split(/[\#\/]/).last
           #puts statement.subject.to_s
         elsif pred =~ /Document\Z/i
-          puts "sub #{uri_prefix} in #{obj} for #{test_dir}" if $DEBUG
+          puts "sub #{uri_prefix} in #{obj} for #{test_dir}" if ::RDF::N3::debug?
           about = obj.dup
           obj.sub!(uri_prefix, test_dir)
-          puts " => #{obj}" if $DEBUG
+          puts " => #{obj}" if ::RDF::N3::debug?
           self.send("#{pred}=", obj)
           if pred == "inputDocument"
             self.about ||= about
             self.name ||= statement.subject.to_s.split(/[\#\/]/).last
           end
         elsif pred == "referenceOutput"
-          puts "referenceOutput: #{obj}" if $DEBUG
+          puts "referenceOutput: #{obj}" if ::RDF::N3::debug?
           outputDocument = obj.sub(uri_prefix, test_dir)
-          puts "referenceOutput: " + self.send(pred) if $DEBUG
+          puts "referenceOutput: " + self.send(pred) if ::RDF::N3::debug?
         elsif self.respond_to?("#{pred}=")
           self.send("#{pred}=", obj)
         end
@@ -130,7 +130,7 @@ module RdfHelper
         @parser.graph.should be_equivalent_graph(self.output, self)
       else
         output_graph = RDF::Graph.load(self.outputDocument, :format => detect_format(self.outputDocument))
-        puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if $DEBUG
+        puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if ::RDF::N3::debug?
         graph.should Matchers::be_equivalent_graph(output_graph, self)
       end
     end
