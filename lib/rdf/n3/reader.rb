@@ -412,7 +412,6 @@ module RDF::N3
       localname = expression.localname.text_value if expression.respond_to?(:localname)
       localname ||= (expression.respond_to?(:text_value) ? expression.text_value : expression).to_s.sub(/^:/, "")
       localname = nil if localname.empty? # In N3/Turtle "_:" is not named
-      escaped_localname = RDF::NTriples.escape(localname.to_s)
 
       if expression.respond_to?(:info)
         add_debug(*expression.info("build_uri(#{prefix.inspect}, #{localname.inspect})"))
@@ -421,23 +420,23 @@ module RDF::N3
       end
 
       uri = if @uri_mappings[prefix]
-        add_debug(*expression.info("build_uri: (ns): #{@uri_mappings[prefix]}, #{escaped_localname}")) if expression.respond_to?(:info)
-        ns(prefix, RDF::NTriples.escape(localname.to_s))
+        add_debug(*expression.info("build_uri: (ns): #{@uri_mappings[prefix]}, #{localname}")) if expression.respond_to?(:info)
+        ns(prefix, localname.to_s)
       elsif prefix == '_'
         add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
         bnode(localname)
       elsif prefix == "rdf"
         add_debug(*expression.info("build_uri: (rdf)")) if expression.respond_to?(:info)
         # A special case
-        RDF::RDF[escaped_localname]
+        RDF::RDF[localname.to_s]
       elsif prefix == "xsd"
         add_debug(*expression.info("build_uri: (xsd)")) if expression.respond_to?(:info)
         # A special case
-        RDF::XSD[escaped_localname]
+        RDF::XSD[localname.to_s]
       else
         add_debug(*expression.info("build_uri: (default_ns)")) if expression.respond_to?(:info)
         @default_ns ||= uri("#{@uri}#", nil)
-        ns(nil, escaped_localname)
+        ns(nil, localname.to_s)
       end
       add_debug(*expression.info("build_uri: #{uri.inspect}")) if expression.respond_to?(:info)
       uri
