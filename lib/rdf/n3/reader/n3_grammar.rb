@@ -1297,7 +1297,7 @@ module N3Grammer
     i0, s0 = index, []
     s1, i1 = [], index
     loop do
-      if has_terminal?('\G[a-z]', true, index)
+      if has_terminal?('\G[a-zA-Z]', true, index)
         r2 = true
         @index += 1
       else
@@ -1331,7 +1331,7 @@ module N3Grammer
         if r5
           s6, i6 = [], index
           loop do
-            if has_terminal?('\G[a-z0-9]', true, index)
+            if has_terminal?('\G[a-zA-Z0-9]', true, index)
               r7 = true
               @index += 1
             else
