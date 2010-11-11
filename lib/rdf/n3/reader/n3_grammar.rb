@@ -113,7 +113,7 @@ module N3Grammer
     if r1
       r0 = r1
     else
-      if has_terminal?('\G[-0-9\\u00b7\\u0300-\\u037d\\u203f-\\u2040\\\\]', true, index)
+      if has_terminal?('\G[-0-9\\u00b7\\u0300-\\u036f\\u203f-\\u2040\\\\]', true, index)
         r2 = true
         @index += 1
       else

@@ -17,6 +17,9 @@ Install with 'gem install rdf-n3'
 
 Based on original parser by Patrick Sinclair (metade)
 
+== Limitations:
+* Full support of Unicode input requires Ruby version 1.9 or greater.
+
 == Usage:
 Instantiate a reader from a local file:
 

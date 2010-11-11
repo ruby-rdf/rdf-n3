@@ -14,7 +14,7 @@ grammar N3Grammer
   end
   
   rule barename_tail
-    barename_start / [-0-9\u00b7\u0300-\u037d\u203f-\u2040\\]
+    barename_start / [-0-9\u00b7\u0300-\u036f\u203f-\u2040\\]
   end
   
   rule hexdigit
