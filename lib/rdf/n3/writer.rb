@@ -207,7 +207,7 @@ module RDF::N3
     
     def p_default(node, position)
       #puts "p_default: #{node.inspect}, #{position}" if ::RDF::N3::debug?
-      l = (position == SUBJECT ? "" : " ") + label(node)
+      l = (position == SUBJECT ? "" : " ") + format_value(node)
       write(l)
     end
     
@@ -375,10 +375,6 @@ module RDF::N3
       end
     end
     
-    def label(node)
-      get_qname(node) || node.to_ntriples
-    end
-
     def add_namespace(prefix, ns)
       return if @namespaces.has_key?(prefix.to_s)
       uri = (ns.respond_to?(:to_uri) ? ns.to_uri : ns).to_s
@@ -443,6 +439,44 @@ module RDF::N3
     # Write text
     def write(text)
       @stream.write(text)
+    end
+    
+    ##
+    # Returns the N-Triples representation of a literal.
+    #
+    # @param  [RDF::Literal, String, #to_s] literal
+    # @param  [Hash{Symbol => Object}] options
+    # @return [String]
+    def format_literal(literal, options = {})
+      case literal
+        when RDF::Literal
+          text = quoted(literal.value)
+          text << "@#{literal.language}" if literal.has_language?
+          text << "^^#{format_uri(literal.datatype)}" if literal.has_datatype?
+          text
+        else
+          quoted(literal.to_s)
+      end
+    end
+    
+    ##
+    # Returns the Turtle/N3 representation of a URI reference.
+    #
+    # @param  [RDF::URI] literal
+    # @param  [Hash{Symbol => Object}] options
+    # @return [String]
+    def format_uri(uri, options = {})
+      get_qname(uri) || "<%s>" % uri_for(uri)
+    end
+    
+    ##
+    # Returns the Turtle/N3 representation of a blank node.
+    #
+    # @param  [RDF::Node] node
+    # @param  [Hash{Symbol => Object}] options
+    # @return [String]
+    def format_node(node, options = {})
+      "_:%s" % node.id
     end
   end
 end

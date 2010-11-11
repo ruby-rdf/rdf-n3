@@ -5,7 +5,7 @@ require 'rdf/n3'
 require 'getoptlong'
 
 def parse(input, base)
-  puts RDF::Writer.for($format.to_sym).buffer { |writer|
+  puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
     RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
       writer << statement
     end
