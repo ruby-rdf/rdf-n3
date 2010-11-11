@@ -1,3 +1,10 @@
+=== 0.2.3
+* In Writer, set @base_uri not @base, as :base_uri is an attribute.
+* Relativize URLs without matching as regexp.
+* Allow mixed case literal languages.
+* Improve N3 Unicode support for Ruby 1.9
+* Improve Turtle/N3 Writer to use unescaped and qname'd values
+
 === 0.2.2
 * Ruby 1.9.2 compatibility
 * Added script/tc to run test cases
