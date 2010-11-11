@@ -1,6 +1,12 @@
 require 'treetop'
 
-Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar"))
+if defined?(::Encoding)
+  # load full grammar
+  Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar"))
+else
+  # load 1.8 grammar, doesn't include U00010000-\U000effff
+  Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar_18"))
+end
 
 module RDF::N3
   ##

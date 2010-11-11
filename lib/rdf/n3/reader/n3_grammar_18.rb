@@ -85,7 +85,7 @@ module N3Grammer
       return cached
     end
 
-    if has_terminal?('\G[A-Z_a-z\\u00c0-\\u00d6\\u00d8-\\u00f6\\u00f8-\\u02ff\\u0370-\\u037d\\u037f-\\u1fff\\u200c-\\u200d\\u2070-\\u218f\\u2c00-\\u2fef\\u3001-\\ud7ff\\uf900-\\ufdcf\\ufdf0-\\ufffd\\u{10000}-\\u{effff}]', true, index)
+    if has_terminal?('\G[A-Z_a-z\\p{Alpha}]', true, index)
       r0 = instantiate_node(SyntaxNode,input, index...(index + 1))
       @index += 1
     else
@@ -113,7 +113,7 @@ module N3Grammer
     if r1
       r0 = r1
     else
-      if has_terminal?('\G[-0-9\\u00b7\\u0300-\\u037d\\u203f-\\u2040\\\\]', true, index)
+      if has_terminal?('\G[-0-9\\\\]', true, index)
         r2 = true
         @index += 1
       else

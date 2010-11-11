@@ -134,8 +134,23 @@ describe "RDF::N3::Reader" do
         "tab:\t" => ':a :b  "tab:\t" .',
         "é" => ':a :b  "\u00E9" .',
         "€" => ':a :b  "\u20AC" .',
+        "resumé" => ':a :resume  "resum\u00E9" .',
       }.each_pair do |contents, triple|
-        specify "test #{contents}" do
+        specify "test #{triple}" do
+          graph = parse(triple, :base_uri => "http://a/b")
+          statement = graph.statements.first
+          graph.size.should == 1
+          statement.object.value.should == contents
+        end
+      end
+      
+      {
+        'Dürst' => ':a :b "Dürst" .',
+        "é" => ':a :b  "é" .',
+        "€" => ':a :b  "€" .',
+        "resumé" => ':a :resume  "resumé" .',
+      }.each_pair do |contents, triple|
+        specify "test #{triple}" do
           graph = parse(triple, :base_uri => "http://a/b")
           statement = graph.statements.first
           graph.size.should == 1
@@ -276,6 +291,25 @@ describe "RDF::N3::Reader" do
           parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
         end
       end
+
+      {
+        %(<#Dürst> :knows :jane.) => '<http://a/b#D\u00FCrst> <http://a/b#knows> <http://a/b#jane> .',
+        %(:Dürst :knows :jane.) => '<http://a/b#D\u00FCrst> <http://a/b#knows> <http://a/b#jane> .',
+        %(:bob :resumé "Bob's non-normalized resumé".) => '<http://a/b#bob> <http://a/b#resumé> "Bob\'s non-normalized resumé" .',
+        %(:alice :resumé "Alice's normalized resumé".) => '<http://a/b#alice> <http://a/b#resumé> "Alice\'s normalized resumé" .',
+        }.each_pair do |n3, nt|
+          it "for '#{n3}'" do
+            begin
+              parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
+            rescue
+              if defined?(::Encoding)
+                raise
+              else
+                pending("Unicode URIs not supported in Ruby 1.8") {  raise } 
+              end
+            end
+          end
+        end
 
       {
         %(<#Dürst>       a  "URI straight in UTF8".) => %(<http://a/b#D\\u00FCrst> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "URI straight in UTF8" .),

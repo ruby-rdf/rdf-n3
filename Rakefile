@@ -54,6 +54,7 @@ end
 desc "Update N3 grammar"
 task :grammar do
   sh "tt -o lib/rdf/n3/reader/n3_grammar.rb lib/rdf/n3/reader/n3_grammar.treetop"
+  sh "tt -o lib/rdf/n3/reader/n3_grammar_18.rb lib/rdf/n3/reader/n3_grammar_18.treetop"
 end
 
 desc "Generate test manifest yaml"
