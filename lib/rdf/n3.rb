@@ -26,6 +26,7 @@ module RDF
     require 'rdf/n3/patches/graph_properties'
     require 'rdf/n3/patches/qname_hacks'
     require 'rdf/n3/patches/seq'
+    require 'rdf/n3/patches/uri_hacks'
     autoload :Reader,  'rdf/n3/reader'
     autoload :VERSION, 'rdf/n3/version'
     autoload :Writer,  'rdf/n3/writer'
