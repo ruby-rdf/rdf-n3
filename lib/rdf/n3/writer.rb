@@ -339,36 +339,24 @@ module RDF::N3
 
     # Return a QName for the URI, or nil. Adds namespace of QName to defined prefixes
     def get_qname(uri)
-      if uri.is_a?(RDF::URI)
-        md = relativize(uri)
-        return "<#{md}>" unless md == uri.to_s
+      return nil unless uri.is_a?(RDF::URI)
 
-        return @uri_to_qname[uri] if @uri_to_qname.has_key?(uri)
-
-        # Duplicate logic from URI#qname to remember namespace assigned
-        
+      unless @uri_to_qname.has_key?(uri)
         # Find in defined prefixes
         prefixes.each_pair do |prefix, vocab|
           if uri.to_s.index(vocab.to_s) == 0
-            uri.vocab = vocab
             local_name = uri.to_s[(vocab.to_s.length)..-1]
             add_debug "get_qname(ns): #{prefix}:#{local_name}"
-            return @uri_to_qname[uri] = "#{prefix}:#{local_name}"
+            return @uri_to_qname[uri] = [prefix, local_name.to_sym]
           end
         end
-
-        # Otherwise, remember that there is no mapping
-        return @uri_to_qname[uri] = nil
+        
+        @uri_to_qname[uri] = nil
       end
+      
+      @uri_to_qname[uri]
     end
     
-    def add_namespace(prefix, ns)
-      return if @namespaces.has_key?(prefix.to_s)
-      uri = (ns.respond_to?(:to_uri) ? ns.to_uri : ns).to_s
-      add_debug "add_namespace: '#{prefix}', <#{uri}>"
-      @namespaces[prefix.to_s] = uri
-    end
-
     def reset
       @depth = 0
       @lists = {}
@@ -386,8 +374,8 @@ module RDF::N3
     def sort_properties(properties)
       properties.keys.each do |k|
         properties[k] = properties[k].sort do |a, b|
-          a_li = a.is_a?(RDF::URI) && a.qname && a.qname.last =~ /^_\d+$/ ? a.to_i : a.to_s
-          b_li = b.is_a?(RDF::URI) && b.qname && b.qname.last =~ /^_\d+$/ ? b.to_i : b.to_s
+          a_li = a.is_a?(RDF::URI) && get_qname(a) && get_qname(a).last.to_s =~ /^_\d+$/ ? a.to_i : a.to_s
+          b_li = b.is_a?(RDF::URI) && get_qname(b) && get_qname(b).last.to_s =~ /^_\d+$/ ? b.to_i : b.to_s
           
           a_li <=> b_li
         end
@@ -453,7 +441,14 @@ module RDF::N3
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_uri(uri, options = {})
-      get_qname(uri) || "<%s>" % uri_for(uri)
+      md = relativize(uri)
+      if md && md != uri.to_s
+        "<%s>" % md
+      elsif qname = get_qname(uri)
+        qname.map(&:to_s).join(":")
+      else
+        "<%s>" % uri_for(uri)
+      end
     end
     
     ##

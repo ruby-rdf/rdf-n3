@@ -24,7 +24,6 @@ module RDF
     require 'rdf/n3/vocab'
     require 'rdf/n3/patches/array_hacks'
     require 'rdf/n3/patches/graph_properties'
-    require 'rdf/n3/patches/qname_hacks'
     require 'rdf/n3/patches/seq'
     require 'rdf/n3/patches/uri_hacks'
     autoload :Reader,  'rdf/n3/reader'
