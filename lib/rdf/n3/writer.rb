@@ -38,6 +38,18 @@ module RDF::N3
   #     end
   #   end
   #
+  # The writer will add prefix definitions, and use them for creating @prefix definitions, and minting QNames
+  #
+  # @example Creating prefix definitions in output
+  #   RDF::N3::Writer.buffer(:prefixes => {
+  #       :"" => "http://example.com",
+  #       :foaf => "http://xmlns.com/foaf/0.1/"}
+  #   ) do |writer|
+  #     graph.each_statement do |statement|
+  #       writer << statement
+  #     end
+  #   end
+  #
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Writer < RDF::Writer
     format RDF::N3::Format
@@ -57,10 +69,10 @@ module RDF::N3
     #
     # @param  [IO, File]               output
     # @param  [Hash{Symbol => Object}] options
-    #   @option options [Integer]       :max_depth      (nil)
-    #   @option options [String, #to_s] :base_uri (nil)
-    #   @option options [String, #to_s] :lang   (nil)
-    #   @option options [Array]         :attributes   (nil)
+    #   @option options [Integer]       :max_depth      (nil) Maximum depth for recursively defining resources, defaults to 3
+    #   @option options [String, #to_s] :base_uri (nil) Base URI of graph, used to shorting URI references and creating an @base definition
+    #   @option options [Hash]          :prefixes   ({}) URI Prefix associatesions for minting QNames and creating @prefix definitions
+    # @deprecated 0.2.x versions will attempt to find prefix definitions from URIs using RDF::URI.qname, this will be deprecated in version 0.3.0
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
@@ -325,6 +337,7 @@ module RDF::N3
       @subjects[statement.subject] = true
       
       # Pre-fetch qnames, to fill prefixes
+      # FIXME: remove for 0.3
       get_qname(statement.subject)
       get_qname(statement.predicate)
       get_qname(statement.object)
@@ -350,6 +363,10 @@ module RDF::N3
             return @uri_to_qname[uri] = [prefix, local_name.to_sym]
           end
         end
+        
+        # FIXME: remove for 0.3
+        qname = uri.qname if uri.respond_to?(:qname)
+        return @uri_to_qname[uri] = qname if qname
         
         @uri_to_qname[uri] = nil
       end
