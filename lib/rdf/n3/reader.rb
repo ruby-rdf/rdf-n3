@@ -40,6 +40,7 @@ module RDF::N3
     # @option options [Boolean] :base_uri (nil) Base URI to use for relative URIs.
     # @option options [Boolean] :canonicalize (false) Canonicalize literals on input.
     # @option options [Boolean] :intern (true) Intern created URIs.
+    # @option options [Hash] :prefixes ({}) Capture defined prefixes.
     # @return [reader]
     # @yield  [reader]
     # @yieldparam [Reader] reader
@@ -48,7 +49,7 @@ module RDF::N3
       super do
         @debug = options[:debug]
         @strict = options[:strict]
-        @uri_mappings = {}
+        @prefixes = options.fetch(:prefixes, {})
         @uri = uri(options[:base_uri], nil, false)
         @canonicalize = options.fetch(:canonicalize, false)
         @intern = options.fetch(:intern, true)
@@ -140,7 +141,7 @@ module RDF::N3
         uri = @default_ns
       end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
-      @uri_mappings[prefix] = @intern ? RDF::URI.intern(uri) : RDF::URI.new(uri)
+      @prefixes[prefix.to_sym] = @intern ? RDF::URI.intern(uri) : RDF::URI.new(uri)
     end
 
     def process_statements(document)
@@ -431,8 +432,8 @@ module RDF::N3
         add_debug("", "build_uri(#{prefix.inspect}, #{localname.inspect})")
       end
 
-      uri = if @uri_mappings[prefix]
-        add_debug(*expression.info("build_uri: (ns): #{@uri_mappings[prefix]}, #{localname}")) if expression.respond_to?(:info)
+      uri = if @prefixes[prefix.to_sym]
+        add_debug(*expression.info("build_uri: (ns): #{@prefixes[prefix.to_sym]}, #{localname}")) if expression.respond_to?(:info)
         ns(prefix, localname.to_s)
       elsif prefix == '_'
         add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
@@ -469,7 +470,7 @@ module RDF::N3
     end
     
     def ns(prefix, suffix)
-      prefix = prefix.nil? ? @default_ns.to_s : @uri_mappings[prefix].to_s
+      prefix = prefix.nil? ? @default_ns.to_s : @prefixes[prefix.to_sym].to_s
       suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
       add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
       @intern ? RDF::URI.intern(prefix + suffix) : RDF::URI.new(prefix + suffix)

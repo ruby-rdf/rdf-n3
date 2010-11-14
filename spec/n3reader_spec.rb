@@ -491,7 +491,7 @@ describe "RDF::N3::Reader" do
       end
     end
     
-    describe "namespaces" do
+    describe "prefixes" do
       it "should not append # for http://foo/bar" do
         n3 = %(@prefix : <http://foo/bar> . :a : :b .)
         nt = %(
@@ -561,6 +561,23 @@ describe "RDF::N3::Reader" do
         <http://example.org/products/> <http://example.org/products/a> <http://example.org/products/#e> .
         )
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
+      end
+      
+      it "returns defined prefixes" do
+        n3 = %(
+        @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix : <http://test/> .
+        :foo a rdfs:Class.
+        :bar :d :c.
+        :a :d :c.
+        )
+        prefixes = {}
+        parse(n3, :base_uri => "http://a/b", :prefixes => prefixes)
+        prefixes.should == {
+          :rdf => RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+          :rdfs => RDF::URI.new("http://www.w3.org/2000/01/rdf-schema#"),
+          :"" => RDF::URI.new("http://test/")}
       end
     end
     
