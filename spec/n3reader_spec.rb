@@ -362,7 +362,7 @@ describe "RDF::N3::Reader" do
   #   end
   # end
   
-  describe "with n3 grammer" do
+  describe "with n3 grammar" do
     describe "syntactic expressions" do
       it "should create typed literals with qname" do
         n3doc = %(

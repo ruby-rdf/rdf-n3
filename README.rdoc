@@ -29,6 +29,8 @@ Instantiate a reader from a local file:
     end
   end
 
+Define @base and @prefix definitions, and use for serialization using :base_uri an :prefixes options
+
 Write a graph to a file:
 
   RDF::N3::Writer.open("etc/test.n3") do |writer|

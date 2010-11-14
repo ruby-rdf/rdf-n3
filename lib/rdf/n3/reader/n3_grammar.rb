@@ -2,7 +2,7 @@
 
 
 #encoding: utf-8
-module N3Grammer
+module N3Grammar
   include Treetop::Runtime
 
   def root
@@ -3758,7 +3758,7 @@ module N3Grammer
 
 end
 
-class N3GrammerParser < Treetop::Runtime::CompiledParser
-  include N3Grammer
+class N3GrammarParser < Treetop::Runtime::CompiledParser
+  include N3Grammar
 end
 

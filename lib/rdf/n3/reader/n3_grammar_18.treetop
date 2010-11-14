@@ -1,5 +1,5 @@
 #encoding: utf-8
-grammar N3Grammer
+grammar N3Grammar
   # Entry point to grammar
   rule document
     statements

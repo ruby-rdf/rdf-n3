@@ -16,7 +16,7 @@ module RDF::N3
   class Reader < RDF::Reader
     format Format
     
-    # @return [Hash<Symbol,RDF::URI>] Prefixes defined in parsing
+    # @return [Hash<Symbol,RDF::URI>] Prefixes defined in parsing. Suitable for passing to a Writer.
     attr_reader :prefixes
 
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
@@ -43,6 +43,7 @@ module RDF::N3
     # @option options [Boolean] :base_uri (nil) Base URI to use for relative URIs.
     # @option options [Boolean] :canonicalize (false) Canonicalize literals on input.
     # @option options [Boolean] :intern (true) Intern created URIs.
+    # @option options [Boolean] :prefixes (true) Used to initialize @prefixes.
     # @return [reader]
     # @yield  [reader]
     # @yieldparam [Reader] reader
@@ -51,7 +52,7 @@ module RDF::N3
       super do
         @debug = options[:debug]
         @strict = options[:strict]
-        @prefixes = {}
+        @prefixes = options.fetch(:prefixes, {})
         @uri = uri(options[:base_uri], nil, false)
         @canonicalize = options.fetch(:canonicalize, false)
         @intern = options.fetch(:intern, true)
@@ -81,7 +82,7 @@ module RDF::N3
     def each_statement(&block)
       @callback = block
 
-      parser = N3GrammerParser.new
+      parser = N3GrammarParser.new
       document = parser.parse(@doc)
       unless document
         puts parser.inspect if ::RDF::N3::debug?
