@@ -51,10 +51,9 @@ module RDF::N3
     ##
     # Initializes the Turtle writer instance.
     #
-    # Opitons:
+    # Options:
     # max_depth:: Maximum depth for recursively defining resources, defaults to 3
     # base_uri:: Base URI of graph, used to shorting URI references
-    # default_namespace:: URI to use as default namespace
     #
     # @param  [IO, File]               output
     # @param  [Hash{Symbol => Object}] options
@@ -62,12 +61,12 @@ module RDF::N3
     #   @option options [String, #to_s] :base_uri (nil)
     #   @option options [String, #to_s] :lang   (nil)
     #   @option options [Array]         :attributes   (nil)
-    #   @option options [String]        :default_namespace
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
       @graph = RDF::Graph.new
       @stream = output
+      @uri_to_qname = {}
       super
     end
 
@@ -106,13 +105,10 @@ module RDF::N3
       @max_depth = @options[:max_depth] || 3
       @base_uri = @options[:base_uri]
       @debug = @options[:debug]
-      @default_namespace = @options[:default_namespace]
 
       self.reset
 
       add_debug "\nserialize: graph: #{@graph.size}"
-
-      add_namespace("", @default_namespace) if @default_namespace
 
       preprocess
       start_document
@@ -131,9 +127,9 @@ module RDF::N3
       
       write("#{indent}@base <#{@base_uri}> .\n") if @base_uri
       
-      add_debug("start_document: #{@namespaces.inspect}")
-      @namespaces.keys.sort.each do |prefix|
-        write("#{indent}@prefix #{prefix}: <#{@namespaces[prefix]}> .\n")
+      add_debug("start_document: #{prefixes.inspect}")
+      prefixes.keys.sort_by(&:to_s).each do |prefix|
+        write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
     end
     
@@ -328,7 +324,7 @@ module RDF::N3
       @references[statement.object] = references
       @subjects[statement.subject] = true
       
-      # Pre-fetch qnames, to fill namespaces
+      # Pre-fetch qnames, to fill prefixes
       get_qname(statement.subject)
       get_qname(statement.predicate)
       get_qname(statement.object)
@@ -341,37 +337,28 @@ module RDF::N3
       @references.fetch(node, 0)
     end
 
-    # Return a QName for the URI, or nil. Adds namespace of QName to defined namespaces
+    # Return a QName for the URI, or nil. Adds namespace of QName to defined prefixes
     def get_qname(uri)
       if uri.is_a?(RDF::URI)
         md = relativize(uri)
         return "<#{md}>" unless md == uri.to_s
 
-        # Duplicate logic from URI#qname to remember namespace assigned
+        return @uri_to_qname[uri] if @uri_to_qname.has_key?(uri)
 
-        if uri.qname
-          return ":#{uri.qname.last}" if uri.vocab == @default_namespace
-          add_namespace(uri.qname.first, uri.vocab)
-          add_debug "get_qname(uri.qname): #{uri.qname.join(':')}"
-          return uri.qname.join(":") 
-        end
+        # Duplicate logic from URI#qname to remember namespace assigned
         
-        # No vocabulary assigned, find one from cache of created namespace URIs
-        @namespaces.each_pair do |prefix, vocab|
+        # Find in defined prefixes
+        prefixes.each_pair do |prefix, vocab|
           if uri.to_s.index(vocab.to_s) == 0
             uri.vocab = vocab
             local_name = uri.to_s[(vocab.to_s.length)..-1]
-            if vocab == @default_namespace
-              add_debug "get_qname(ns): :#{local_name}"
-              return ":#{local_name}"
-            else
-              add_debug "get_qname(ns): #{prefix}:#{local_name}"
-              return "#{prefix}:#{local_name}"
-            end
+            add_debug "get_qname(ns): #{prefix}:#{local_name}"
+            return @uri_to_qname[uri] = "#{prefix}:#{local_name}"
           end
         end
-        
-        nil
+
+        # Otherwise, remember that there is no mapping
+        return @uri_to_qname[uri] = nil
       end
     end
     

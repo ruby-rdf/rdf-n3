@@ -20,16 +20,17 @@ describe RDF::N3::Writer do
       input = %(<http://xmlns.com/foaf/0.1/b> <http://xmlns.com/foaf/0.1/c> <http://xmlns.com/foaf/0.1/d> .)
       serialize(input, nil,
         [%r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^foaf:b foaf:c foaf:d \.$)]
+        %r(^foaf:b foaf:c foaf:d \.$)],
+        :prefixes => { :foaf => RDF::FOAF}
       )
     end
 
     it "should use qname URIs with empty prefix" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . <http://xmlns.com/foaf/0.1/b> <http://xmlns.com/foaf/0.1/c> <http://xmlns.com/foaf/0.1/d> .)
+      input = %(<http://xmlns.com/foaf/0.1/b> <http://xmlns.com/foaf/0.1/c> <http://xmlns.com/foaf/0.1/d> .)
       serialize(input, nil,
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
         %r(^:b :c :d \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -46,9 +47,9 @@ describe RDF::N3::Writer do
       serialize(input, nil,
         [%r(^\s+a :class;$),
         %r(^\s+rdfs:label "label"),
-        %r(^:b dc11:title \"title\"),
+        %r(^:b dc:title \"title\"),
         %r(^\s+:c :d)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF, :dc => "http://purl.org/dc/elements/1.1/", :rdfs => RDF::RDFS}
       )
     end
     
@@ -58,7 +59,7 @@ describe RDF::N3::Writer do
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
         %r(^:b :c :d,$),
         %r(^\s+:e \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -68,7 +69,7 @@ describe RDF::N3::Writer do
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
         %r(^:b :c :d;$),
         %r(^\s+:e :f \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
   end
@@ -78,7 +79,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . [:a :b] .)
       serialize(input, nil,
         [%r(^\s*\[ :a :b\] \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -87,7 +88,7 @@ describe RDF::N3::Writer do
       serialize(input, nil,
         [%r(^\s*\[ :a :b;$),
         %r(^\s+:c :d\] \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -95,7 +96,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b [:c :d] .)
       serialize(input, nil,
         [%r(^\s*\:a :b \[ :c :d\] \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
   end
@@ -105,7 +106,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . (:a :b) .)
       serialize(input, nil,
         [%r(^\(:a :b\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
 
@@ -113,7 +114,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b ( "apple" "banana" ) .)
       serialize(input, nil,
         [%r(^:a :b \("apple" "banana"\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -121,7 +122,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b () .)
       serialize(input, nil,
         [%r(^:a :b \(\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -129,7 +130,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .)
       serialize(input, nil,
         [%r(^:emptyList (<.*sameAs>|owl:sameAs) \(\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -137,7 +138,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . () :a :b .)
       serialize(input, nil,
         [%r(^\(\) :a :b \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -145,7 +146,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . (:a) :b :c .)
       serialize(input, nil,
         [%r(^\(:a\) :b :c \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
 
@@ -153,7 +154,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :listOf2Empties = (() ()) .)
       serialize(input, nil,
         [%r(^:listOf2Empties (<.*sameAs>|owl:sameAs) \(\(\) \(\)\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -161,7 +162,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :twoAnons = ([a :mother] [a :father]) .)
       serialize(input, nil,
         [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :mother\] \[\s*a :father\]\) \.$)],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF}
       )
     end
     
@@ -191,7 +192,7 @@ describe RDF::N3::Writer do
           %r(@prefix : <http://xmlns.com/foaf/0.1/> \.),
           %r(@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \.),
         ],
-        :default_namespace => RDF::FOAF
+        :prefixes => { "" => RDF::FOAF, :rdfs => RDF::RDFS, :owl => RDF::OWL, :rdf => "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}
       )
       #$verbose = false
     end
