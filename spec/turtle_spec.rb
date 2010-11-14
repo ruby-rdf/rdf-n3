@@ -38,6 +38,7 @@ describe RDF::N3::Reader do
                 RDF::Reader.for(t.inputDocument).new(rdf_string,
                     :base_uri => t.about,
                     :strict => true,
+                    :canonicalize => true,
                     :debug => t.debug).each do |statement|
                   g << statement
                 end

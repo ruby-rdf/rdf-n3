@@ -38,6 +38,8 @@ module RDF::N3
     # @option options [Array] :debug Array to place debug messages
     # @option options [Boolean] :strict Raise Error if true, continue with lax parsing, otherwise
     # @option options [Boolean] :base_uri (nil) Base URI to use for relative URIs.
+    # @option options [Boolean] :canonicalize (false) Canonicalize literals on input.
+    # @option options [Boolean] :intern (true) Intern created URIs.
     # @return [reader]
     # @yield  [reader]
     # @yieldparam [Reader] reader
@@ -48,10 +50,14 @@ module RDF::N3
         @strict = options[:strict]
         @uri_mappings = {}
         @uri = uri(options[:base_uri], nil, false)
+        @canonicalize = options.fetch(:canonicalize, false)
+        @intern = options.fetch(:intern, true)
 
         @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
         @default_ns = uri("#{options[:base_uri]}#", nil, false) if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
+        add_debug("@canonicalize", "#{@canonicalize.inspect}")
+        add_debug("@intern", "#{@intern.inspect}")
         
         block.call(self) if block_given?
       end
@@ -134,7 +140,7 @@ module RDF::N3
         uri = @default_ns
       end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
-      @uri_mappings[prefix] = RDF::URI.intern(uri)
+      @uri_mappings[prefix] = @intern ? RDF::URI.intern(uri) : RDF::URI.new(uri)
     end
 
     def process_statements(document)
@@ -293,7 +299,7 @@ module RDF::N3
         if @keywords && !@keywords.include?(barename)
           build_uri(barename)
         else
-          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => @strict, :canonicalize => true)
+          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => @strict, :canonicalize => @canonicalize)
         end
       elsif expression.respond_to?(:barename)
         add_debug(*expression.info("process_expression(barename)"))
@@ -404,13 +410,13 @@ module RDF::N3
 
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
-      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => @strict, :datatype => encoding, :canonicalize => true)
+      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => @strict, :datatype => encoding, :canonicalize => @canonicalize)
     end
     
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
-      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => @strict, :canonicalize => true)
+      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => @strict, :canonicalize => @canonicalize)
     end
     
     def build_uri(expression)
@@ -457,7 +463,7 @@ module RDF::N3
     
     # Create URIs
     def uri(value, append, normalize = false)
-      value = RDF::URI.intern(value)
+      value = @intern ? RDF::URI.intern(value) : RDF::URI.new(value)
       value = value.join(append) if append
       value
     end
@@ -466,7 +472,7 @@ module RDF::N3
       prefix = prefix.nil? ? @default_ns.to_s : @uri_mappings[prefix].to_s
       suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
       add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
-      RDF::URI.intern(prefix + suffix)
+      @intern ? RDF::URI.intern(prefix + suffix) : RDF::URI.new(prefix + suffix)
     end
   end
 end

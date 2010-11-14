@@ -264,7 +264,7 @@ describe "RDF::N3::Reader" do
     it "should allow mixed-case language" do
       n3doc = %(:x2 :p "xyz"@EN .)
       statement = parse(n3doc).statements.first
-      statement.object.to_ntriples.should == %("xyz"@en)
+      statement.object.to_ntriples.should == %("xyz"@EN)
     end
 
     it "should create typed literals" do
@@ -1053,7 +1053,7 @@ EOF
   def parse(input, options = {})
     @debug = []
     graph = RDF::Graph.new
-    RDF::N3::Reader.new(input, options.merge(:debug => @debug, :strict => true)).each do |statement|
+    RDF::N3::Reader.new(input, {:debug => @debug, :strict => true, :canonicalize => false}.merge(options)).each do |statement|
       graph << statement
     end
     graph
