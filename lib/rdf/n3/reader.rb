@@ -15,6 +15,9 @@ module RDF::N3
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Reader < RDF::Reader
     format Format
+    
+    # @return [Hash<Symbol,RDF::URI>] Prefixes defined in parsing
+    attr_reader :prefixes
 
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
@@ -30,7 +33,7 @@ module RDF::N3
         )*
       $},
       Regexp::EXTENDED)
-  
+
     ##
     # Initializes the N3 reader instance.
     #
@@ -40,7 +43,6 @@ module RDF::N3
     # @option options [Boolean] :base_uri (nil) Base URI to use for relative URIs.
     # @option options [Boolean] :canonicalize (false) Canonicalize literals on input.
     # @option options [Boolean] :intern (true) Intern created URIs.
-    # @option options [Hash] :prefixes ({}) Capture defined prefixes.
     # @return [reader]
     # @yield  [reader]
     # @yieldparam [Reader] reader
@@ -49,7 +51,7 @@ module RDF::N3
       super do
         @debug = options[:debug]
         @strict = options[:strict]
-        @prefixes = options.fetch(:prefixes, {})
+        @prefixes = {}
         @uri = uri(options[:base_uri], nil, false)
         @canonicalize = options.fetch(:canonicalize, false)
         @intern = options.fetch(:intern, true)
