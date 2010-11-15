@@ -343,25 +343,6 @@ describe "RDF::N3::Reader" do
     end
   end
   
-  # describe "with illegal syntax" do
-  #   {
-  #     %(:y :p1 "xyz"^^xsd:integer .) => %r(Typed literal has an invalid lexical value: .* "xyz"),
-  #     %(:y :p1 "12xyz"^^xsd:integer .) => %r(Typed literal has an invalid lexical value: .* "12xyz"),
-  #     %(:y :p1 "xy.z"^^xsd:double .) => %r(Typed literal has an invalid lexical value: .* "xy\.z"),
-  #     %(:y :p1 "+1.0z"^^xsd:double .) => %r(Typed literal has an invalid lexical value: .* "\+1.0z"),
-  #     %(:a :b .) => %r(Illegal statment: ".*" missing object),
-  #     %(:a :b 'single quote' .) => RDF::ReaderError,
-  #     %(:a "literal value" :b .) => RDF::ReaderError,
-  #     %(@keywords prefix. :e prefix :f .) => %r(Keyword ".*" used as expression)
-  #   }.each_pair do |n3, error|
-  #     it "should raise error for '#{n3}'" do
-  #       lambda {
-  #         parse("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . #{n3}", :base_uri => "http://a/b")
-  #       }.should raise_error(error)
-  #     end
-  #   end
-  # end
-  
   describe "with n3 grammar" do
     describe "syntactic expressions" do
       it "should create typed literals with qname" do
@@ -1048,6 +1029,78 @@ describe "RDF::N3::Reader" do
     end
   end
 
+  describe "canonicalization" do
+#    {
+#      "<http://foo>"                 =>  "<http://foo>",
+#      "<http://foo/a>"               => "<http://foo/a>",
+#      "<http://foo#a>"               => "<http://foo#a>",
+#
+#      "<http://foo/>"                =>  "<http://foo/>",
+#      "<http://foo/#a>"              => "<http://foo/#a>",
+#
+#      "<http://foo#>"                =>  "<http://foo#>",
+#      "<http://foo#a>"               => "<http://foo/a>",
+#      "<http://foo#/a>"              => "<http://foo/a>",
+#      "<http://foo##a>"              => "<http://foo#a>",
+#
+#      "<http://foo/bar>"             =>  "<http://foo/bar>",
+#      "<http://foo/bar>"             => "<http://foo/a>",
+#      "<http://foo/bar/a>"           => "<http://foo/a>",
+#      "<http://foo/bar#a>"           => "<http://foo/bar#a>",
+#
+#      "<http://foo/bar/>"            =>  "<http://foo/bar/>",
+#      "<http://foo/bar/a>"           => "<http://foo/bar/a>",
+#      "<http://foo/bar//a>"          => "<http://foo/a>",
+#      "<http://foo/bar/#a>"          => "<http://foo/bar/#a>",
+#
+#      "<http://foo/bar#>"            =>  "<http://foo/bar#>",
+#      "<http://foo/bar#a>"           => "<http://foo/a>",
+#      "<http://foo/bar#/a>"          => "<http://foo/a>",
+#      "<http://foo/bar##a>"          => "<http://foo/bar#a>",
+#
+#      "<http://foo/bar##D%C3%BCrst>" => "<http://foo/bar#D%C3%BCrst>",
+#      "<http://foo/bar##Dürst>"      => "<http://foo/bar#D\\u00FCrst>",
+#    }.each_pair do |input, result|
+#      it "returns subject #{result} given #{input}" do
+#        n3 = %(#{input} a :b)
+#        nt = %(#{result} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#b> .)
+#        parse(n3, :base_uri => "http://a/b", :canonicalize => true).should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
+#      end
+#    end
+
+    {
+      %("+1"^^xsd:integer) => %("1"^^xsd:integer),
+      %(+1) => %("1"^^xsd:integer),
+      %(true) => %("true"^^xsd:boolean),
+      %("lang"@EN) => %("lang"@en),
+    }.each_pair do |input, result|
+      it "returns object #{result} given #{input}" do
+        n3 = %(:a :b #{input} .)
+        nt = %(<http://a/b#a> <http://a/b#b> #{result} .)
+        parse(n3, :base_uri => "http://a/b", :canonicalize => true).should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
+      end
+    end
+  end
+  
+  describe "validation" do
+    {
+      %(:y :p1 "xyz"^^xsd:integer .) => %r("xyz" is not a valid .*),
+      %(:y :p1 "12xyz"^^xsd:integer .) => %r("12xyz" is not a valid .*),
+      %(:y :p1 "xy.z"^^xsd:double .) => %r("xy\.z" is not a valid .*),
+      %(:y :p1 "+1.0z"^^xsd:double .) => %r("\+1.0z" is not a valid .*),
+      %(:a :b .) => %r(Illegal statment: ".*" missing object),
+      %(:a :b 'single quote' .) => RDF::ReaderError,
+      %(:a "literal value" :b .) => RDF::ReaderError,
+      %(@keywords prefix. :e prefix :f .) => %r(Keyword ".*" used as expression)
+    }.each_pair do |n3, error|
+      it "should raise '#{error}' for '#{n3}'" do
+        lambda {
+          parse("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . #{n3}", :base_uri => "http://a/b", :validate => true)
+        }.should raise_error(error)
+      end
+    end
+  end
+  
   it "should parse rdf_core testcase" do
     sampledoc = <<-EOF;
 <http://www.w3.org/2000/10/rdf-tests/rdfcore/xmlbase/Manifest.rdf#test001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#PositiveParserTest> .
@@ -1070,7 +1123,7 @@ EOF
   def parse(input, options = {})
     @debug = []
     graph = RDF::Graph.new
-    RDF::N3::Reader.new(input, {:debug => @debug, :strict => true, :canonicalize => false}.merge(options)).each do |statement|
+    RDF::N3::Reader.new(input, {:debug => @debug, :validate => true, :canonicalize => false}.merge(options)).each do |statement|
       graph << statement
     end
     graph
