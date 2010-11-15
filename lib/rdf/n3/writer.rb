@@ -66,14 +66,17 @@ module RDF::N3
     # @option options [Integer]       :max_depth      (3) Maximum depth for recursively defining resources, defaults to 3
     # @option options [String, #to_s] :base_uri (nil) Base URI of graph, used to shorting URI references and creating an @base definition
     # @option options [{Symbol => URI}] :prefixes   ({}) URI Prefix associatesions for minting QNames and creating @prefix definitions
-    # @note 0.2.x versions will attempt to find prefix definitions from URIs using RDF::URI.qname, this will be deprecated in version 0.3.0
+    # @option options [Boolean]       :standard_prefixes   (false) Add standard prefixes to @prefixes, if necessary.
+    # @option options [String]        :default_namespace (nil) URI to use as default namespace, same as prefixes[:""]
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
-      @graph = RDF::Graph.new
-      @stream = output
-      @uri_to_qname = {}
-      super
+      super do
+        @graph = RDF::Graph.new
+        @uri_to_qname = {}
+        prefix(:"",@options[:default_namespace]) if @options[:default_namespace]
+        block.call(self) if block_given?
+      end
     end
 
     ##
@@ -146,15 +149,19 @@ module RDF::N3
           end
         end
         
-        # FIXME: remove for 0.3
-        qname = uri.qname if uri.respond_to?(:qname)
-        return @uri_to_qname[uri] = qname if qname
+        # Use a default vocabulary
+        if @options[:standard_prefixes] && vocab = RDF::Vocabulary.detect {|v| uri.to_s.index(v.to_uri.to_s) == 0}
+          prefix = vocab.__name__.to_s.split('::').last.downcase
+          prefixes[prefix.to_sym] = vocab.to_uri
+          suffix = uri.to_s[vocab.to_uri.to_s.size..-1]
+          return @uri_to_qname[uri] = [prefix.to_sym, suffix.empty? ? nil : suffix.to_sym] if prefix && suffix
+        end
         
         @uri_to_qname[uri] = nil
       end
       
       @uri_to_qname[uri]
-    rescue
+    rescue Addressable::URI::InvalidURIError
        @uri_to_qname[uri] = nil
     end
     
@@ -239,11 +246,11 @@ module RDF::N3
     def start_document
       @started = true
       
-      @stream.write("#{indent}@base <#{@base_uri}> .\n") if @base_uri
+      @output.write("#{indent}@base <#{@base_uri}> .\n") if @base_uri
       
       add_debug("start_document: #{prefixes.inspect}")
       prefixes.keys.sort_by(&:to_s).each do |prefix|
-        @stream.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
+        @output.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
     end
     
@@ -385,11 +392,11 @@ module RDF::N3
       return false if !is_valid_list(node)
       #puts "p_list: #{node.inspect}, #{position}" if ::RDF::N3::debug?
 
-      @stream.write(position == :subject ? "(" : " (")
+      @output.write(position == :subject ? "(" : " (")
       @depth += 2
       do_list(node)
       @depth -= 2
-      @stream.write(')')
+      @output.write(')')
     end
     
     def p_squared?(node, position)
@@ -403,11 +410,11 @@ module RDF::N3
 
       #puts "p_squared: #{node.inspect}, #{position}" if ::RDF::N3::debug?
       subject_done(node)
-      @stream.write(position == :subject ? '[' : ' [')
+      @output.write(position == :subject ? '[' : ' [')
       @depth += 2
       predicate_list(node)
       @depth -= 2
-      @stream.write(']')
+      @output.write(']')
       
       true
     end
@@ -415,7 +422,7 @@ module RDF::N3
     def p_default(node, position)
       #puts "p_default: #{node.inspect}, #{position}" if ::RDF::N3::debug?
       l = (position == :subject ? "" : " ") + format_value(node)
-      @stream.write(l)
+      @output.write(l)
     end
     
     def path(node, position)
@@ -426,7 +433,7 @@ module RDF::N3
     def verb(node)
       puts "verb: #{node.inspect}" if ::RDF::N3::debug?
       if node == RDF.type
-        @stream.write(" a")
+        @output.write(" a")
       else
         path(node, :predicate)
       end
@@ -437,7 +444,7 @@ module RDF::N3
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
-        @stream.write(",\n#{indent(2)}") if i > 0
+        @output.write(",\n#{indent(2)}") if i > 0
         path(obj, :object)
       end
     end
@@ -449,7 +456,7 @@ module RDF::N3
       return if prop_list.empty?
 
       prop_list.each_with_index do |prop, i|
-        @stream.write(";\n#{indent(2)}") if i > 0
+        @output.write(";\n#{indent(2)}") if i > 0
         verb(RDF::URI.intern(prop))
         object_list(properties[prop])
       end
@@ -462,19 +469,19 @@ module RDF::N3
     def s_squared(subject)
       return false unless s_squared?(subject)
       
-      @stream.write("\n#{indent} [")
+      @output.write("\n#{indent} [")
       @depth += 1
       predicate_list(subject)
       @depth -= 1
-      @stream.write("] .")
+      @output.write("] .")
       true
     end
     
     def s_default(subject)
-      @stream.write("\n#{indent}")
+      @output.write("\n#{indent}")
       path(subject, :subject)
       predicate_list(subject)
-      @stream.write(" .")
+      @output.write(" .")
       true
     end
     
@@ -492,6 +499,5 @@ module RDF::N3
     def subject_done(subject)
       @serialized[subject] = true
     end
-    
   end
 end
