@@ -16,9 +16,6 @@ module RDF::N3
   class Reader < RDF::Reader
     format Format
     
-    # @return [Hash<Symbol,RDF::URI>] Prefixes defined in parsing. Suitable for passing to a Writer.
-    attr_reader :prefixes
-
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
     NC_REGEXP = Regexp.new(
@@ -59,14 +56,14 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if _validate_
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @prefixes = options.fetch(:prefixes, {})
         @uri = uri(options[:base_uri])
 
         @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
         @default_ns = uri("#{options[:base_uri]}#") if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
-        add_debug("canonicalize", "#{@options[:canonicalize].inspect}")
-        add_debug("intern", "#{@options[:intern].inspect}")
+        add_debug("validate", "#{validate?.inspect}")
+        add_debug("canonicalize", "#{canonicalize?.inspect}")
+        add_debug("intern", "#{intern?.inspect}")
         
         block.call(self) if block_given?
       end
@@ -139,7 +136,7 @@ module RDF::N3
     # @raise [RDF::ReaderError]:: Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
     def add_triple(node, subject, predicate, object)
       statement = RDF::Statement.new(subject, predicate, object)
-      add_debug(node, "statement: #{statement}")
+      add_debug(node, statement.to_s)
       @callback.call(statement)
     end
 
@@ -149,7 +146,7 @@ module RDF::N3
         uri = @default_ns
       end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
-      @prefixes[prefix.to_sym] =  uri(uri)
+      prefix(prefix, uri(uri))
     end
 
     def process_statements(document)
@@ -207,7 +204,7 @@ module RDF::N3
             @keywords = process_barename_csl(s.barename_csl) ||[]
             add_debug("@keywords", @keywords.inspect)
             if (@keywords & N3_KEYWORDS) != @keywords
-              raise RDF::ReaderError, "undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}" if @options[:validate]
+              raise RDF::ReaderError, "undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}" if validate?
             end
           end
         end
@@ -306,7 +303,7 @@ module RDF::N3
         if @keywords && !@keywords.include?(barename)
           build_uri(barename)
         else
-          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => @options[:validate], :canonicalize => @options[:canonicalize])
+          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
         end
       elsif expression.respond_to?(:barename)
         add_debug(*expression.info("process_expression(barename)"))
@@ -417,13 +414,13 @@ module RDF::N3
 
       # Evaluate text_value to remove redundant escapes
       #puts string.elements[1].text_value.dump
-      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => @options[:validate], :datatype => encoding, :canonicalize => @options[:canonicalize])
+      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => validate?, :datatype => encoding, :canonicalize => canonicalize?)
     end
     
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
-      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => @options[:validate], :canonicalize => @options[:canonicalize])
+      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => validate?, :canonicalize => canonicalize?)
     end
     
     def build_uri(expression)
@@ -438,8 +435,8 @@ module RDF::N3
         add_debug("", "build_uri(#{prefix.inspect}, #{localname.inspect})")
       end
 
-      uri = if @prefixes[prefix.to_sym]
-        add_debug(*expression.info("build_uri: (ns): #{@prefixes[prefix.to_sym]}, #{localname}")) if expression.respond_to?(:info)
+      uri = if prefix(prefix)
+        add_debug(*expression.info("build_uri: (ns): #{prefix(prefix)}, #{localname}")) if expression.respond_to?(:info)
         ns(prefix, localname.to_s)
       elsif prefix == '_'
         add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
@@ -464,7 +461,7 @@ module RDF::N3
     # Is this an allowable keyword?
     def keyword_check(kw)
       unless (@keywords || %w(a is of has)).include?(kw)
-        raise RDF::ReaderError, "unqualified keyword '#{kw}' used without @keyword directive" if @options[:validate]
+        raise RDF::ReaderError, "unqualified keyword '#{kw}' used without @keyword directive" if validate?
       end
     end
     
@@ -472,14 +469,14 @@ module RDF::N3
     def uri(value, append = nil)
       value = RDF::URI.new(value)
       value = value.join(append) if append
-      value.validate! if @options[:validate] && value.respond_to?(:validate)
-      value.canonicalize! if @options[:canonicalize] && value.respond_to?(:canonicalize)
-      value = RDF::URI.intern(value) if @options[:intern]
+      value.validate! if validate? && value.respond_to?(:validate)
+      value.canonicalize! if canonicalize?
+      value = RDF::URI.intern(value) if intern?
       value
     end
     
     def ns(prefix, suffix)
-      prefix = prefix.nil? ? @default_ns.to_s : @prefixes[prefix.to_sym].to_s
+      prefix = prefix.nil? ? @default_ns.to_s : prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
       add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
       uri(prefix + suffix)
