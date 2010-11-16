@@ -59,13 +59,19 @@ module RDF::N3
         @uri = uri(options[:base_uri])
 
         @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
+        @doc.force_encoding(encoding) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
         @default_ns = uri("#{options[:base_uri]}#") if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
         add_debug("validate", "#{validate?.inspect}")
         add_debug("canonicalize", "#{canonicalize?.inspect}")
         add_debug("intern", "#{intern?.inspect}")
         
-        block.call(self) if block_given?
+        if block_given?
+          case block.arity
+            when 0 then instance_eval(&block)
+            else block.call(self)
+          end
+        end
       end
     end
 

@@ -62,12 +62,27 @@ module RDF::N3
     ##
     # Initializes the Turtle writer instance.
     #
-    # @param  [IO, File]               output
-    # @option options [Integer]       :max_depth      (3) Maximum depth for recursively defining resources, defaults to 3
-    # @option options [String, #to_s] :base_uri (nil) Base URI of graph, used to shorting URI references and creating an @base definition
-    # @option options [{Symbol => URI}] :prefixes   ({}) URI Prefix associatesions for minting QNames and creating @prefix definitions
-    # @option options [Boolean]       :standard_prefixes   (false) Add standard prefixes to @prefixes, if necessary.
-    # @option options [String]        :default_namespace (nil) URI to use as default namespace, same as prefixes[:""]
+    # @param  [IO, File] output
+    #   the output stream
+    # @param  [Hash{Symbol => Object}] options
+    #   any additional options
+    # @option options [Encoding] :encoding     (Encoding::UTF_8)
+    #   the encoding to use on the output stream (Ruby 1.9+)
+    # @option options [Boolean]  :canonicalize (false)
+    #   whether to canonicalize literals when serializing
+    # @option options [Hash]     :prefixes     (Hash.new)
+    #   the prefix mappings to use (not supported by all writers)
+    # @option options [#to_s]    :base_uri     (nil)
+    #   the base URI to use when constructing relative URIs
+    # @option options [Integer]  :max_depth      (3)
+    #   Maximum depth for recursively defining resources, defaults to 3
+    # @option options [Boolean]  :standard_prefixes   (false)
+    #   Add standard prefixes to @prefixes, if necessary.
+    # @option options [String]   :default_namespace (nil)
+    #   URI to use as default namespace, same as prefixes[:""]
+    # @yield  [writer] `self`
+    # @yieldparam  [RDF::Writer] writer
+    # @yieldreturn [void]
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
@@ -75,7 +90,12 @@ module RDF::N3
         @graph = RDF::Graph.new
         @uri_to_qname = {}
         prefix(:"",@options[:default_namespace]) if @options[:default_namespace]
-        block.call(self) if block_given?
+        if block_given?
+          case block.arity
+            when 0 then instance_eval(&block)
+            else block.call(self)
+          end
+        end
       end
     end
 
@@ -311,7 +331,6 @@ module RDF::N3
       @subjects[statement.subject] = true
       
       # Pre-fetch qnames, to fill prefixes
-      # FIXME: remove for 0.3
       get_qname(statement.subject)
       get_qname(statement.predicate)
       get_qname(statement.object)
