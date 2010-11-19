@@ -42,7 +42,7 @@ module RDF::N3
   #
   # @example Creating @base and @prefix definitions in output
   #   RDF::N3::Writer.buffer(:base_uri => "http://example.com/", :prefixes => {
-  #       :"" => "http://example.com/ns#",
+  #       nil => "http://example.com/ns#",
   #       :foaf => "http://xmlns.com/foaf/0.1/"}
   #   ) do |writer|
   #     graph.each_statement do |statement|
@@ -59,6 +59,13 @@ module RDF::N3
     # @return [URI] Base URI used for relativizing URIs
     attr_accessor :base_uri
     
+    # FIXME: temporary patch until fixed in RDF.rb
+    # Allow for nil prefix mapping
+    def prefix(name, uri = nil)
+      name = name.to_s.empty? ? nil : (name.respond_to?(:to_sym) ? name.to_sym : name.to_s.to_sym)
+      uri.nil? ? prefixes[name] : prefixes[name] = RDF::URI(uri)
+    end
+
     ##
     # Initializes the Turtle writer instance.
     #
@@ -79,7 +86,7 @@ module RDF::N3
     # @option options [Boolean]  :standard_prefixes   (false)
     #   Add standard prefixes to @prefixes, if necessary.
     # @option options [String]   :default_namespace (nil)
-    #   URI to use as default namespace, same as prefixes[:""]
+    #   URI to use as default namespace, same as prefixes[nil]
     # @yield  [writer] `self`
     # @yieldparam  [RDF::Writer] writer
     # @yieldreturn [void]
@@ -89,7 +96,7 @@ module RDF::N3
       super do
         @graph = RDF::Graph.new
         @uri_to_qname = {}
-        prefix(:"",@options[:default_namespace]) if @options[:default_namespace]
+        prefix(nil, @options[:default_namespace]) if @options[:default_namespace]
         if block_given?
           case block.arity
             when 0 then instance_eval(&block)

@@ -558,7 +558,7 @@ describe "RDF::N3::Reader" do
         reader.prefixes.should == {
           :rdf => RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
           :rdfs => RDF::URI.new("http://www.w3.org/2000/01/rdf-schema#"),
-          :"" => RDF::URI.new("http://test/")}
+          nil => RDF::URI.new("http://test/")}
       end
     end
     
