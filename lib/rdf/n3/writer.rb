@@ -120,7 +120,7 @@ module RDF::N3
     # @param  [RDF::Statement] statement
     # @return [void]
     def write_statement(statement)
-      @graph.insert_statement(statement)
+      @graph.insert(statement)
     end
 
     ##
@@ -132,7 +132,7 @@ module RDF::N3
     # @raise  [NotImplementedError] unless implemented in subclass
     # @abstract
     def write_triple(subject, predicate, object)
-      @graph.insert_statement(Statement.new(subject, predicate, object))
+      @graph.insert(Statement.new(subject, predicate, object))
     end
 
     ##
