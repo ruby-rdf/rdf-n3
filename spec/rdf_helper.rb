@@ -58,8 +58,8 @@ module RdfHelper
           #puts statement.subject.to_s
         elsif pred =~ /Document\Z/i
           puts "sub #{uri_prefix} in #{obj} for #{test_dir}" if ::RDF::N3::debug?
-          about = obj.dup
-          obj.sub!(uri_prefix, test_dir)
+          about = obj
+          obj = obj.sub(uri_prefix, test_dir)
           puts " => #{obj}" if ::RDF::N3::debug?
           self.send("#{pred}=", obj)
           if pred == "inputDocument"
@@ -155,7 +155,7 @@ module RdfHelper
       @negative_entailment_tests = []
 
       unless File.file?(File.join(test_dir, test.sub(ext, "yml")))
-        load_opts = {:base_uri => test_uri}
+        load_opts = {:base_uri => test_uri, :intern => false}
         load_opts[:format] = :n3 if ext == "tests" # For swap tests
         graph = RDF::Graph.load(File.join(test_dir, test), load_opts)
         uri_base = Addressable::URI.join(test_uri, ".").to_s
@@ -170,7 +170,8 @@ module RdfHelper
           entries = entries.first
           raise "No entires found for MF Manifest" unless entries.is_a?(RDF::Statement)
 
-          @test_cases = graph.seq(entries.object).map do |subject|
+          entries = RDF::List.new(entries.object, graph)
+          @test_cases = entries.each_subject.to_a.map do |subject|
             TestCase.new(subject, uri_base, test_dir, :test_type => :mf, :graph => graph)
           end
         else

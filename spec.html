@@ -1,0 +1,1425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>RSpec results</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Expires" content="-1" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <style type="text/css">
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    font-size: 80%;
+  }
+  </style>
+  <script type="text/javascript">
+    // <![CDATA[
+function moveProgressBar(percentDone) {
+  document.getElementById("rspec-header").style.width = percentDone +"%";
+}
+function makeRed(element_id) {
+  document.getElementById(element_id).style.background = '#C40D0D';
+  document.getElementById(element_id).style.color = '#FFFFFF';
+}
+
+function makeYellow(element_id) {
+  if (element_id == "rspec-header" && document.getElementById(element_id).style.background != '#C40D0D')
+  {
+    document.getElementById(element_id).style.background = '#FAF834';
+    document.getElementById(element_id).style.color = '#000000';
+  }
+  else
+  {
+    document.getElementById(element_id).style.background = '#FAF834';
+    document.getElementById(element_id).style.color = '#000000';
+  }
+}
+
+    // ]]>
+  </script>
+  <style type="text/css">
+#rspec-header {
+  background: #65C400; color: #fff; height: 4em;
+}
+
+.rspec-report h1 {
+  margin: 0px 10px 0px 10px;
+  padding: 10px;
+  font-family: "Lucida Grande", Helvetica, sans-serif;
+  font-size: 1.8em;
+  position: absolute;
+}
+
+#summary {
+  margin: 0; padding: 5px 10px;
+  font-family: "Lucida Grande", Helvetica, sans-serif;
+  text-align: right;
+  top: 0px;
+  right: 0px;
+  float:right;
+}
+
+#summary p {
+  margin: 0 0 0 2px;
+}
+
+#summary #totals {
+  font-size: 1.2em;
+}
+
+.example_group {
+  margin: 0 10px 5px;
+  background: #fff;
+}
+
+dl {
+  margin: 0; padding: 0 0 5px;
+  font: normal 11px "Lucida Grande", Helvetica, sans-serif;
+}
+
+dt {
+  padding: 3px;
+  background: #65C400;
+  color: #fff;
+  font-weight: bold;
+}
+
+dd {
+  margin: 5px 0 5px 5px;
+  padding: 3px 3px 3px 18px;
+}
+
+dd.spec.passed {
+  border-left: 5px solid #65C400;
+  border-bottom: 1px solid #65C400;
+  background: #DBFFB4; color: #3D7700;
+}
+
+dd.spec.failed {
+  border-left: 5px solid #C20000;
+  border-bottom: 1px solid #C20000;
+  color: #C20000; background: #FFFBD3;
+}
+
+dd.spec.not_implemented {
+  border-left: 5px solid #FAF834;
+  border-bottom: 1px solid #FAF834;
+  background: #FCFB98; color: #131313;
+}
+
+dd.spec.pending_fixed {
+  border-left: 5px solid #0000C2;
+  border-bottom: 1px solid #0000C2;
+  color: #0000C2; background: #D3FBFF;
+}
+
+.backtrace {
+  color: #000;
+  font-size: 12px;
+}
+
+a {
+  color: #BE5C00;
+}
+
+/* Ruby code, style similar to vibrant ink */
+.ruby {
+  font-size: 12px;
+  font-family: monospace;
+  color: white;
+  background-color: black;
+  padding: 0.1em 0 0.2em 0;
+}
+
+.ruby .keyword { color: #FF6600; }
+.ruby .constant { color: #339999; }
+.ruby .attribute { color: white; }
+.ruby .global { color: white; }
+.ruby .module { color: white; }
+.ruby .class { color: white; }
+.ruby .string { color: #66FF00; }
+.ruby .ident { color: white; }
+.ruby .method { color: #FFCC00; }
+.ruby .number { color: white; }
+.ruby .char { color: white; }
+.ruby .comment { color: #9933CC; }
+.ruby .symbol { color: white; }
+.ruby .regex { color: #44B4CC; }
+.ruby .punct { color: white; }
+.ruby .escape { color: white; }
+.ruby .interp { color: white; }
+.ruby .expr { color: white; }
+
+.ruby .offending { background-color: gray; }
+.ruby .linenum {
+  width: 75px;
+  padding: 0.1em 1em 0.2em 0;
+  color: #000000;
+  background-color: #FFFBD3;
+}
+
+  </style>
+</head>
+<body>
+<div class="rspec-report">
+
+<div id="rspec-header">
+  <div id="label">
+    <h1>RSpec Code Examples</h1>
+  </div>
+
+  <div id="summary">
+    <p id="totals">&nbsp;</p>
+    <p id="duration">&nbsp;</p>
+  </div>
+</div>
+
+<div class="results">
+<div class="example_group">
+  <dl>
+  <dt id="example_group_1">RDF::N3::Reader w3c cwm tests</dt>
+    <script type="text/javascript">moveProgressBar('0.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1001: Parse a small RDF file, generate N3</span></dd>
+    <script type="text/javascript">moveProgressBar('0.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1002a: Do not redefine the xml: prefix</span></dd>
+    <script type="text/javascript">moveProgressBar('0.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1002b: Allow for relative xml:base</span></dd>
+    <script type="text/javascript">moveProgressBar('1.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1002c: do not redefine xml: and xmlns: even if told told</span></dd>
+    <script type="text/javascript">moveProgressBar('1.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1002d: Allow for redefinition of rdf:</span></dd>
+    <script type="text/javascript">moveProgressBar('1.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1002e: rdf:parseType=&quot;Literal&quot;</span></dd>
+    <script type="text/javascript">moveProgressBar('2.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1003: Parse RDF embedded in foreign XML</span></dd>
+    <script type="text/javascript">moveProgressBar('2.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005: test generation of relative URIs</span></dd>
+    <script type="text/javascript">moveProgressBar('2.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005a: An N3 file with no final newline character</span></dd>
+    <script type="text/javascript">moveProgressBar('2.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005b: combinations of - and _ in identifiers</span></dd>
+    <script type="text/javascript">moveProgressBar('3.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005c: @keywords in n3</span></dd>
+    <script type="text/javascript">moveProgressBar('3.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005d: using no keywords in n3</span></dd>
+    <script type="text/javascript">moveProgressBar('3.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1005e: djb noticed a:b was parsed as rdf:type token</span></dd>
+    <script type="text/javascript">moveProgressBar('4.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1006: Parse and generate simple contexts</span></dd>
+    <script type="text/javascript">moveProgressBar('4.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1007: Parse and regen anonymous property</span></dd>
+    <script type="text/javascript">moveProgressBar('4.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1007a: Parse RDF/XML nodeID to N3</span></dd>
+    <script type="text/javascript">moveProgressBar('4.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1007b: Parse RDF/XML nodeID and regen RDF/XML</span></dd>
+    <script type="text/javascript">moveProgressBar('5.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1007c: use nodeID's with classes</span></dd>
+    <script type="text/javascript">moveProgressBar('5.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1007d: A loop of anonymous nodes wasn't being printed at all</span></dd>
+    <script type="text/javascript">moveProgressBar('5.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1008: Convert some RDF/XML into RDF/N3</span></dd>
+    <script type="text/javascript">moveProgressBar('6.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1008a: When rdf/xml localnames are not valid qNames</span></dd>
+    <script type="text/javascript">moveProgressBar('6.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1009: N3 string quoting with escaping</span></dd>
+    <script type="text/javascript">moveProgressBar('6.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1009aa: N3 string quoting with utf-8 literals</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_1');</script>
+    <script type="text/javascript">moveProgressBar('6.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">test t1009ab: log:n3string genertating utf-8 literals was double encoding (PENDING: Formulae not supported)</span></dd>
+    <script type="text/javascript">moveProgressBar('7.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1009b: XML to XML with utf-8 non-ascii characters</span></dd>
+    <script type="text/javascript">moveProgressBar('7.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1010: Path syntax, simple</span></dd>
+    <script type="text/javascript">moveProgressBar('7.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1011: Path syntax, more</span></dd>
+    <script type="text/javascript">moveProgressBar('8.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t10115: Number syntax</span></dd>
+    <script type="text/javascript">moveProgressBar('8.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1014: N3 string nested triple quoting</span></dd>
+    <script type="text/javascript">moveProgressBar('8.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1017: parsing and generation of N3 list syntax</span></dd>
+    <script type="text/javascript">moveProgressBar('8.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1018: conversion of subset of N3 list syntax to RDF</span></dd>
+    <script type="text/javascript">moveProgressBar('9.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1018a1: make sure typeNodes in RDF/XML Collections are parsed</span></dd>
+    <script type="text/javascript">moveProgressBar('9.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1019: Avoiding default namespace on attrs</span></dd>
+    <script type="text/javascript">moveProgressBar('9.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1020: Avoiding default namespace on attrs</span></dd>
+    <script type="text/javascript">moveProgressBar('10.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1021: Avoiding default namespace on attrs</span></dd>
+    <script type="text/javascript">moveProgressBar('10.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1022: Early DAML (now OWL) example in XML/RDF</span></dd>
+    <script type="text/javascript">moveProgressBar('10.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test t1063: extremely basic RDF serialization test</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_2">RDF::N3::Format discovery</dt>
+    <script type="text/javascript">moveProgressBar('10.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('11.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'etc/foaf.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('11.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'etc/foaf.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('11.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'foaf.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('12.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'foaf.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('12.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover '.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('12.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover '.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('12.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'text/n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('13.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'text/turtle'</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_3">RDF::N3::Reader</dt>
+    <script type="text/javascript">moveProgressBar('13.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse rdf_core testcase</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_4">RDF::N3::Reader discovery</dt>
+    <script type="text/javascript">moveProgressBar('13.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('14.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'etc/foaf.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('14.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'etc/foaf.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('14.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'foaf.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('14.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'foaf.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('15.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover '.n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('15.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover '.ttl'</span></dd>
+    <script type="text/javascript">moveProgressBar('15.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'text/n3'</span></dd>
+    <script type="text/javascript">moveProgressBar('16.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should discover 'text/turtle'</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_5">RDF::N3::Reader interface</dt>
+    <script type="text/javascript">moveProgressBar('16.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should yield reader</span></dd>
+    <script type="text/javascript">moveProgressBar('16.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should return reader</span></dd>
+    <script type="text/javascript">moveProgressBar('16.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should yield statements</span></dd>
+    <script type="text/javascript">moveProgressBar('17.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should yield triples</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_6">RDF::N3::Reader with simple ntriples</dt>
+    <script type="text/javascript">moveProgressBar('17.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create named subject bnode</span></dd>
+    <script type="text/javascript">moveProgressBar('17.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create named predicate bnode</span></dd>
+    <script type="text/javascript">moveProgressBar('18.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create named object bnode</span></dd>
+    <script type="text/javascript">moveProgressBar('18.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test three uris</span></dd>
+    <script type="text/javascript">moveProgressBar('18.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test spaces and tabs throughout</span></dd>
+    <script type="text/javascript">moveProgressBar('18.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test line ending with CR NL</span></dd>
+    <script type="text/javascript">moveProgressBar('19.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (1)</span></dd>
+    <script type="text/javascript">moveProgressBar('19.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (2)</span></dd>
+    <script type="text/javascript">moveProgressBar('19.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (3)</span></dd>
+    <script type="text/javascript">moveProgressBar('20.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (4)</span></dd>
+    <script type="text/javascript">moveProgressBar('20.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (5)</span></dd>
+    <script type="text/javascript">moveProgressBar('20.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test literal escapes (6)</span></dd>
+    <script type="text/javascript">moveProgressBar('20.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test Space is optional before final . (1)</span></dd>
+    <script type="text/javascript">moveProgressBar('21.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test Space is optional before final . (2)</span></dd>
+    <script type="text/javascript">moveProgressBar('21.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (1)</span></dd>
+    <script type="text/javascript">moveProgressBar('21.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (2)</span></dd>
+    <script type="text/javascript">moveProgressBar('22.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (3)</span></dd>
+    <script type="text/javascript">moveProgressBar('22.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (4)</span></dd>
+    <script type="text/javascript">moveProgressBar('22.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (5)</span></dd>
+    <script type="text/javascript">moveProgressBar('22.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (6)</span></dd>
+    <script type="text/javascript">moveProgressBar('23.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (7)</span></dd>
+    <script type="text/javascript">moveProgressBar('23.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (8)</span></dd>
+    <script type="text/javascript">moveProgressBar('23.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test XML Literals as Datatyped Literals (9)</span></dd>
+    <script type="text/javascript">moveProgressBar('24.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test Plain literals with languages (1)</span></dd>
+    <script type="text/javascript">moveProgressBar('24.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test Plain literals with languages (2)</span></dd>
+    <script type="text/javascript">moveProgressBar('24.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test Typed Literals</span></dd>
+    <script type="text/javascript">moveProgressBar('24.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should allow mixed-case language</span></dd>
+    <script type="text/javascript">moveProgressBar('25.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literals</span></dd>
+    <script type="text/javascript">moveProgressBar('25.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNodes</span></dd>
+    <script type="text/javascript">moveProgressBar('25.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create URIs</span></dd>
+    <script type="text/javascript">moveProgressBar('26.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create literals</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_7">RDF::N3::Reader with simple ntriples simple triple</dt>
+    <script type="text/javascript">moveProgressBar('26.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have a single triple</span></dd>
+    <script type="text/javascript">moveProgressBar('26.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have subject</span></dd>
+    <script type="text/javascript">moveProgressBar('26.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have predicate</span></dd>
+    <script type="text/javascript">moveProgressBar('27.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have object</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_8">RDF::N3::Reader with simple ntriples with blank lines</dt>
+    <script type="text/javascript">moveProgressBar('27.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test comment</span></dd>
+    <script type="text/javascript">moveProgressBar('27.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test comment after whitespace</span></dd>
+    <script type="text/javascript">moveProgressBar('28.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test empty line</span></dd>
+    <script type="text/javascript">moveProgressBar('28.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test line with spaces</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_9">RDF::N3::Reader with simple ntriples with literal encodings</dt>
+    <script type="text/javascript">moveProgressBar('28.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b &quot;D\u00FCrst&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('28.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;simple literal&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('29.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;backslash:\\&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('29.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;dquote:\&quot;&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('29.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;newline:\n&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('30.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;return\r&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('30.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;tab:\t&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('30.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;\u00E9&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('30.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;\u20AC&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('31.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :resume  &quot;resum\u00E9&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('31.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b &quot;Dürst&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('31.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;é&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('32.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :b  &quot;€&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('32.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test :a :resume  &quot;resumé&quot; .</span></dd>
+    <script type="text/javascript">moveProgressBar('32.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse long literal with escape</span></dd>
+    <script type="text/javascript">moveProgressBar('32.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse multi-line literal</span></dd>
+    <script type="text/javascript">moveProgressBar('33.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse long literal ending in double quote</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_10">RDF::N3::Reader with simple ntriples should create URIs</dt>
+    <script type="text/javascript">moveProgressBar('33.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for '&lt;http://example.org/joe&gt; &lt;http://xmlns.com/foaf/0.1/knows&gt; &lt;http://example.org/jane&gt; .'</span></dd>
+    <script type="text/javascript">moveProgressBar('33.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for '&lt;joe&gt; &lt;knows&gt; &lt;jane&gt; .'</span></dd>
+    <script type="text/javascript">moveProgressBar('34.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for ':joe :knows :jane .'</span></dd>
+    <script type="text/javascript">moveProgressBar('34.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for '&lt;#D%C3%BCrst&gt;  a  &quot;URI percent ^encoded as C3, BC&quot;.'</span></dd>
+    <script type="text/javascript">moveProgressBar('34.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for '&lt;#Dürst&gt; :knows :jane.'</span></dd>
+    <script type="text/javascript">moveProgressBar('34.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for ':Dürst :knows :jane.'</span></dd>
+    <script type="text/javascript">moveProgressBar('35.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for ':bob :resumé &quot;Bob's non-normalized resumé&quot;.'</span></dd>
+    <script type="text/javascript">moveProgressBar('35.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for ':alice :resumé &quot;Alice's normalized resumé&quot;.'</span></dd>
+    <script type="text/javascript">moveProgressBar('35.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">for '&lt;#Dürst&gt;       a  &quot;URI straight in UTF8&quot;.'</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_11">RDF::N3::Reader with n3 grammar syntactic expressions</dt>
+    <script type="text/javascript">moveProgressBar('36.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literals with qname</span></dd>
+    <script type="text/javascript">moveProgressBar('36.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use &lt;&gt; as a prefix and as a triple node</span></dd>
+    <script type="text/javascript">moveProgressBar('36.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use &lt;#&gt; as a prefix and as a triple node</span></dd>
+    <script type="text/javascript">moveProgressBar('36.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate rdf:type for 'a'</span></dd>
+    <script type="text/javascript">moveProgressBar('37.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate rdf:type for '@a'</span></dd>
+    <script type="text/javascript">moveProgressBar('37.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate inverse predicate for 'is xxx of'</span></dd>
+    <script type="text/javascript">moveProgressBar('37.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate inverse predicate for '@is xxx @of'</span></dd>
+    <script type="text/javascript">moveProgressBar('38.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate inverse predicate for 'is xxx of' with object list</span></dd>
+    <script type="text/javascript">moveProgressBar('38.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate predicate for 'has xxx'</span></dd>
+    <script type="text/javascript">moveProgressBar('38.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate predicate for '@has xxx'</span></dd>
+    <script type="text/javascript">moveProgressBar('38.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create log:implies predicate for '=&gt;'</span></dd>
+    <script type="text/javascript">moveProgressBar('39.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create log:implies inverse predicate for '&lt;='</span></dd>
+    <script type="text/javascript">moveProgressBar('39.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create owl:sameAs predicate for '='</span></dd>
+    <script type="text/javascript">moveProgressBar('39.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b @true'</span></dd>
+    <script type="text/javascript">moveProgressBar('40.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b @false'</span></dd>
+    <script type="text/javascript">moveProgressBar('40.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b 1'</span></dd>
+    <script type="text/javascript">moveProgressBar('40.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b -1'</span></dd>
+    <script type="text/javascript">moveProgressBar('40.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b +1'</span></dd>
+    <script type="text/javascript">moveProgressBar('41.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b 1.0'</span></dd>
+    <script type="text/javascript">moveProgressBar('41.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b 1.0e1'</span></dd>
+    <script type="text/javascript">moveProgressBar('41.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b 1.0e-1'</span></dd>
+    <script type="text/javascript">moveProgressBar('42.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create typed literal for ':a :b 1.0e+1'</span></dd>
+    <script type="text/javascript">moveProgressBar('42.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should accept empty localname</span></dd>
+    <script type="text/javascript">moveProgressBar('42.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should accept prefix with empty local name</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_11');</script>
+    <script type="text/javascript">moveProgressBar('42.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">should do something for @forAll (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_11');</script>
+    <script type="text/javascript">moveProgressBar('43.1');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">should do something for @forSome (PENDING: TODO)</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_12">RDF::N3::Reader with n3 grammar prefixes</dt>
+    <script type="text/javascript">moveProgressBar('43.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should not append # for http://foo/bar</span></dd>
+    <script type="text/javascript">moveProgressBar('43.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should not append # for http://foo/bar/</span></dd>
+    <script type="text/javascript">moveProgressBar('44.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should not append # for http://foo/bar#</span></dd>
+    <script type="text/javascript">moveProgressBar('44.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should set absolute base</span></dd>
+    <script type="text/javascript">moveProgressBar('44.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should set absolute base (trailing /)</span></dd>
+    <script type="text/javascript">moveProgressBar('44.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should set absolute base (trailing #)</span></dd>
+    <script type="text/javascript">moveProgressBar('45.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should set relative base</span></dd>
+    <script type="text/javascript">moveProgressBar('45.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">returns defined prefixes</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_13">RDF::N3::Reader with n3 grammar keywords</dt>
+    <script type="text/javascript">moveProgressBar('45.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for 'prefix :&lt;&gt;.'</span></dd>
+    <script type="text/javascript">moveProgressBar('46.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for 'base &lt;&gt;.'</span></dd>
+    <script type="text/javascript">moveProgressBar('46.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for 'keywords a.'</span></dd>
+    <script type="text/javascript">moveProgressBar('46.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for ':a is :b of :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('46.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for ':a @is :b of :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('47.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for ':a is :b @of :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('47.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should require @ if keywords set to empty for ':a has :b :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('47.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for ':a a :b'</span></dd>
+    <script type="text/javascript">moveProgressBar('48.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for ':a :b true'</span></dd>
+    <script type="text/javascript">moveProgressBar('48.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for ':a :b false'</span></dd>
+    <script type="text/javascript">moveProgressBar('48.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for 'c :a :t'</span></dd>
+    <script type="text/javascript">moveProgressBar('48.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for ':c a :t'</span></dd>
+    <script type="text/javascript">moveProgressBar('49.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use default_ns for ':c :a t'</span></dd>
+    <script type="text/javascript">moveProgressBar('49.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords true. :a :b true.'</span></dd>
+    <script type="text/javascript">moveProgressBar('49.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords false. :a :b false.'</span></dd>
+    <script type="text/javascript">moveProgressBar('50.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords a. :a a :b.'</span></dd>
+    <script type="text/javascript">moveProgressBar('50.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords is. :a is :b @of :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('50.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords of. :a @is :b of :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('50.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use keyword for '@keywords has. :a has :b :c.'</span></dd>
+    <script type="text/javascript">moveProgressBar('51.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise error if unknown keyword set</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_14">RDF::N3::Reader with n3 grammar declaration ordering</dt>
+    <script type="text/javascript">moveProgressBar('51.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should process _ namespace binding after an initial use as a BNode</span></dd>
+    <script type="text/javascript">moveProgressBar('51.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should allow a prefix to be redefined</span></dd>
+    <script type="text/javascript">moveProgressBar('52.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should process sequential @base declarations (swap base.n3)</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_15">RDF::N3::Reader with n3 grammar BNodes</dt>
+    <script type="text/javascript">moveProgressBar('52.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode for identifier with '_' prefix</span></dd>
+    <script type="text/javascript">moveProgressBar('52.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode for [] as subject</span></dd>
+    <script type="text/javascript">moveProgressBar('52.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode for [] as predicate</span></dd>
+    <script type="text/javascript">moveProgressBar('53.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode for [] as object</span></dd>
+    <script type="text/javascript">moveProgressBar('53.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode for [] as statement</span></dd>
+    <script type="text/javascript">moveProgressBar('53.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create statements with BNode subjects using [ pref obj]</span></dd>
+    <script type="text/javascript">moveProgressBar('54.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create BNode as a single object</span></dd>
+    <script type="text/javascript">moveProgressBar('54.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create a shared BNode</span></dd>
+    <script type="text/javascript">moveProgressBar('54.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create nested BNodes</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_16">RDF::N3::Reader with n3 grammar BNodes from paths</dt>
+    <script type="text/javascript">moveProgressBar('54.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create bnode for path x.p</span></dd>
+    <script type="text/javascript">moveProgressBar('55.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create bnode for path x!p</span></dd>
+    <script type="text/javascript">moveProgressBar('55.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create bnode for path x^p</span></dd>
+    <script type="text/javascript">moveProgressBar('55.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should decode :joe!fam:mother!loc:office!loc:zip as Joe's mother's office's zipcode</span></dd>
+    <script type="text/javascript">moveProgressBar('56.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should decode :joe!fam:mother^fam:mother Anyone whose mother is Joe's mother.</span></dd>
+    <script type="text/javascript">moveProgressBar('56.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should decode path with property list.</span></dd>
+    <script type="text/javascript">moveProgressBar('56.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should decode path as object(1)</span></dd>
+    <script type="text/javascript">moveProgressBar('56.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should decode path as object(2)</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_17">RDF::N3::Reader with n3 grammar formulae</dt>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_17');</script>
+    <script type="text/javascript">moveProgressBar('57.1');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">should require that graph be formula_aware when encountering a formlua (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_17');</script>
+    <script type="text/javascript">moveProgressBar('57.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">should separate triples between specified and quoted graphs (PENDING: TODO)</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_18">RDF::N3::Reader with n3 grammar object lists</dt>
+    <script type="text/javascript">moveProgressBar('57.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should create 2 statements for simple list</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_19">RDF::N3::Reader with n3 grammar property lists</dt>
+    <script type="text/javascript">moveProgressBar('58.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse property list</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_20">RDF::N3::Reader with n3 grammar lists</dt>
+    <script type="text/javascript">moveProgressBar('58.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse empty list</span></dd>
+    <script type="text/javascript">moveProgressBar('58.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse list with single element</span></dd>
+    <script type="text/javascript">moveProgressBar('58.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse list with multiple elements</span></dd>
+    <script type="text/javascript">moveProgressBar('59.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse unattached lists</span></dd>
+    <script type="text/javascript">moveProgressBar('59.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should add property to nil list</span></dd>
+    <script type="text/javascript">moveProgressBar('59.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should parse with compound items</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_21">RDF::N3::Reader with n3 grammar with AggregateGraph tests with a type</dt>
+    <script type="text/javascript">moveProgressBar('60.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have 3 namespaces</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_22">RDF::N3::Reader with n3 grammar with AggregateGraph tests with blank clause</dt>
+    <script type="text/javascript">moveProgressBar('60.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have 4 namespaces</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_23">RDF::N3::Reader with n3 grammar with AggregateGraph tests with empty subject</dt>
+    <script type="text/javascript">moveProgressBar('60.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have 4 namespaces</span></dd>
+    <script type="text/javascript">moveProgressBar('60.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should have default subject</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_24">RDF::N3::Reader canonicalization</dt>
+    <script type="text/javascript">moveProgressBar('61.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">returns object &quot;1&quot;^^xsd:integer given &quot;+1&quot;^^xsd:integer</span></dd>
+    <script type="text/javascript">moveProgressBar('61.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">returns object &quot;1&quot;^^xsd:integer given +1</span></dd>
+    <script type="text/javascript">moveProgressBar('61.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">returns object &quot;true&quot;^^xsd:boolean given true</span></dd>
+    <script type="text/javascript">moveProgressBar('62.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">returns object &quot;lang&quot;@en given &quot;lang&quot;@EN</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_25">RDF::N3::Reader validation</dt>
+    <script type="text/javascript">moveProgressBar('62.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:&quot;xyz&quot; is not a valid .*)' for ':y :p1 &quot;xyz&quot;^^xsd:integer .'</span></dd>
+    <script type="text/javascript">moveProgressBar('62.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:&quot;12xyz&quot; is not a valid .*)' for ':y :p1 &quot;12xyz&quot;^^xsd:integer .'</span></dd>
+    <script type="text/javascript">moveProgressBar('62.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:&quot;xy\.z&quot; is not a valid .*)' for ':y :p1 &quot;xy.z&quot;^^xsd:double .'</span></dd>
+    <script type="text/javascript">moveProgressBar('63.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:&quot;\+1.0z&quot; is not a valid .*)' for ':y :p1 &quot;+1.0z&quot;^^xsd:double .'</span></dd>
+    <script type="text/javascript">moveProgressBar('63.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:Illegal statment: &quot;.*&quot; missing object)' for ':a :b .'</span></dd>
+    <script type="text/javascript">moveProgressBar('63.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise 'RDF::ReaderError' for ':a :b 'single quote' .'</span></dd>
+    <script type="text/javascript">moveProgressBar('64.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise 'RDF::ReaderError' for ':a &quot;literal value&quot; :b .'</span></dd>
+    <script type="text/javascript">moveProgressBar('64.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should raise '(?-mix:Keyword &quot;.*&quot; used as expression)' for '@keywords prefix. :e prefix :f .'</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_26">RDF::N3::Reader w3c swap tests positive parser tests</dt>
+    <script type="text/javascript">moveProgressBar('64.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10001: http://www.w3.org/2000/10/swap/test/syntax/no-last-nl.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10001.nt</span></dd>
+    <script type="text/javascript">moveProgressBar('64.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10002: http://www.w3.org/2000/10/swap/test/syntax/dot-dash.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10002.nt</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('65.1');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10003: http://www.w3.org/2000/10/swap/test/syntax/keywords1.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10003.nt (PENDING: @forAll/@forEach not yet implemented)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('65.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10004: http://www.w3.org/2000/10/swap/test/syntax/keywords2.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10004.nt (PENDING: @forAll/@forEach not yet implemented)</span></dd>
+    <script type="text/javascript">moveProgressBar('65.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10005: http://www.w3.org/2000/10/swap/test/syntax/djb1a.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10005.nt</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('66.0');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10007: http://www.w3.org/2000/10/swap/test/contexts.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10007.nt (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('66.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10008: http://www.w3.org/2000/10/swap/test/anon-prop.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10008.nt (PENDING: Isomorphic compare issue)</span></dd>
+    <script type="text/javascript">moveProgressBar('66.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10009: http://www.w3.org/2000/10/swap/test/strquot.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10009.nt</span></dd>
+    <script type="text/javascript">moveProgressBar('66.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10010: http://www.w3.org/2000/10/swap/test/i18n/hiragana.n3 against </span></dd>
+    <script type="text/javascript">moveProgressBar('67.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10011: http://www.w3.org/2000/10/swap/test/syntax/path1.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10011.nt</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('67.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10012: http://www.w3.org/2000/10/swap/test/syntax/path2.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10012.nt (PENDING: check visually, graph compare times too long)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('67.7');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10013: http://www.w3.org/2000/10/swap/test/syntax/numbers.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10013.nt (PENDING: Isomorphic compare issue)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('68.0');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10014: http://www.w3.org/2000/10/swap/test/syntax/qvars1.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10014.nt (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('68.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10015: http://www.w3.org/2000/10/swap/test/syntax/qvars2.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10015.nt (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">moveProgressBar('68.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10016: http://www.w3.org/2000/10/swap/test/syntax/lstring.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10016.nt</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_26');</script>
+    <script type="text/javascript">moveProgressBar('68.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10017: http://www.w3.org/2000/10/swap/test/lists.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10017.nt (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">moveProgressBar('69.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10018: http://www.w3.org/2000/10/swap/test/syntax/trailing-semicolon.n3 against /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10018.nt</span></dd>
+    <script type="text/javascript">moveProgressBar('69.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10025: http://www.w3.org/2000/10/swap/test/syntax/equals1.n3 against </span></dd>
+    <script type="text/javascript">moveProgressBar('69.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10026: http://www.w3.org/2000/10/swap/test/syntax/equals2.n3 against </span></dd>
+    <script type="text/javascript">moveProgressBar('70.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_10027: http://www.w3.org/2000/10/swap/test/syntax/zero-predicates.n3 against </span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_27">RDF::N3::Reader w3c swap tests negative parser tests</dt>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_27');</script>
+    <script type="text/javascript">moveProgressBar('70.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10019: http://www.w3.org/2000/10/swap/test/syntax/this-quantifiers.n3 (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_27');</script>
+    <script type="text/javascript">moveProgressBar('70.5');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_10020: http://www.w3.org/2000/10/swap/test/syntax/this-rules.n3 (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_27');</script>
+    <script type="text/javascript">moveProgressBar('70.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_20000: http://www.w3.org/2000/10/swap/test/tests-work.txt (PENDING: figure out how to tell that these are errors)</span></dd>
+    <script type="text/javascript">moveProgressBar('71.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_20001: http://www.w3.org/2000/10/swap/test/syntax/neg-keywords3.n3</span></dd>
+    <script type="text/javascript">moveProgressBar('71.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_20002: http://www.w3.org/2000/10/swap/test/syntax/neg-single-quote.n3</span></dd>
+    <script type="text/javascript">moveProgressBar('71.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_20003: http://www.w3.org/2000/10/swap/test/syntax/neg-thisadoc.n3</span></dd>
+    <script type="text/javascript">moveProgressBar('72.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_20004: http://www.w3.org/2000/10/swap/test/syntax/neg-literal-predicate.n3</span></dd>
+    <script type="text/javascript">makeYellow('rspec-header');</script>
+    <script type="text/javascript">makeYellow('example_group_27');</script>
+    <script type="text/javascript">moveProgressBar('72.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">n3_20005: http://www.w3.org/2000/10/swap/test/syntax/neg-formula-predicate.n3 (PENDING: formulae not yet implemented)</span></dd>
+    <script type="text/javascript">moveProgressBar('72.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">n3_20028: http://www.w3.org/2000/10/swap/test/syntax/zero-objects.n3</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_28">RDF::N3::Reader w3c turtle tests positive parser tests</dt>
+    <script type="text/javascript">moveProgressBar('72.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-00: Blank subject</span></dd>
+    <script type="text/javascript">moveProgressBar('73.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-01: @prefix and qnames</span></dd>
+    <script type="text/javascript">moveProgressBar('73.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-02: , operator</span></dd>
+    <script type="text/javascript">moveProgressBar('73.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-03: ; operator</span></dd>
+    <script type="text/javascript">moveProgressBar('74.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-04: empty [] as subject and object</span></dd>
+    <script type="text/javascript">moveProgressBar('74.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-05: non-empty [] as subject and object</span></dd>
+    <script type="text/javascript">moveProgressBar('74.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-06: 'a' as predicate</span></dd>
+    <script type="text/javascript">moveProgressBar('74.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-07: simple collection</span></dd>
+    <script type="text/javascript">moveProgressBar('75.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-08: empty collection</span></dd>
+    <script type="text/javascript">moveProgressBar('75.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-09: integer datatyped literal</span></dd>
+    <script type="text/javascript">moveProgressBar('75.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-10: decimal integer canonicalization</span></dd>
+    <script type="text/javascript">moveProgressBar('76.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-11: - and _ in names and qnames</span></dd>
+    <script type="text/javascript">moveProgressBar('76.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-12: tests for rdf:_&lt;numbers&gt; and other qnames starting with _</span></dd>
+    <script type="text/javascript">moveProgressBar('76.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-13: bare : allowed</span></dd>
+    <script type="text/javascript">moveProgressBar('76.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-17: simple long literal</span></dd>
+    <script type="text/javascript">moveProgressBar('77.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-18: long literals with escapes</span></dd>
+    <script type="text/javascript">moveProgressBar('77.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-19: floating point number</span></dd>
+    <script type="text/javascript">moveProgressBar('77.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-20: empty literals, normal and long variant</span></dd>
+    <script type="text/javascript">moveProgressBar('78.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-21: positive integer, decimal and doubles</span></dd>
+    <script type="text/javascript">moveProgressBar('78.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-22: negative integer, decimal and doubles</span></dd>
+    <script type="text/javascript">moveProgressBar('78.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-23: long literal ending in double quote</span></dd>
+    <script type="text/javascript">moveProgressBar('78.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-24: boolean literals</span></dd>
+    <script type="text/javascript">moveProgressBar('79.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-25: comments</span></dd>
+    <script type="text/javascript">moveProgressBar('79.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-26: no final mewline</span></dd>
+    <script type="text/javascript">moveProgressBar('79.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-27: duplicate prefix</span></dd>
+    <script type="text/javascript">makeRed('rspec-header');</script>
+    <script type="text/javascript">makeRed('example_group_28');</script>
+    <script type="text/javascript">moveProgressBar('80.0');</script>
+    <dd class="spec failed">
+      <span class="failed_spec_name">test-28: decimal data types (serializing test)</span>
+      <div class="failure" id="failure_1">
+        <div class="message"><pre>Graph entry count differs:
+expected: 13
+actual:   19
+[Test Case about='http://www.w3.org/2001/sw/DataAccess/df1/tests/test-28.ttl', name='test-28', inputDocument='/Users/gregg/Projects/rdf-n3/spec/turtle/test-28.ttl', outputDocument='/Users/gregg/Projects/rdf-n3/spec/turtle/test-28.out', description='decimal data types (serializing test)']
+Input file: /Users/gregg/Projects/rdf-n3/spec/turtle/test-28.ttl
+Output file: /Users/gregg/Projects/rdf-n3/spec/turtle/test-28.out
+Unsorted Expected:
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;1.2345678901234567&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+Unsorted Results:
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;2.234&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+&lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; &quot;1.2345678901234567&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; .
+
+Debug:
+@default_ns: #&lt;RDF::URI:0x809e7764(http://www.w3.org/2001/sw/DataAccess/df1/tests/test-28.ttl#)&gt;
+validate: false
+canonicalize: true
+intern: true
+@0: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@0: process_expression(uri)[uri='http://example.org/foo']
+@0: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@25: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@25: process_verb[uri='http://example.org/bar']
+@25: process_expression(uri)[uri='http://example.org/bar']
+@25: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.345&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@50: process_objects[literal='true']
+@50: process_expression(literal)[literal='true']
+@50: process_literal[literal='true']
+@59: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.345 .
+@104: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@104: process_expression(uri)[uri='http://example.org/foo']
+@104: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@129: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@129: process_verb[uri='http://example.org/bar']
+@129: process_expression(uri)[uri='http://example.org/bar']
+@129: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@154: process_objects[literal='true']
+@154: process_expression(literal)[literal='true']
+@154: process_literal[literal='true']
+@159: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 1.0 .
+@204: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@204: process_expression(uri)[uri='http://example.org/foo']
+@204: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@229: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@229: process_verb[uri='http://example.org/bar']
+@229: process_expression(uri)[uri='http://example.org/bar']
+@229: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.0&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@254: process_objects[literal='true']
+@254: process_expression(literal)[literal='true']
+@254: process_literal[literal='true']
+@261: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 1.0 .
+@306: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@306: process_expression(uri)[uri='http://example.org/foo']
+@306: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@331: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@331: process_verb[uri='http://example.org/bar']
+@331: process_expression(uri)[uri='http://example.org/bar']
+@331: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@356: process_objects[literal='true']
+@356: process_expression(literal)[literal='true']
+@356: process_literal[literal='true']
+@362: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 1.0 .
+@407: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.000000000&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@407: process_expression(uri)[uri='http://example.org/foo']
+@407: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.000000000&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@432: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.000000000&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@432: process_verb[uri='http://example.org/bar']
+@432: process_expression(uri)[uri='http://example.org/bar']
+@432: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.000000000&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@457: process_objects[literal='true']
+@457: process_expression(literal)[literal='true']
+@457: process_literal[literal='true']
+@472: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 1.0 .
+@517: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@517: process_expression(uri)[uri='http://example.org/foo']
+@517: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@542: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@542: process_verb[uri='http://example.org/bar']
+@542: process_expression(uri)[uri='http://example.org/bar']
+@542: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.3&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@567: process_objects[literal='true']
+@567: process_expression(literal)[literal='true']
+@567: process_literal[literal='true']
+@574: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.3 .
+@619: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@619: process_expression(uri)[uri='http://example.org/foo']
+@619: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@644: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@644: process_verb[uri='http://example.org/bar']
+@644: process_expression(uri)[uri='http://example.org/bar']
+@644: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@669: process_objects[literal='true']
+@669: process_expression(literal)[literal='true']
+@669: process_literal[literal='true']
+@684: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234000005 .
+@729: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@729: process_expression(uri)[uri='http://example.org/foo']
+@729: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@754: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@754: process_verb[uri='http://example.org/bar']
+@754: process_expression(uri)[uri='http://example.org/bar']
+@754: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@779: process_objects[literal='true']
+@779: process_expression(literal)[literal='true']
+@779: process_literal[literal='true']
+@795: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.2340000005 .
+@840: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@840: process_expression(uri)[uri='http://example.org/foo']
+@840: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@865: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@865: process_verb[uri='http://example.org/bar']
+@865: process_expression(uri)[uri='http://example.org/bar']
+@865: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@890: process_objects[literal='true']
+@890: process_expression(literal)[literal='true']
+@890: process_literal[literal='true']
+@907: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.23400000005 .
+@952: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@952: process_expression(uri)[uri='http://example.org/foo']
+@952: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@977: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@977: process_verb[uri='http://example.org/bar']
+@977: process_expression(uri)[uri='http://example.org/bar']
+@977: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1002: process_objects[literal='true']
+@1002: process_expression(literal)[literal='true']
+@1002: process_literal[literal='true']
+@1020: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234000000005 .
+@1065: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1065: process_expression(uri)[uri='http://example.org/foo']
+@1065: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1090: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1090: process_verb[uri='http://example.org/bar']
+@1090: process_expression(uri)[uri='http://example.org/bar']
+@1090: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1115: process_objects[literal='true']
+@1115: process_expression(literal)[literal='true']
+@1115: process_literal[literal='true']
+@1134: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.2340000000005 .
+@1179: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1179: process_expression(uri)[uri='http://example.org/foo']
+@1179: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1204: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1204: process_verb[uri='http://example.org/bar']
+@1204: process_expression(uri)[uri='http://example.org/bar']
+@1204: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1229: process_objects[literal='true']
+@1229: process_expression(literal)[literal='true']
+@1229: process_literal[literal='true']
+@1249: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.23400000000005 .
+@1294: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1294: process_expression(uri)[uri='http://example.org/foo']
+@1294: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1319: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1319: process_verb[uri='http://example.org/bar']
+@1319: process_expression(uri)[uri='http://example.org/bar']
+@1319: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1344: process_objects[literal='true']
+@1344: process_expression(literal)[literal='true']
+@1344: process_literal[literal='true']
+@1365: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234000000000005 .
+@1410: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1410: process_expression(uri)[uri='http://example.org/foo']
+@1410: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1435: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1435: process_verb[uri='http://example.org/bar']
+@1435: process_expression(uri)[uri='http://example.org/bar']
+@1435: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1460: process_objects[literal='true']
+@1460: process_expression(literal)[literal='true']
+@1460: process_literal[literal='true']
+@1482: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.2340000000000005 .
+@1527: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1527: process_expression(uri)[uri='http://example.org/foo']
+@1527: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1552: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1552: process_verb[uri='http://example.org/bar']
+@1552: process_expression(uri)[uri='http://example.org/bar']
+@1552: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1577: process_objects[literal='true']
+@1577: process_expression(literal)[literal='true']
+@1577: process_literal[literal='true']
+@1600: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@1645: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1645: process_expression(uri)[uri='http://example.org/foo']
+@1645: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1670: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1670: process_verb[uri='http://example.org/bar']
+@1670: process_expression(uri)[uri='http://example.org/bar']
+@1670: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1695: process_objects[literal='true']
+@1695: process_expression(literal)[literal='true']
+@1695: process_literal[literal='true']
+@1719: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@1764: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1764: process_expression(uri)[uri='http://example.org/foo']
+@1764: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1789: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1789: process_verb[uri='http://example.org/bar']
+@1789: process_expression(uri)[uri='http://example.org/bar']
+@1789: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1814: process_objects[literal='true']
+@1814: process_expression(literal)[literal='true']
+@1814: process_literal[literal='true']
+@1839: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@1884: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1884: process_expression(uri)[uri='http://example.org/foo']
+@1884: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@1909: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1909: process_verb[uri='http://example.org/bar']
+@1909: process_expression(uri)[uri='http://example.org/bar']
+@1909: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@1934: process_objects[literal='true']
+@1934: process_expression(literal)[literal='true']
+@1934: process_literal[literal='true']
+@1960: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@2005: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2005: process_expression(uri)[uri='http://example.org/foo']
+@2005: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.234000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2030: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2030: process_verb[uri='http://example.org/bar']
+@2030: process_expression(uri)[uri='http://example.org/bar']
+@2030: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.234000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2055: process_objects[literal='true']
+@2055: process_expression(literal)[literal='true']
+@2055: process_literal[literal='true']
+@2082: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@2127: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2127: process_expression(uri)[uri='http://example.org/foo']
+@2127: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.2340000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2152: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2152: process_verb[uri='http://example.org/bar']
+@2152: process_expression(uri)[uri='http://example.org/bar']
+@2152: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.2340000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2177: process_objects[literal='true']
+@2177: process_expression(literal)[literal='true']
+@2177: process_literal[literal='true']
+@2205: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@2250: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2250: process_expression(uri)[uri='http://example.org/foo']
+@2250: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;2.23400000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2275: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2275: process_verb[uri='http://example.org/bar']
+@2275: process_expression(uri)[uri='http://example.org/bar']
+@2275: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;2.23400000000000000000005&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2300: process_objects[literal='true']
+@2300: process_expression(literal)[literal='true']
+@2300: process_literal[literal='true']
+@2329: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 2.234 .
+@2374: process_statements[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.2345678901234567890123457890&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2374: process_expression(uri)[uri='http://example.org/foo']
+@2374: process_statements(http://example.org/foo)[subject='&lt;http://example.org/foo&gt;', property_list='&lt;http://example.org/bar&gt; &quot;1.2345678901234567890123457890&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt; ']
+@2399: process_properties[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.2345678901234567890123457890&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2399: process_verb[uri='http://example.org/bar']
+@2399: process_expression(uri)[uri='http://example.org/bar']
+@2399: process_statements(http://example.org/foo, http://example.org/bar)[verb='&lt;http://example.org/bar&gt;', object_list='&quot;1.2345678901234567890123457890&quot;^^&lt;http://www.w3.org/2001/XMLSchema#decimal&gt;']
+@2424: process_objects[literal='true']
+@2424: process_expression(literal)[literal='true']
+@2424: process_literal[literal='true']
+@2458: process_expression(uri)[uri='http://www.w3.org/2001/XMLSchema#decimal']
+statement: &lt;http://example.org/foo&gt; &lt;http://example.org/bar&gt; 1.2345678901234567 .</pre></div>
+        <div class="backtrace"><pre><a href="txmt://open?url=file:///Users/gregg/Projects/rdf-n3/spec/rdf_helper.rb&line=134">/Users/gregg/Projects/rdf-n3/spec/rdf_helper.rb:134</a> :in `run_test'
+<a href="txmt://open?url=file:///Users/gregg/Projects/rdf-n3/spec/turtle_spec.rb&line=35">/Users/gregg/Projects/rdf-n3/spec/turtle_spec.rb:35</a> :in `block (5 levels) in <top (required)>'</pre></div>
+    <pre class="ruby"><code><span class="linenum">132</span>        <span class="ident">output_graph</span> <span class="punct">=</span> <span class="constant">RDF</span><span class="punct">::</span><span class="constant">Graph</span><span class="punct">.</span><span class="ident">load</span><span class="punct">(</span><span class="constant">self</span><span class="punct">.</span><span class="ident">outputDocument</span><span class="punct">,</span> <span class="symbol">:format</span> <span class="punct">=&gt;</span> <span class="ident">detect_format</span><span class="punct">(</span><span class="constant">self</span><span class="punct">.</span><span class="ident">outputDocument</span><span class="punct">))</span>
+<span class="linenum">133</span>        <span class="ident">puts</span> <span class="punct">&quot;</span><span class="string">result: <span class="expr">#{CGI.escapeHTML(graph.to_ntriples)}</span></span><span class="punct">&quot;</span> <span class="keyword">if</span> <span class="punct">::</span><span class="constant">RDF</span><span class="punct">::</span><span class="constant">N3</span><span class="punct">::</span><span class="ident">debug?</span>
+<span class="offending"><span class="linenum">134</span>        <span class="ident">graph</span><span class="punct">.</span><span class="ident">should</span> <span class="constant">Matchers</span><span class="punct">::</span><span class="ident">be_equivalent_graph</span><span class="punct">(</span><span class="ident">output_graph</span><span class="punct">,</span> <span class="constant">self</span><span class="punct">)</span></span>
+<span class="linenum">135</span>      <span class="keyword">end</span>
+<span class="linenum">136</span>    <span class="keyword">end</span></code></pre>
+      </div>
+    </dd>
+    <script type="text/javascript">moveProgressBar('80.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">test-29: Escaping U+0001 to U+007F in a URI (PENDING: Silly test)</span></dd>
+    <script type="text/javascript">moveProgressBar('80.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-30: @base</span></dd>
+    <script type="text/javascript">moveProgressBar('80.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">rdf-schema: RDF Namespace document converted into Turtle</span></dd>
+    <script type="text/javascript">moveProgressBar('81.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">rdfs-namespace: RDFS Namespace document converted into Turtle</span></dd>
+    <script type="text/javascript">moveProgressBar('81.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">rdfq-results: Example query result from http://www.w3.org/2003/03/rdfqr-tests/recording-query-results.html (PENDING: Skip very long input file)</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_29">RDF::N3::Reader w3c turtle tests negative parser tests</dt>
+    <script type="text/javascript">moveProgressBar('81.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">bad-00: prefix name must end in a :</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('82.0');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-01: blank predicate forbidden (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('82.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-02: blank predicate forbidden (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('82.5');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-03: a forbidden as subject (PENDING: TODO)</span></dd>
+    <script type="text/javascript">moveProgressBar('82.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">bad-04: , not allowed in collections</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('83.1');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-05: {} not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('83.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-06: is and of not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('83.7');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-07: paths not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('84.0');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-08: @keywords not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('84.2');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-09: =&gt; not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('84.5');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-10: = not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('84.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-11: @forAll not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('85.1');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-12: @forSome not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_29');</script>
+    <script type="text/javascript">moveProgressBar('85.4');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">bad-13: &lt;= not allowed in Turtle (PENDING: TODO)</span></dd>
+    <script type="text/javascript">moveProgressBar('85.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">bad-14: long literal with missing end</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_30">RDF::N3::Writer simple tests</dt>
+    <script type="text/javascript">moveProgressBar('86.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use full URIs without base</span></dd>
+    <script type="text/javascript">moveProgressBar('86.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use relative URIs with base</span></dd>
+    <script type="text/javascript">moveProgressBar('86.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use qname URIs with prefix</span></dd>
+    <script type="text/javascript">moveProgressBar('86.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should use qname URIs with empty prefix</span></dd>
+    <script type="text/javascript">moveProgressBar('87.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should order properties</span></dd>
+    <script type="text/javascript">moveProgressBar('87.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate object list</span></dd>
+    <script type="text/javascript">moveProgressBar('87.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate property list</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_31">RDF::N3::Writer anons</dt>
+    <script type="text/javascript">moveProgressBar('88.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate bare anon</span></dd>
+    <script type="text/javascript">moveProgressBar('88.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate anon as subject</span></dd>
+    <script type="text/javascript">moveProgressBar('88.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate anon as object</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_32">RDF::N3::Writer lists</dt>
+    <script type="text/javascript">moveProgressBar('88.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate bare list</span></dd>
+    <script type="text/javascript">moveProgressBar('89.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate literal list</span></dd>
+    <script type="text/javascript">moveProgressBar('89.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate empty list</span></dd>
+    <script type="text/javascript">moveProgressBar('89.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate empty list(2)</span></dd>
+    <script type="text/javascript">moveProgressBar('90.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate empty list as subject</span></dd>
+    <script type="text/javascript">moveProgressBar('90.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate list as subject</span></dd>
+    <script type="text/javascript">moveProgressBar('90.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate list of empties</span></dd>
+    <script type="text/javascript">moveProgressBar('90.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate list anon</span></dd>
+    <script type="text/javascript">moveProgressBar('91.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should generate owl:unionOf list</span></dd>
+  </dl>
+</div>
+<div class="example_group">
+  <dl>
+  <dt id="example_group_33">RDF::N3::Writer w3c turtle tests</dt>
+    <script type="text/javascript">moveProgressBar('91.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-00: Blank subject</span></dd>
+    <script type="text/javascript">moveProgressBar('91.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-01: @prefix and qnames</span></dd>
+    <script type="text/javascript">moveProgressBar('92.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-02: , operator</span></dd>
+    <script type="text/javascript">moveProgressBar('92.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-03: ; operator</span></dd>
+    <script type="text/javascript">moveProgressBar('92.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-04: empty [] as subject and object</span></dd>
+    <script type="text/javascript">moveProgressBar('92.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-05: non-empty [] as subject and object</span></dd>
+    <script type="text/javascript">moveProgressBar('93.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-06: 'a' as predicate</span></dd>
+    <script type="text/javascript">moveProgressBar('93.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-07: simple collection</span></dd>
+    <script type="text/javascript">moveProgressBar('93.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-08: empty collection</span></dd>
+    <script type="text/javascript">moveProgressBar('94.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-09: integer datatyped literal</span></dd>
+    <script type="text/javascript">moveProgressBar('94.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-10: decimal integer canonicalization</span></dd>
+    <script type="text/javascript">moveProgressBar('94.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-11: - and _ in names and qnames</span></dd>
+    <script type="text/javascript">moveProgressBar('94.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-12: tests for rdf:_&lt;numbers&gt; and other qnames starting with _</span></dd>
+    <script type="text/javascript">moveProgressBar('95.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-13: bare : allowed</span></dd>
+    <script type="text/javascript">moveProgressBar('95.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-17: simple long literal</span></dd>
+    <script type="text/javascript">moveProgressBar('95.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-18: long literals with escapes</span></dd>
+    <script type="text/javascript">moveProgressBar('96.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-19: floating point number</span></dd>
+    <script type="text/javascript">moveProgressBar('96.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-20: empty literals, normal and long variant</span></dd>
+    <script type="text/javascript">moveProgressBar('96.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-21: positive integer, decimal and doubles</span></dd>
+    <script type="text/javascript">moveProgressBar('96.8');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-22: negative integer, decimal and doubles</span></dd>
+    <script type="text/javascript">moveProgressBar('97.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-23: long literal ending in double quote</span></dd>
+    <script type="text/javascript">moveProgressBar('97.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-24: boolean literals</span></dd>
+    <script type="text/javascript">moveProgressBar('97.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-25: comments</span></dd>
+    <script type="text/javascript">moveProgressBar('98.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-26: no final mewline</span></dd>
+    <script type="text/javascript">moveProgressBar('98.2');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-27: duplicate prefix</span></dd>
+    <script type="text/javascript">moveProgressBar('98.5');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-28: decimal data types (serializing test)</span></dd>
+    <script type="text/javascript">makeYellow('example_group_33');</script>
+    <script type="text/javascript">moveProgressBar('98.8');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">test-29: Escaping U+0001 to U+007F in a URI (PENDING: Silly test)</span></dd>
+    <script type="text/javascript">moveProgressBar('99.1');</script>
+    <dd class="spec passed"><span class="passed_spec_name">test-30: @base</span></dd>
+    <script type="text/javascript">moveProgressBar('99.4');</script>
+    <dd class="spec passed"><span class="passed_spec_name">rdf-schema: RDF Namespace document converted into Turtle</span></dd>
+    <script type="text/javascript">moveProgressBar('99.7');</script>
+    <dd class="spec passed"><span class="passed_spec_name">rdfs-namespace: RDFS Namespace document converted into Turtle</span></dd>
+    <script type="text/javascript">makeYellow('example_group_33');</script>
+    <script type="text/javascript">moveProgressBar('100.0');</script>
+    <dd class="spec not_implemented"><span class="not_implemented_spec_name">rdfq-results: Example query result from http://www.w3.org/2003/03/rdfqr-tests/recording-query-results.html (PENDING: Skip very long input file)</span></dd>
+  </dl>
+</div>
+<script type="text/javascript">document.getElementById('duration').innerHTML = "Finished in <strong>4.153992 seconds</strong>";</script>
+<script type="text/javascript">document.getElementById('totals').innerHTML = "350 examples, 1 failure, 34 pending";</script>
+</div>
+</div>
+</body>
+</html>

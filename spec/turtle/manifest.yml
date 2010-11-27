@@ -1,0 +1,204 @@
+--- 
+- !ruby/object:RdfHelper::TestCase 
+  about: &id001 !ruby/object:RDF::URI 
+    uri: !ruby/object:Addressable::URI 
+      authority: www.w3.org
+      fragment: 
+      hash: 
+      host: www.w3.org
+      normalized_host: 
+      normalized_path: 
+      normalized_scheme: 
+      password: 
+      path: /2001/sw/DataAccess/df1/tests/test-00.ttl
+      port: 
+      query: 
+      scheme: http
+      uri_string: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-00.ttl
+      user: 
+      userinfo: 
+      validation_deferred: false
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 
+- !ruby/object:RdfHelper::TestCase 
+  about: *id001
+  description: ""
+  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
+  name: ""
+  outputDocument: 

@@ -48,43 +48,43 @@
   name: t1005
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/no-last-nl.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/no-last-nl.n3
   description: An N3 file with no final newline character
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/no-last-nl.n3
   name: t1005a
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/dot-dash.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/dot-dash.n3
   description: combinations of - and _ in identifiers
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/dot-dash.n3
   name: t1005b
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords1.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/keywords1.n3
   description: "@keywords in n3"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords1.n3
   name: t1005c
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords2.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/keywords2.n3
   description: using no keywords in n3
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords2.n3
   name: t1005d
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/djb1a.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/djb1a.n3
   description: djb noticed a:b was parsed as rdf:type token
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/djb1a.n3
   name: t1005e
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/contexts.n3
+  about: http://www.w3.org/2000/10/swap/test/contexts.n3
   description: Parse and generate simple contexts
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/contexts.n3
   name: t1006
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/anon-prop.n3
+  about: http://www.w3.org/2000/10/swap/test/anon-prop.n3
   description: Parse and regen anonymous property
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/anon-prop.n3
   name: t1007
@@ -97,7 +97,7 @@
   name: t1007a
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/ex1.rdf
+  about: http://www.w3.org/2000/10/swap/test/nodeID/ex1.rdf
   description: Parse RDF/XML nodeID and regen RDF/XML
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/ex1.rdf
   name: t1007b
@@ -127,13 +127,13 @@
   name: t1008a
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
+  about: http://www.w3.org/2000/10/swap/test/strquot.n3
   description: N3 string quoting with escaping
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
   name: t1009
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
+  about: http://www.w3.org/2000/10/swap/test/strquot.n3
   description: N3 string quoting with utf-8 literals
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
   name: t1009aa
@@ -152,32 +152,32 @@
   name: t1009b
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path1.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/path1.n3
   description: Path syntax, simple
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path1.n3
   name: t1010
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path2.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/path2.n3
   description: Path syntax, more
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path2.n3
   name: t1011
   rdf_type: CwmProofTest
   status: pending
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/numbers.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/numbers.n3
   description: Number syntax
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/numbers.n3
   name: t10115
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/lstring.n3
+  about: http://www.w3.org/2000/10/swap/test/syntax/lstring.n3
   description: N3 string nested triple quoting
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/lstring.n3
   name: t1014
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/lists.n3
+  about: http://www.w3.org/2000/10/swap/test/lists.n3
   description: parsing and generation of N3 list syntax
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/lists.n3
   name: t1017
@@ -201,13 +201,13 @@
   name: t1019
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
+  about: http://www.w3.org/2000/10/swap/test/norm/fix.rdf
   description: Avoiding default namespace on attrs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
   name: t1020
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
-  about: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
+  about: http://www.w3.org/2000/10/swap/test/norm/fix.rdf
   description: Avoiding default namespace on attrs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
   name: t1021
