@@ -4,16 +4,30 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require 'rdf/n3'
 require 'getoptlong'
 
-def parse(input, base)
-  puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
-    RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
-      writer << statement
-    end
-  }
+def run(input, base)
+  if $parse_only
+    include RDF::N3::Meta
+    include RDF::N3::Parser
+    puts "\nparse #{input.read}---\n\n"
+    input.rewind
+    test(input, BRANCHES, REGEXPS)
+  else
+    puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
+      RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+        writer << statement
+      end
+    }
+  end
 end
 
-mode = ARGV.shift
-raise "Mode must be one of 'parse'" unless mode == "parse"
+case ARGV.shift
+when "parse"
+  $parse_only = false
+when "test"
+  $parse_only = true
+else
+  raise "Mode must be one of 'parse' or 'test'"
+end
 
 $verbose = false
 $format = :ntriples
@@ -26,7 +40,7 @@ opts = GetoptLong.new(
   ["--quiet", GetoptLong::NO_ARGUMENT],
   ["--format", GetoptLong::REQUIRED_ARGUMENT],
   ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
-  ["--uri", GetoptLong::REQUIRED_ARGUMENT]
+  ["--uri", GetoptLong::REQUIRED_ARGUMENT],
 )
 opts.each do |opt, arg|
   case opt
@@ -35,15 +49,14 @@ opts.each do |opt, arg|
   when '--debug' then ::RDF::N3::debug = true
   when '--execute' then input = arg
   when '--format' then $format = arg
-  when '--uri' then base_uri = arg
   end
 end
 
 if ARGV.empty?
   s = input ? input : $stdin.read
-  parse(StringIO.new(s), base_uri)
+  run(StringIO.new(s), base_uri)
 else
   ARGV.each do |test_file|
-    parse(File.open(test_file), base_uri)
+    run(File.open(test_file), base_uri)
   end
 end

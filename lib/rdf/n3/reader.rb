@@ -1,43 +1,19 @@
-require 'treetop'
-
-if defined?(::Encoding)
-  # load full grammar
-  Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar"))
-else
-  # load 1.8 grammar, doesn't include U00010000-\U000effff
-  Treetop.load(File.join(File.dirname(__FILE__), "reader", "n3_grammar_18"))
-end
-
 module RDF::N3
   ##
   # A Notation-3/Turtle parser in Ruby
   #
+  # N3 Parser, based in librdf version of predictiveParser.py
+  # @see http://www.w3.org/2000/10/swap/grammar/predictiveParser.py
+  # @see http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3
+  #
+  # Separate pass to create branch_table from n3-selectors.n3
+  #
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Reader < RDF::Reader
     format Format
+    include Meta
+    include Parser
     
-    N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
-
-    NC_REGEXP = Regexp.new(
-      %{^
-        (?!\\\\u0301)             # &#x301; is a non-spacing acute accent.
-                                  # It is legal within an XML Name, but not as the first character.
-        (  [a-zA-Z_]
-         | \\\\u[0-9a-fA-F]
-        )
-        (  [0-9a-zA-Z_\.-]
-         | \\\\u([0-9a-fA-F]{4})
-        )*
-      $},
-      Regexp::EXTENDED)
-
-    # FIXME: temporary patch until fixed in RDF.rb
-    # Allow for nil prefix mapping
-    def prefix(name, uri = nil)
-      name = name.to_s.empty? ? nil : (name.respond_to?(:to_sym) ? name.to_sym : name.to_s.to_sym)
-      uri.nil? ? prefixes[name] : prefixes[name] = (uri.respond_to?(:to_sym) ? uri.to_sym : uri.to_s.to_sym)
-    end
-
     ##
     # Initializes the N3 reader instance.
     #
@@ -65,8 +41,19 @@ module RDF::N3
       super do
         @uri = uri(options[:base_uri])
 
-        @doc = input.respond_to?(:read) ? (input.rewind; input.read) : input
-        @doc.force_encoding(encoding) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
+        # FIXME: for now, read in entire doc, eventually, process as stream
+        @data = input.respond_to?(:read) ? (input.rewind; input.read) : input
+        @data.force_encoding(encoding) if @data.respond_to?(:force_encoding) # for Ruby 1.9+
+        @pos = 0
+        
+        @memo = {}
+        @keyword_mode = false
+        @keywords = %w(a is of this has)
+        @productions = []
+
+        @branches = BRANCHES # Get from meta class
+        @regexps = REGEXPS # Get from meta class
+
         @default_ns = uri("#{options[:base_uri]}#") if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
         add_debug("validate", "#{validate?.inspect}")
@@ -82,12 +69,6 @@ module RDF::N3
       end
     end
 
-    # No need to rewind, as parsing is done in initialize
-    def rewind; end
-    
-    # Document closed when read in initialize
-    def close; end
-    
     ##
     # Iterates the given block for each RDF statement in the input.
     #
@@ -97,17 +78,9 @@ module RDF::N3
     def each_statement(&block)
       @callback = block
 
-      parser = N3GrammarParser.new
-      document = parser.parse(@doc)
-      unless document
-        puts parser.inspect if ::RDF::N3::debug?
-        reason = parser.failure_reason
-        raise RDF::ReaderError, reason
-      end
-
-      process_statements(document)
+      parse(START)
     end
-
+    
     ##
     # Iterates the given block for each RDF triple in the input.
     #
@@ -493,28 +466,6 @@ module RDF::N3
       suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
       add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
       uri(prefix + suffix)
-    end
-  end
-end
-
-module Treetop
-  module Runtime
-    class SyntaxNode
-      # Brief information about a syntax node
-      def info(ctx = "")
-        m = self.singleton_methods(true)
-        if m.empty?
-          ["@#{self.interval.first}", "#{ctx}['#{self.text_value}']"]
-        else
-          ["@#{self.interval.first}", "#{ctx}[" +
-          self.singleton_methods(true).map do |mm|
-            v = self.send(mm)
-            v = v.text_value if v.is_a?(SyntaxNode)
-            "#{mm}='#{v}'"
-          end.join(", ") +
-          "]"]
-        end
-      end
     end
   end
 end
