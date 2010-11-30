@@ -1,0 +1,220 @@
+#!/usr/bin/env ruby -s
+require 'rubygems'
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
+require 'rdf/n3'
+require 'getoptlong'
+
+# Build rdf/n3/parser/meta.rb from http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3
+# Based on code from http://www.w3.org/2000/10/swap/grammar/predictiveParser.py
+
+class BNF < RDF::Vocabulary("http://www.w3.org/2000/10/swap/grammar/bnf#"); end
+class REGEX < RDF::Vocabulary("http://www.w3.org/2000/10/swap/grammar/regex#"); end
+class N3 < RDF::Vocabulary("http://www.w3.org/2000/10/swap/grammar/n3#"); end
+
+class PredictiveParser
+  attr_accessor :already, :agenda, :errors, :literalTerminals, :branchTable, :tokenRegexps
+  attr_accessor :graph
+  
+  def initialize
+    @already = []
+    @agenda = []
+    @errors = []
+    @literalTerminals = {}
+    @branchTable = {}
+    @tokenRegexps = {}
+  end
+
+  def parse(file)
+    progress("Loading " + file)
+    File.open(file) do |f|
+      @graph = RDF::Graph.new do |g|
+        RDF::N3::Reader.new(f).each do |statement|
+          g << statement
+        end
+      end
+    end
+    progress("Loaded #{@graph.count} statements.")
+  end
+
+  def recordError(str)
+    errors << str
+    "##### ERROR:  #{str}"
+  end
+
+  def progress(str); puts(str); end
+  def chatty(str); progress(str) if $verbose; end
+
+  def runProduction(lhs)
+    doProduction(lhs)
+    while !@agenda.empty?
+      x = @agenda.shift
+      @already << x
+      doProduction(x)
+    end
+
+    if !@errors.empty?
+      progress("###### FAILED with #{errors.length} errors.")
+      @errors.each {|s| progress("  #{s}")}
+      exit(-2)
+    else
+      progress("Ok for predictive parsing")
+    end 
+  end
+  
+  # Generate branch tables for one production
+  def doProduction(lhs)
+    if lhs == BNF.void
+      progress("\nvoid")
+      return
+    end
+    if lhs == BNF.eof
+      progress( "\nEOF")
+      return
+    end
+    if lhs.is_a?(RDF::Literal)
+      literalTerminals[lhs.value()] = 1
+      return
+    end
+
+    branchDict = {}
+
+    rhs = graph.first_object(:subject => lhs, :predicate => BNF.matches)
+    if rhs
+      chatty("\nToken #{lhs} matches regexp #{rhs}")
+      tokenRegexps[lhs] = Regexp.compile(rhs.value)
+
+      cc = graph.query(:subject => lhs, :predicate => BNF.canStartWith)
+      progress(recordError("No record of what token #{lhs} can start with")) if cc.empty?
+      cc.each {|statement| chatty("  Can start with: #{statement.object}")}
+      return
+    end
+  
+    rhs = graph.first_object(:subject => lhs, :predicate => BNF.mustBeOneSequence)
+    unless rhs
+        progress(recordError("No definition of #{lhs}"))
+  #     raise RuntimeError("No definition of %s  in\n %s" %(`lhs`, `g`))
+        return
+    end
+
+    options = rhs
+    progress("\nProduction #{lhs} :: #{options}")
+    graph.query(:subject => lhs, :predicate => BNF.canPrecede) do |statement|
+      chatty("  Can precede '#{statement.object}'")
+    end
+
+    graph.query(:subject => lhs, :predicate => BNF.branch) do |statement|
+      branch = statement.object
+      sequence = graph.first_object(:subject => statement.object, :predicate => BNF.sequence)
+      option = RDF::List.new(sequence, graph).to_a
+      progress("  option: #{option}")
+    
+      option.each do |part|
+        agenda << part unless already.include?(part) || agenda.include?(part)
+      end
+    
+      conditions = graph.query(:subject => branch, :predicate => BNF.condition).map(&:object)
+      if conditions.empty?
+        progress(recordError("NO SELECTOR for #{lhs} option #{option}"))
+        if option.empty?
+          # Void case - the tricky one
+          graph.pattern(:subject => lhs, :predicate => BNF.canPrecede) do |st|
+            progress("      Can precede #{st.object}")
+          end
+        end
+      end
+    
+      progress("    Conditions: #{conditions.to_a.map(&:to_s)}")
+      conditions.each do |str1|
+        if branchDict.has_key?(str1)
+          progress(
+              "Conflict: #{str1} is also the condition for #{branchDict[str1]}")
+        end
+        branchDict[str1] = option
+      end
+    end
+  
+    branchDict.keys.each do |str1|
+      branchDict.keys.each do |str2|
+        s1, s2 = str1.to_s, str2.to_s
+        if (s1.index(s2) == 0 || s2.index(s1) == 0) && branchDict[str1] != branchDict[str2]
+          progress("WARNING: for #{lhs}, #{str1} indicates #{branchDict[str1]}, but #{str2} indicates #{branchDict[str2]}")
+        end
+      end
+    end
+  
+    branchTable[lhs] = branchDict
+  end
+  
+  def litOrNot(value)
+    (value.is_a?(RDF::Literal) ? "" : ":") + value.to_s.dump
+  end
+  
+  def outputBranchTable(io, indent = 0)
+    ind0 = '  ' * indent
+    ind1 = ind0 + '  '
+    ind2 = ind1 + '  '
+    ind3 = ind2 + '  '
+    io.puts "#{ind0}BRANCHES = {"
+    branchTable.keys.sort_by(&:to_s).each do |prod|
+      io.puts "#{ind1}#{litOrNot(prod)} => {"
+      branchTable[prod].keys.sort_by(&:to_s).each do |term|
+        list = branchTable[prod][term].map {|t2| litOrNot(t2)}.join(",\n#{ind3}")
+        io.puts "#{ind2}#{litOrNot(term)} => [#{list}],"
+      end
+      io.puts "#{ind1}},"
+    end
+    io.puts "#{ind0}}\n"
+  end
+
+  def outputMatchTable(io, indent = 0)
+    ind0 = '  ' * indent
+    ind1 = ind0 + '  '
+    io.puts "#{ind0}MATCHES = {"
+    tokenRegexps.keys.sort_by(&:to_s).each do |prod|
+      io.puts "#{ind1}#{litOrNot(prod)} => #{tokenRegexps[prod].source.dump},"
+    end
+    io.puts "#{ind0}}\n"
+  end
+end
+
+mode = ARGV.shift
+raise "Mode must be one of 'parse'" unless mode == "parse"
+
+$verbose = false
+$debug = false
+grammarFile = File.expand_path(File.join(File.dirname(__FILE__), "../lib/rdf/n3/reader/n3-selectors.n3"))
+parseAs = "document"
+output = STDOUT
+
+opts = GetoptLong.new(
+  ["--debug", GetoptLong::NO_ARGUMENT],
+  ["--verbose", GetoptLong::NO_ARGUMENT],
+  ["--grammar", GetoptLong::REQUIRED_ARGUMENT],
+  ["--as", GetoptLong::REQUIRED_ARGUMENT],
+  ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT]
+)
+opts.each do |opt, arg|
+  case opt
+  when '--verbose' then $verbose = true
+  when '--debug' then $debug = true
+  when '--grammar' then grammarFile = arg
+  when '--as' then parseAs = arg
+  when '--output' then output = File.open(arg, "w")
+  end
+end
+
+pp = PredictiveParser.new
+
+pp.parse(grammarFile)
+pp.runProduction(N3[parseAs])
+
+unless output == STDOUT
+  output.puts "#This file is automatically generated by #{__FILE__}"
+  output.puts "module RDF::N3::Meta"
+end
+pp.outputBranchTable(output, 1)
+output.puts ""
+pp.outputMatchTable(output, 1)
+unless output == STDOUT
+  output.puts "end"
+end
