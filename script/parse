@@ -40,7 +40,7 @@ opts = GetoptLong.new(
   ["--quiet", GetoptLong::NO_ARGUMENT],
   ["--format", GetoptLong::REQUIRED_ARGUMENT],
   ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
-  ["--uri", GetoptLong::REQUIRED_ARGUMENT],
+  ["--uri", GetoptLong::REQUIRED_ARGUMENT]
 )
 opts.each do |opt, arg|
   case opt

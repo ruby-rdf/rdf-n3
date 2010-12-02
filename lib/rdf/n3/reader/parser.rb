@@ -20,7 +20,7 @@ module RDF::N3
           onStart(abbr(todo_stack.last[:prod]))
           return nil if tok.nil?
           
-          prod_branch = @branches[todo_stack.last[:prod].to_s]
+          prod_branch = @branches[todo_stack.last[:prod]]
           raise RDF::ReaderError, "No branches found for '#{todo_stack.last[:prod]}'" if prod_branch.nil?
           sequence = prod_branch[tok]
           if sequence.nil?
@@ -76,7 +76,7 @@ module RDF::N3
         result = self.get_token
         @memo[@pos] = result # Note, @pos may be updated as side-effect of get_token
       end
-      puts "token: '#{@memo[@pos]}'" if $verbose
+      puts "token: '#{@memo[@pos]}'('#{@data[@pos, 10]}...')" if $verbose
       @memo[@pos]
     end
     
@@ -174,7 +174,7 @@ module RDF::N3
 
       @branches = branches
       @regexps = regexps
-      parse(START)
+      parse(START.to_sym)
     end
   end
 end
