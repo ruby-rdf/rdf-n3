@@ -8,9 +8,16 @@ def run(input, base)
   if $parse_only
     include RDF::N3::Meta
     include RDF::N3::Parser
-    puts "\nparse #{input.read}---\n\n"
+    puts "\nparse #{input.read}---\n\n" unless $quiet
     input.rewind
+    if $quiet
+      $stdout = StringIO.new
+    end
     test(input, BRANCHES, REGEXPS)
+    if $quiet
+      $stdout = STDOUT
+      print "."
+    end
   else
     puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
       RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
@@ -18,6 +25,10 @@ def run(input, base)
       end
     }
   end
+rescue
+  fname = input.respond_to?(:path) ? input.path : "-stdin-"
+  STDERR.puts("Error in #{fname}")
+  raise
 end
 
 case ARGV.shift
@@ -60,3 +71,4 @@ else
     run(File.open(test_file), base_uri)
   end
 end
+puts
