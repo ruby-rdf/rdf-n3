@@ -81,7 +81,7 @@ class PredictiveParser
     rhs = graph.first_object(:subject => lhs, :predicate => BNF.matches)
     if rhs
       chatty("\nToken #{lhs} matches regexp #{rhs}")
-      tokenRegexps[lhs] = Regexp.compile(rhs.value)
+      tokenRegexps[lhs] = rhs.value
 
       cc = graph.query(:subject => lhs, :predicate => BNF.canStartWith)
       progress(recordError("No record of what token #{lhs} can start with")) if cc.empty?
@@ -156,6 +156,8 @@ class PredictiveParser
     ind3 = ind2 + '  '
     io.puts "#{ind0}BRANCHES = {"
     branchTable.keys.sort_by(&:to_s).each do |prod|
+      # Special case double, integer, and decimal to output just a numericliteral, due to a parser conflict
+      next if prod.to_s =~ /numericliteral/
       io.puts "#{ind1}#{litOrNot(prod)} => {"
       branchTable[prod].keys.sort_by(&:to_s).each do |term|
         list = branchTable[prod][term].map {|t2| litOrNot(t2)}.join(",\n#{ind3}")
@@ -171,8 +173,21 @@ class PredictiveParser
     ind1 = ind0 + '  '
     io.puts "#{ind0}REGEXPS = {"
     tokenRegexps.keys.sort_by(&:to_s).each do |prod|
-      io.puts "#{ind1}#{litOrNot(prod)} => Regexp.compile(#{tokenRegexps[prod].source.dump}),"
+      # Special case double, integer, and decimal to output just a numericliteral, due to a parser conflict
+      next if prod.to_s =~ /(integer|double|decimal)/
+      io.puts "#{ind1}#{litOrNot(prod)} => Regexp.compile(" +
+      case prod.to_s
+      when /barename/ then  %q(%([#{BARENAME_START}][#{BARENAME_TAIL}]*))
+      when /prefix/   then  %q(%(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:))
+      when /qname/    then  %q(%((([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?))
+      when /variable/ then  %q(%(\\\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*))
+      when /langcode/ then  %q("[a-zA-Z]+(-[a-zA-Z0-9]+)*")
+      else                  tokenRegexps[prod].dump
+      end + "),"
     end
+
+    io.puts "\n#{ind1}# Hack to replace integer|double|decimal with numericliteral"
+    io.puts "#{ind1}#{litOrNot(N3.numericliteral)} => Regexp.compile(" + %q(%([-+]?[0-9]+(\\\\.[0-9]+)?(e[-+]?[0-9]+)?)) + ")"
     io.puts "#{ind0}}\n"
   end
 end
