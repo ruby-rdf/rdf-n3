@@ -2,10 +2,15 @@
 module RDF::N3
   module Parser
     START = 'http://www.w3.org/2000/10/swap/grammar/n3#document'
-    R_WHITESPACE = Regexp.compile('[ \t\r\n]*(?:(?:#[^\n]*)?\r?(?:$|\n))?', Regexp::MULTILINE)
+    R_WHITESPACE = Regexp.compile('\A\s*(?:#.*$)?')
+    R_MLSTRING = Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")")
     SINGLE_CHARACTER_SELECTORS = %{\t\r\n !\"#$\%&'()*.,+/;<=>?[\\]^`{|}~}
     NOT_QNAME_CHARS = SINGLE_CHARACTER_SELECTORS + "@"
     NOT_NAME_CHARS = NOT_QNAME_CHARS + ":"
+    
+    def error(str)
+      raise RDF::ReaderError, "\n#{@line}\n#{'-' * @pos}^\nError on line #{@lineno} at offset #{@pos}: #{str}"
+    end
     
     def parse(prod)
       todo_stack = [{:prod => prod, :terms => nil}]
@@ -21,11 +26,11 @@ module RDF::N3
           return nil if tok.nil?
           
           prod_branch = @branches[todo_stack.last[:prod]]
-          raise RDF::ReaderError, "No branches found for '#{todo_stack.last[:prod]}'" if prod_branch.nil?
+          error("No branches found for '#{todo_stack.last[:prod]}'") if prod_branch.nil?
           sequence = prod_branch[tok]
           if sequence.nil?
-             dump_stack(todo_stack)
-            raise RDF::ReaderError, "Found '#{tok}' when expecting a #{todo_stack.last[:prod]}. keys='#{prod_branch.keys.to_sentence}'"
+            dump_stack(todo_stack)
+            error("Found '#{tok}' when expecting a #{todo_stack.last[:prod]}. keys='#{prod_branch.keys.to_sentence}'")
           end
           todo_stack.last[:terms] += sequence
         end
@@ -36,29 +41,41 @@ module RDF::N3
           if term.is_a?(String)
             $stdout.puts "parse term(string): #{term}" if $verbose
             j = @pos + term.length
-            word = @data[@pos, term.length]
+            word = buffer[0, term.length]
             if word == term
               onToken(term, word)
-              @pos = j
+              consume(term.length)
             elsif '@' + word.chop == term # FIXME: Huh? don't get this
               onToken(term, word.chop)
-              @pos += j - 1
+              consume(term.length - 1)
             else
-              raise RDF::ReaderError, "Found '#{@data[@pos, 10]}...'; #{term} expected"
+              error("Found '#{buffer[0, 10]}...'; #{term} expected")
             end
           elsif regexp = @regexps[term]
-            md = regexp.match(@data, @pos)
-            raise RDF::ReaderError, "Token '#{@data[@pos, 10]}...' should match #{regexp}" unless md
-            $stdout.puts "parse term(regexp): #{term}, #{regexp}.match('#{@data[@pos, 10]}...') => '#{md.inspect}'" if $verbose
+            if abbr(term) == 'string' && buffer[0, 3] == '"""'
+              # Read until end of multi-line comment if this is the start of a multi-line comment
+              until R_MLSTRING.match(buffer)
+                begin
+                  next_line = @input.readline
+                  @line += next_line
+                  @lineno += 1
+                rescue EOFError => e
+                  error("EOF reached searching for end of multi-line comment")
+                end
+              end
+              #puts "ml-str now #{buffer.dump}"
+            end
+            md = regexp.match(buffer)
+            error("Token '#{buffer[0, 10]}...' should match #{regexp}") unless md
+            $stdout.puts "parse term(regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
             onToken(abbr(term), md.to_s)
-            @pos = md.end(0)
+            consume(md[0].length)
           else
             $stdout.puts "parse term(push): #{term}" if $verbose
             todo_stack << {:prod => term, :terms => nil}
             pushed = true
             break
           end
-          $stdout.puts "parse: next token" if $verbose
           self.token
         end
         
@@ -73,22 +90,22 @@ module RDF::N3
     # Memoizer for get_token
     def token
       unless @memo.has_key?(@pos)
-        result = self.get_token
-        @memo[@pos] = result # Note, @pos may be updated as side-effect of get_token
+        tok = self.get_token
+        @memo[@pos] = tok
+        $stdout.puts "token: '#{tok}'('#{buffer[0, 10]}...')" if buffer && $verbose
       end
-      $stdout.puts "token: '#{@memo[@pos]}'('#{@data[@pos, 10]}...')" if $verbose
       @memo[@pos]
     end
-    
+
     def get_token
       whitespace
       
-      return nil if @pos == @data.length
+      return nil if buffer.nil?
       
-      ch2 = @data[@pos, 2]
+      ch2 = buffer[0, 2]
       return ch2 if %w(=> <= ^^).include?(ch2)
       
-      ch = @data[@pos]
+      ch = buffer[0]
       @keyword_mode = false if ch == '.' && @keyword_mode
       
       return ch if SINGLE_CHARACTER_SELECTORS.include?(ch)
@@ -96,10 +113,10 @@ module RDF::N3
       
       j = 1
       if ch == '@'
-        return '@' if @pos > 0 && @data[@pos-1] == '"'
+        return '@' if @pos > 0 && @line[@pos-1] == '"'
 
-        j += 1 until NOT_NAME_CHARS.include?(@data[@pos+1+j]) # FIXME: EOF
-        name = @data[(@pos+1), j]
+        j += 1 until NOT_NAME_CHARS.include?(buffer[j+1]) # FIXME: EOF
+        name = buffer[1, j]
         if name == 'keywords'
           @keywords = []
           @keyword_mode = true
@@ -107,9 +124,9 @@ module RDF::N3
         return '@' + name
       end
 
-      j += 1 until NOT_QNAME_CHARS.include?(@data[@pos+j]) # FIXME: EOF
-      word = @data[(@pos+1), j]
-      raise RDF::ReaderError, "Tokenizer expected qname, found #{@data[@pos, 10]}" unless word
+      j += 1 until NOT_QNAME_CHARS.include?(buffer[j]) # FIXME: EOF
+      word = buffer[1, j]
+      error("Tokenizer expected qname, found #{buffer[0, 10]}") unless word
       if @keyword_mode
         @keywords << word
       elsif @keywords.include?(word)
@@ -119,16 +136,40 @@ module RDF::N3
         end
         return '@' + word.to_s # implicit keyword
       end
-      
+
       'a'
     end
     
     def whitespace
-      while md = R_WHITESPACE.match(@data, @pos)
+      while buffer && md = R_WHITESPACE.match(buffer)
         return unless md[0].length > 0
-        @pos = md.end(0)
+        consume(md[0].length)
         #$stdout.puts "ws: '#{md[0]}', pos=#{@pos}"
       end
+    end
+    
+    def readline
+      @line = @input.readline
+      @lineno += 1
+      @line.force_encoding(Encoding::UTF_8) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
+      puts "readline[#{@lineno}]: '#{@line}'" if $verbose
+      @pos = 0
+      @line
+    rescue EOFError => e
+      @line = @pos = nil
+    end
+    
+    # Return data from current off set to end of line
+    def buffer
+      @line[@pos, @line.length - @pos] unless @line.nil?
+    end
+    
+    # Cause n characters of line to be consumed. Read new line while line is empty or until eof
+    def consume(n)
+      @memo = {}
+      @pos += n
+      readline while @line && @line.length <= @pos
+      #puts "consume[#{n}]: '#{buffer}'" if $verbose
     end
     
     def abbr(prodURI)
@@ -163,9 +204,9 @@ module RDF::N3
     
     def test(input, branches, regexps)
       # FIXME: for now, read in entire doc, eventually, process as stream
-      @data = input.respond_to?(:read) ? (input.rewind; input.read) : input
-      #@data.force_encoding(encoding) if @data.respond_to?(:force_encoding) # for Ruby 1.9+
-      @pos = 0
+      @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
+      @lineno = 0
+      readline  # Prime the pump
       $stdout ||= STDOUT
       
       @memo = {}
