@@ -1,204 +1,187 @@
 --- 
 - !ruby/object:RdfHelper::TestCase 
-  about: &id001 !ruby/object:RDF::URI 
-    uri: !ruby/object:Addressable::URI 
-      authority: www.w3.org
-      fragment: 
-      hash: 
-      host: www.w3.org
-      normalized_host: 
-      normalized_path: 
-      normalized_scheme: 
-      password: 
-      path: /2001/sw/DataAccess/df1/tests/test-00.ttl
-      port: 
-      query: 
-      scheme: http
-      uri_string: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-00.ttl
-      user: 
-      userinfo: 
-      validation_deferred: false
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-00.ttl
+  description: Blank subject
+  inputDocument: ./spec/turtle/test-00.ttl
+  name: test-00
+  outputDocument: ./spec/turtle/test-00.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-01.ttl
+  description: "@prefix and qnames"
+  inputDocument: ./spec/turtle/test-01.ttl
+  name: test-01
+  outputDocument: ./spec/turtle/test-01.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-02.ttl
+  description: ", operator"
+  inputDocument: ./spec/turtle/test-02.ttl
+  name: test-02
+  outputDocument: ./spec/turtle/test-02.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-03.ttl
+  description: ; operator
+  inputDocument: ./spec/turtle/test-03.ttl
+  name: test-03
+  outputDocument: ./spec/turtle/test-03.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-04.ttl
+  description: empty [] as subject and object
+  inputDocument: ./spec/turtle/test-04.ttl
+  name: test-04
+  outputDocument: ./spec/turtle/test-04.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-05.ttl
+  description: non-empty [] as subject and object
+  inputDocument: ./spec/turtle/test-05.ttl
+  name: test-05
+  outputDocument: ./spec/turtle/test-05.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-06.ttl
+  description: "'a' as predicate"
+  inputDocument: ./spec/turtle/test-06.ttl
+  name: test-06
+  outputDocument: ./spec/turtle/test-06.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-07.ttl
+  description: simple collection
+  inputDocument: ./spec/turtle/test-07.ttl
+  name: test-07
+  outputDocument: ./spec/turtle/test-07.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-08.ttl
+  description: empty collection
+  inputDocument: ./spec/turtle/test-08.ttl
+  name: test-08
+  outputDocument: ./spec/turtle/test-08.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-09.ttl
+  description: integer datatyped literal
+  inputDocument: ./spec/turtle/test-09.ttl
+  name: test-09
+  outputDocument: ./spec/turtle/test-09.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-10.ttl
+  description: decimal integer canonicalization
+  inputDocument: ./spec/turtle/test-10.ttl
+  name: test-10
+  outputDocument: ./spec/turtle/test-10.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-11.ttl
+  description: "- and _ in names and qnames"
+  inputDocument: ./spec/turtle/test-11.ttl
+  name: test-11
+  outputDocument: ./spec/turtle/test-11.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-12.ttl
+  description: tests for rdf:_<numbers> and other qnames starting with _
+  inputDocument: ./spec/turtle/test-12.ttl
+  name: test-12
+  outputDocument: ./spec/turtle/test-12.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-13.ttl
+  description: "bare : allowed"
+  inputDocument: ./spec/turtle/test-13.ttl
+  name: test-13
+  outputDocument: ./spec/turtle/test-13.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-17.ttl
+  description: simple long literal
+  inputDocument: ./spec/turtle/test-17.ttl
+  name: test-17
+  outputDocument: ./spec/turtle/test-17.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-18.ttl
+  description: long literals with escapes
+  inputDocument: ./spec/turtle/test-18.ttl
+  name: test-18
+  outputDocument: ./spec/turtle/test-18.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-19.ttl
+  description: floating point number
+  inputDocument: ./spec/turtle/test-19.ttl
+  name: test-19
+  outputDocument: ./spec/turtle/test-19.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-20.ttl
+  description: empty literals, normal and long variant
+  inputDocument: ./spec/turtle/test-20.ttl
+  name: test-20
+  outputDocument: ./spec/turtle/test-20.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-21.ttl
+  description: positive integer, decimal and doubles
+  inputDocument: ./spec/turtle/test-21.ttl
+  name: test-21
+  outputDocument: ./spec/turtle/test-21.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-22.ttl 
+  description: negative integer, decimal and doubles
+  inputDocument: ./spec/turtle/test-22.ttl
+  name: test-22
+  outputDocument: ./spec/turtle/test-22.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-23.ttl
+  description: long literal ending in double quote
+  inputDocument: ./spec/turtle/test-23.ttl
+  name: test-23
+  outputDocument: ./spec/turtle/test-23.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-24.ttl
+  description: boolean literals
+  inputDocument: ./spec/turtle/test-24.ttl
+  name: test-24
+  outputDocument: ./spec/turtle/test-24.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-25.ttl
+  description: comments
+  inputDocument: ./spec/turtle/test-25.ttl
+  name: test-25
+  outputDocument: ./spec/turtle/test-25.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-26.ttl
+  description: no final mewline
+  inputDocument: ./spec/turtle/test-26.ttl
+  name: test-26
+  outputDocument: ./spec/turtle/test-26.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-27.ttl
+  description: duplicate prefix
+  inputDocument: ./spec/turtle/test-27.ttl
+  name: test-27
+  outputDocument: ./spec/turtle/test-27.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-28.ttl
+  description: decimal data types (serializing test)
+  inputDocument: ./spec/turtle/test-28.ttl
+  name: test-28
+  outputDocument: ./spec/turtle/test-28.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-29.ttl
+  description: Escaping U+0001 to U+007F in a URI
+  inputDocument: ./spec/turtle/test-29.ttl
+  name: test-29
+  outputDocument: ./spec/turtle/test-29.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-30.ttl
+  description: "@base"
+  inputDocument: ./spec/turtle/test-30.ttl
+  name: test-30
+  outputDocument: ./spec/turtle/test-30.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/test-30.ttl
+  description: RDF Namespace document converted into Turtle
+  inputDocument: ./spec/turtle/rdf-schema.ttl
+  name: rdf-schema
+  outputDocument: ./spec/turtle/rdf-schema.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/rdfs-namespace.ttl 
+  description: RDFS Namespace document converted into Turtle
+  inputDocument: ./spec/turtle/rdfs-namespace.ttl
+  name: rdfs-namespace
+  outputDocument: ./spec/turtle/rdfs-namespace.out
 - !ruby/object:RdfHelper::TestCase 
-  about: *id001
-  description: ""
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/turtle/test-00.ttl
-  name: ""
-  outputDocument: 
+  about: http://www.w3.org/2001/sw/DataAccess/df1/tests/rdfq-results.ttl
+  description: Example query result from http://www.w3.org/2003/03/rdfqr-tests/recording-query-results.html
+  inputDocument: ./spec/turtle/rdfq-results.ttl
+  name: rdfq-results
+  outputDocument: ./spec/turtle/rdfq-results.out
