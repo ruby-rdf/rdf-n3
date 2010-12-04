@@ -78,7 +78,7 @@ namespace :spec do
     
     yaml = File.join(TURTLE_DIR, "manifest-bad.yml")
     FileUtils.rm_f(yaml)
-    RdfHelper::TestCase.to_yaml(TURTLE_TEST, TURTLE_DIR, yaml)
+    RdfHelper::TestCase.to_yaml(TURTLE_BAD_TEST, TURTLE_DIR, yaml)
   end
 end
 
