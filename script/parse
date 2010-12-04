@@ -18,6 +18,10 @@ def run(input, base)
       $stdout = STDOUT
       print "."
     end
+  elsif $format == :ntriples
+    RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+      puts statement
+    end
   else
     puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
       RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|

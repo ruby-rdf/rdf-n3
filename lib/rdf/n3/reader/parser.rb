@@ -19,7 +19,7 @@ module RDF::N3
         if todo_stack.last[:terms].nil?
           todo_stack.last[:terms] = []
           tok = self.token
-          #$stdout.puts "parse tok: #{tok}, prod #{todo_stack.last[:prod]}"
+          #puts "parse tok: #{tok}, prod #{todo_stack.last[:prod]}"
           
           # Got an opened production
           onStart(abbr(todo_stack.last[:prod]))
@@ -35,12 +35,11 @@ module RDF::N3
           todo_stack.last[:terms] += sequence
         end
         
-        #$stdout.puts "parse: #{todo_stack.last.inspect}"
+        #puts "parse: #{todo_stack.last.inspect}"
         while !todo_stack.last[:terms].to_a.empty?
           term = todo_stack.last[:terms].shift
           if term.is_a?(String)
-            $stdout.puts "parse term(string): #{term}" if $verbose
-            j = @pos + term.length
+            puts "parse term(string): #{term}" if $verbose
             word = buffer[0, term.length]
             if word == term
               onToken(term, word)
@@ -67,11 +66,11 @@ module RDF::N3
             end
             md = regexp.match(buffer)
             error("Token '#{buffer[0, 10]}...' should match #{regexp}") unless md
-            $stdout.puts "parse term(regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
+            puts "parse term(regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
             onToken(abbr(term), md.to_s)
             consume(md[0].length)
           else
-            $stdout.puts "parse term(push): #{term}" if $verbose
+            puts "parse term(push): #{term}" if $verbose
             todo_stack << {:prod => term, :terms => nil}
             pushed = true
             break
@@ -80,7 +79,7 @@ module RDF::N3
         end
         
         while !pushed && todo_stack.last[:terms].to_a.empty?
-          #$stdout.puts "parse: pop"
+          #puts "parse: pop"
           todo_stack.pop
           self.onFinish
         end
@@ -92,7 +91,7 @@ module RDF::N3
       unless @memo.has_key?(@pos)
         tok = self.get_token
         @memo[@pos] = tok
-        $stdout.puts "token: '#{tok}'('#{buffer[0, 10]}...')" if buffer && $verbose
+        puts "token: '#{tok}'('#{buffer[0, 10]}...')" if buffer && $verbose
       end
       @memo[@pos]
     end
@@ -111,11 +110,11 @@ module RDF::N3
       return ch if SINGLE_CHARACTER_SELECTORS.include?(ch)
       return "0" if "+-0123456789".include?(ch)
       
-      j = 1
       if ch == '@'
         return '@' if @pos > 0 && @line[@pos-1] == '"'
 
-        j += 1 until NOT_NAME_CHARS.include?(buffer[j+1]) # FIXME: EOF
+        j = 0
+        j += 1 while !NOT_NAME_CHARS.include?(buffer[j+1])
         name = buffer[1, j]
         if name == 'keywords'
           @keywords = []
@@ -124,8 +123,10 @@ module RDF::N3
         return '@' + name
       end
 
-      j += 1 until NOT_QNAME_CHARS.include?(buffer[j]) # FIXME: EOF
-      word = buffer[1, j]
+      
+      j = 0
+      j += 1 while !NOT_QNAME_CHARS.include?(buffer[j])
+      word = buffer[0, j]
       error("Tokenizer expected qname, found #{buffer[0, 10]}") unless word
       if @keyword_mode
         @keywords << word
@@ -144,7 +145,7 @@ module RDF::N3
       while buffer && md = R_WHITESPACE.match(buffer)
         return unless md[0].length > 0
         consume(md[0].length)
-        #$stdout.puts "ws: '#{md[0]}', pos=#{@pos}"
+        #puts "ws: '#{md[0]}', pos=#{@pos}"
       end
     end
     

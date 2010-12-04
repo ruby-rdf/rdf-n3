@@ -8,12 +8,18 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
+  # @todo
+  # Existentials, Universals and Formulae
+  #
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Reader < RDF::Reader
     format Format
+
     include Meta
     include Parser
     
+    N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
+
     ##
     # Initializes the N3 reader instance.
     #
@@ -41,25 +47,31 @@ module RDF::N3
       super do
         @uri = uri(options[:base_uri])
 
-        # FIXME: for now, read in entire doc, eventually, process as stream
-        @data = input.respond_to?(:read) ? (input.rewind; input.read) : input
-        @data.force_encoding(encoding) if @data.respond_to?(:force_encoding) # for Ruby 1.9+
-        @pos = 0
+        @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
+        @lineno = 0
+        readline  # Prime the pump
         
         @memo = {}
         @keyword_mode = false
         @keywords = %w(a is of this has)
         @productions = []
+        @prod_data = []
 
         @branches = BRANCHES # Get from meta class
         @regexps = REGEXPS # Get from meta class
+        
+        @formulae = []    # Nodes used as Formluae context identifiers
 
         @default_ns = uri("#{options[:base_uri]}#") if @uri
         add_debug("@default_ns", "#{@default_ns.inspect}")
         add_debug("validate", "#{validate?.inspect}")
         add_debug("canonicalize", "#{canonicalize?.inspect}")
         add_debug("intern", "#{intern?.inspect}")
-        
+
+        # Prefixes that may be used without being defined
+        prefix(:rdf, RDF.to_uri.to_s)
+        prefix(:xsd, RDF::XSD.to_uri.to_s)
+
         if block_given?
           case block.arity
             when 0 then instance_eval(&block)
@@ -78,7 +90,7 @@ module RDF::N3
     def each_statement(&block)
       @callback = block
 
-      parse(START)
+      parse(START.to_sym)
     end
     
     ##
@@ -95,7 +107,338 @@ module RDF::N3
       end
     end
     
+    protected
+    # Start of production
+    def onStart(prod)
+      handler = "#{prod}Start".to_sym
+      add_debug("#{handler}(#{respond_to?(handler)})", prod)
+      @productions << prod
+      send(handler, prod) if respond_to?(handler)
+    end
+
+    # End of production
+    def onFinish
+      prod = @productions.pop()
+      handler = "#{prod}Finish".to_sym
+      send(handler) if respond_to?(handler)
+      add_debug("#{handler}(#{respond_to?(handler)})", "#{prod}: #{@prod_data.last.inspect}")
+    end
+
+    # Process of a token
+    def onToken(prod, tok)
+      unless @productions.empty?
+        parentProd = @productions.last
+        handler = "#{parentProd}Token".to_sym
+        add_debug("#{handler}(#{respond_to?(handler)})", "#{prod}, #{tok}: #{@prod_data.last.inspect}")
+        send(handler, prod, tok) if respond_to?(handler)
+      else
+        error("Token has no parent production")
+      end
+    end
+    
+    def declarationStart(prod)
+      @prod_data << {}
+    end
+    
+    def declarationToken(prod, tok)
+      case prod
+      when "@prefix", "@base", "@keywords"
+        add_prod_data(:prod, prod)
+      else
+        add_prod_data(prod.to_sym, tok)
+      end
+    end
+
+    def declarationFinish
+      decl = @prod_data.pop
+      case decl[:prod]
+      when "@prefix"
+        uri = process_uri(decl[:explicituri])
+        namespace(uri, decl[:prefix])
+      when "@base"
+        # Base, set or update document URI
+        uri = decl[:explicituri]
+        @uri = process_uri(uri)
+        
+        # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
+        # The parser behaves as though there were a
+        #   @prefix : <#>.
+        # just before the file.
+        # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
+        
+        @default_ns =  uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#")
+        add_debug("declarationFinish[@base]", "@default_ns=#{@default_ns.inspect}, @base=#{@uri}")
+      when "@keywords"
+        add_debug("declarationFinish[@keywords]", @keywords.inspect)
+        # Keywords are handled in tokenizer and maintained in @keywords array
+        if (@keywords & N3_KEYWORDS) != @keywords
+          error("Undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}") if validate?
+        end
+        @userkeys = true
+      else
+        error("declarationFinish: FIXME #{decl.inspect}")
+      end
+    end
+    
+    # Document start, instantiate
+    def documentStart(prod)
+      @formulae.push(bnode)
+      @prod_data << {}
+    end
+    
+    def dtlangToken(prod, tok)
+      add_prod_data(:langcode, tok) if prod == "langcode"
+    end
+    
+    def existentialStart(prod)
+      @prod_data << {}
+    end
+
+    def existentialFinish
+      pd = @prod_data.pop
+      forSome = pd.has_key?(:symbol) ? pd[:symbol] : []
+      forSome.each do |term|
+        b = bnode
+        @existentials[term] = {:formula => @formulae.last, :node => b}
+        quantify(@formulae.last, b)
+      end
+    end
+    
+    def expressionStart(prod)
+      @prod_data << {}
+    end
+    
+    # Process path items, and push on the last object for parent processing
+    def expressionFinish
+      expression = @prod_data.pop
+      
+      if expression[:pathitem] && expression[:expression]
+        add_prod_data(:expression, process_path(expression))
+      elsif expression[:pathitem]
+        add_prod_data(:expression, expression[:pathitem])
+      else
+        error("expressionFinish: FIXME #{expression.inspect}")
+      end
+    end
+    
+    def literalStart(prod)
+      @prod_data << {}
+    end
+    
+    def literalToken(prod, tok)
+      add_prod_data(:string, tok) if prod == "string"
+    end
+    
+    def literalFinish
+      lit = @prod_data.pop
+      content = RDF::NTriples.unescape(lit[:string])
+      language = lit[:langcode]
+      datatype = lit[:symbol]
+      
+      lit = RDF::Literal.new(content, :language => language, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)
+      add_prod_data(:literal, lit)
+    end
+    
+    def objectStart(prod)
+      @prod_data << {}
+    end
+    
+    def objectFinish
+      object = @prod_data.pop
+      if object[:expression]
+        add_prod_data(:object, object[:expression])
+      else
+        error("objectFinish: FIXME #{object.inspect}")
+      end
+    end
+    
+    def pathitemStart(prod)
+      @prod_data << {}
+    end
+    
+    def pathitemToken(prod, tok)
+      case prod
+      when "numericliteral"
+        nl = RDF::NTriples.unescape(tok)
+        datatype = case nl
+        when /e/i then RDF::XSD.double
+        when /\./ then RDF::XSD.decimal
+        else RDF::XSD.integer
+        end
+        
+        lit = RDF::Literal.new(nl, :datatype => datatype, :validate => validate?, :canonicalize => true)
+        add_prod_data(:literal, lit)
+      when "quickvariable"
+        error("pathitemToken(quickvariable): FIXME #{pathitem.inspect}")
+      when "boolean"
+        lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => true)
+        add_prod_data(:literal, lit)
+      when "[", "("
+        # Push on state for content of blank node
+        @prod_data << {}
+      when "]", ")"
+        # Construct
+        symbol = process_anonnode(@prod_data.pop)
+        add_prod_data(:symbol, symbol)
+      else
+        error("pathitemToken(#{prod}, #{tok}): FIXME")
+      end
+    end
+
+    def pathitemFinish
+      pathitem = @prod_data.pop
+      if pathitem[:pathlist]
+        error("pathitemFinish(pathlist): FIXME #{pathitem.inspect}")
+      elsif pathitem[:propertylist]
+        error("pathitemFinish(propertylist): FIXME #{pathitem.inspect}")
+      elsif pathitem[:symbol] || pathitem[:literal]
+        add_prod_data(:pathitem, pathitem[:symbol] || pathitem[:literal])
+      else
+        error("pathitemFinish: FIXME #{pathitem.inspect}")
+      end
+    end
+    
+    def pathlistStart(prod)
+      @prod_data << {:pathlist => []}
+    end
+    
+    def pathlistFinish
+      pathlist = @prod_data.pop
+      # Flatten propertylist into an array
+      expr = @prod_data.last.delete(:expression)
+      add_prod_data(:pathlist, expr) if expr
+      add_prod_data(:pathlist, pathlist[:pathlist]) if pathlist[:pathlist]
+    end
+    
+    def propertylistStart(prod)
+      @prod_data << {}
+    end
+    
+    def propertylistFinish
+      propertylist = @prod_data.pop
+      # Flatten propertylist into an array
+      ary = [propertylist, propertylist.delete(:propertylist)].flatten.compact
+      @prod_data.last[:propertylist] = ary
+    end
+    
+    def simpleStatementStart(prod)
+      @prod_data << {}
+    end
+    
+    # Completion of Simple Statement, all productions include :subject, and :propertyList
+    def simpleStatementFinish
+      statement = @prod_data.pop
+      
+      subject = statement[:subject]
+      properties = [statement[:propertylist]].flatten.compact
+      properties.each do |p|
+        predicate = p[:verb]
+        add_debug("simpleStatementFinish", predicate)
+        error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
+        objects =[ p[:object]].flatten.compact
+        objects.each do |object|
+          if p[:invert]
+            add_triple("simpleStatementFinish", object, predicate, subject)
+          else
+            add_triple("simpleStatementFinish", subject, predicate, object)
+          end
+        end
+      end
+    end
+
+    def subjectStart(prod)
+      @prod_data << {}
+    end
+    
+    def subjectFinish
+      subject = @prod_data.pop
+      
+      if subject[:expression]
+        add_prod_data(:subject, subject[:expression])
+      else
+        error("unknown expression type")
+      end
+    end
+    
+    def symbolToken(prod, tok)
+      term = case prod
+      when 'explicituri'
+        process_uri(tok)
+      when 'qname'
+        process_qname(tok)
+      else
+        error("symbolToken(#{prod}, #{tok}): FIXME #{term.inspect}")
+      end
+      
+      add_prod_data(:symbol, term)
+    end
+
+    def universalStart(prod)
+      @prod_data << {}
+    end
+
+    def universalFinish
+      pd = @prod_data.pop
+      forAll = pd.has_key?(:symbol) ? pd[:symbol] : []
+      forAll.each do |term|
+#        v = self.univar('var')
+#        @universals[term] = {:formula => @formulae,last, :var => v}
+#        quantify(@formulae.last, v)
+      end
+    end
+
+    def verbStart(prod)
+      @prod_data << {}
+    end
+    
+    def verbToken(prod, tok)
+      term = case prod
+      when '<='
+        add_prod_data(:expression, RDF::LOG.implies)
+        add_prod_data(:invert, true)
+      when '=>'
+        add_prod_data(:expression, RDF::LOG.implies)
+      when '='
+        add_prod_data(:expression, RDF::OWL.sameAs)
+      when '@a'
+        add_prod_data(:expression, RDF.type)
+      when '@has', "@of"
+        # Syntactic sugar
+      when '@is'
+        add_prod_data(:invert, true)
+      else
+        error("verbToken(#{prod}, #{tok}): FIXME #{term.inspect}")
+      end
+      
+      add_prod_data(:symbol, term)
+    end
+
+    def verbFinish
+      verb = @prod_data.pop
+      if verb[:expression]
+        add_prod_data(:verb, verb[:expression])
+      else
+        error("verbFinish: FIXME #{verb.inspect}")
+      end
+    end
+    
     private
+    
+    ###################
+    # Utility Functions
+    ###################
+
+    # Add values to production data, values aranged as an array
+    def add_prod_data(sym, value)
+      case @prod_data.last[sym]
+      when nil
+        @prod_data.last[sym] = value
+      when Array
+        @prod_data.last[sym] << value
+      else
+        @prod_data.last[sym] = [@prod_data.last[sym], value]
+      end
+    end
 
     # Keep track of allocated BNodes
     def bnode(value = nil)
@@ -108,8 +451,8 @@ module RDF::N3
     # @param [XML Node, any] node:: XML Node or string for showing context
     # @param [String] message::
     def add_debug(node, message)
-      puts "#{node}: #{message}" if ::RDF::N3::debug?
-      @options[:debug] << "#{node}: #{message}" if @options[:debug].is_a?(Array)
+      puts "#{' ' * @productions.length}#{node}[#{@lineno},#{@pos}]: #{message}" if ::RDF::N3::debug?
+      @options[:debug] << "[#{@lineno},#{@pos}]: #{message}" if @options[:debug].is_a?(Array)
     end
 
     # add a statement, object can be literal or URI or bnode
@@ -135,89 +478,20 @@ module RDF::N3
       prefix(prefix, uri(uri))
     end
 
-    def process_statements(document)
-      document.elements.find_all do |e|
-        s = e.elements.first
-        add_debug(*s.info("process_statements"))
-        
-        if s.respond_to?(:subject)
-          subject = process_expression(s.subject)
-          add_debug(*s.info("process_statements(#{subject})"))
-          properties = process_properties(s.property_list)
-          properties.each do |p|
-            predicate = process_verb(p.verb)
-            add_debug(*p.info("process_statements(#{subject}, #{predicate})"))
-            raise RDF::ReaderError, %Q(Illegal statment: "#{predicate}" missing object) unless p.respond_to?(:object_list)
-            objects = process_objects(p.object_list)
-            objects.each do |object|
-              if p.verb.respond_to?(:invert)
-                add_triple("statement", object, predicate, subject)
-              else
-                add_triple("statement", subject, predicate, object)
-              end
-            end
-          end
-        elsif s.respond_to?(:anonnode)
-          process_anonnode(s)
-        elsif s.respond_to?(:pathitem)
-          process_path(s)
-        elsif s.respond_to?(:declaration)
-          if s.respond_to?(:nprefix)
-            add_debug(*s.info("process_statements(namespace)"))
-            keyword_check("prefix") if s.text_value.index("prefix") == 0
-            uri = process_uri(s.explicituri.uri)
-            namespace(uri, s.nprefix.text_value)
-          elsif s.respond_to?(:base)
-            add_debug(*s.info("process_statements(base)"))
-            keyword_check("base") if s.text_value.index("base") == 0
-            # Base, set or update document URI
-            uri = s.explicituri.uri.text_value
-            @uri = process_uri(uri)
-            
-            # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
-            # The parser behaves as though there were a
-            #   @prefix : <#>.
-            # just before the file.
-            # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
-            
-            @default_ns =  uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#")
-            add_debug("@default_ns", "#{@default_ns.inspect}")
-            add_debug("@base", "#{@uri}")
-            @uri
-          elsif s.respond_to?(:keywords)
-            add_debug(*s.info("process_statements(keywords)"))
-            keyword_check("keywords") if s.text_value.index("keywords") == 0
-            @keywords = process_barename_csl(s.barename_csl) ||[]
-            add_debug("@keywords", @keywords.inspect)
-            if (@keywords & N3_KEYWORDS) != @keywords
-              raise RDF::ReaderError, "undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}" if validate?
-            end
-          end
-        end
-      end
-    end
-    
-    def process_barename_csl(list)
-      #add_debug(*list.info("process_barename_csl(list)"))
-      res = [list.barename.text_value] if list.respond_to?(:barename)
-      rest = process_barename_csl(list.barename_csl_tail) if list.respond_to?(:barename_csl_tail)
-      rest ? res + rest : res
-    end
-
     def process_anonnode(anonnode)
-      add_debug(*anonnode.info("process_anonnode"))
+      add_debug("process_anonnode", anonnode.inspect)
       bnode = RDF::Node.new
       
-      if anonnode.respond_to?(:property_list)
-        properties = process_properties(anonnode.property_list)
+      if anonnode[:propertylist]
+        properties = anonnode[:propertylist]
         properties.each do |p|
-          predicate = process_verb(p.verb)
-          add_debug(*p.info("anonnode[#{predicate}]"))
-          objects = process_objects(p.object_list)
+          predicate = p[:verb]
+          add_debug("process_anonnode(verb)", predicate.inspect)
+          objects = [p[:object]].flatten.compact
           objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
         end
-      elsif anonnode.respond_to?(:path_list)
-        objects = process_objects(anonnode.path_list)
+      elsif anonnode[:pathlist]
+        objects = [anonnode[:pathlist]].flatten.compact
         last = objects.pop
         first_bnode = bnode
         objects.each do |object|
@@ -244,7 +518,7 @@ module RDF::N3
         if @keywords.nil? || @keywords.include?("a")
           RDF.type
         else
-          build_uri("a")
+          process_qname("a")
         end
       when "@a"           then RDF.type
       when "="            then RDF::OWL.sameAs
@@ -273,7 +547,7 @@ module RDF::N3
         process_uri(expression.uri)
       elsif expression.respond_to?(:localname)
         add_debug(*expression.info("process_expression(localname)"))
-        build_uri(expression)
+        process_qname(expression)
       elsif expression.respond_to?(:anonnode)
         add_debug(*expression.info("process_expression(anonnode)"))
         process_anonnode(expression)
@@ -287,7 +561,7 @@ module RDF::N3
         add_debug(*expression.info("process_expression(boolean)"))
         barename = expression.text_value.to_s
         if @keywords && !@keywords.include?(barename)
-          build_uri(barename)
+          process_qname(barename)
         else
           RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
         end
@@ -302,11 +576,11 @@ module RDF::N3
         else
           # create URI using barename, unless it's in defined set, in which case it's an error
           raise RDF::ReaderError, %Q(Keyword "#{barename}" used as expression) if @keywords && @keywords.include?(barename)
-          build_uri(barename)
+          process_qname(barename)
         end
       else
         add_debug(*expression.info("process_expression(else)"))
-        build_uri(expression)
+        process_qname(expression)
       end
     end
 
@@ -318,10 +592,10 @@ module RDF::N3
     # Elements may be strug together, with the last element the verb applied to the previous expression:
     #   :a.:b.:c means [is :c of [ is :b of :a]]
     #   :a!:b^:c meands [:c [ is :b of :a]]
-    def process_path(path)
-      add_debug(*path.info("process_path"))
+    def process_path(expression)
+      add_debug("process_path")
 
-      object = process_expression(path.pathitem)
+      object = process_pathitem(expression[:pathitem])
       
       # Create a list of direction/predicate pairs
       path_list = process_path_list(path.expression, path.respond_to?(:reverse))
@@ -355,18 +629,9 @@ module RDF::N3
     end
     
     def process_uri(uri)
-      uri = uri.text_value if uri.respond_to?(:text_value)
       uri(@uri, RDF::NTriples.unescape(uri))
     end
     
-    def process_properties(properties)
-      add_debug(*properties.info("process_properties"))
-      result = []
-      result << properties if properties.respond_to?(:verb)
-      result << process_properties(properties.property_list) if properties.respond_to?(:property_list)
-      result.flatten
-    end
-
     def process_objects(objects)
       add_debug(*objects.info("process_objects"))
       result = []
@@ -384,63 +649,35 @@ module RDF::N3
       result.flatten
     end
 
-    def process_literal(object)
-      add_debug(*object.info("process_literal"))
-      encoding, language = nil, nil
-      string, type = object.elements
-
-      unless type.elements.nil?
-        #puts type.elements.inspect
-        if (type.elements[0].text_value=='@')
-          language = type.elements[1].text_value
-        else
-          encoding = process_expression(type.elements[1])
-        end
-      end
-
-      # Evaluate text_value to remove redundant escapes
-      #puts string.elements[1].text_value.dump
-      RDF::Literal.new(RDF::NTriples.unescape(string.elements[1].text_value), :language => language, :validate => validate?, :datatype => encoding, :canonicalize => canonicalize?)
-    end
-    
     def process_numeric_literal(object)
       add_debug(*object.info("process_numeric_literal"))
 
       RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => validate?, :canonicalize => canonicalize?)
     end
     
-    def build_uri(expression)
-      prefix = expression.respond_to?(:nprefix) ? expression.nprefix.text_value.to_s : ""
-      localname = expression.localname.text_value if expression.respond_to?(:localname)
-      localname ||= (expression.respond_to?(:text_value) ? expression.text_value : expression).to_s.sub(/^:/, "")
-      localname = nil if localname.empty? # In N3/Turtle "_:" is not named
-
-      if expression.respond_to?(:info)
-        add_debug(*expression.info("build_uri(#{prefix.inspect}, #{localname.inspect})"))
+    def process_qname(tok)
+      if tok.include?(":")
+        prefix, name = tok.split(":")
+      elsif @userkeys
+        # If the @keywords directive is given, the keywords given will thereafter be recognized
+        # without a "@" prefix, and anything else is a local name in the default namespace.
+        prefix, name = "", tok
       else
-        add_debug("", "build_uri(#{prefix.inspect}, #{localname.inspect})")
+        error("Set user @keywords to use barenames.")
       end
 
       uri = if prefix(prefix)
-        add_debug(*expression.info("build_uri: (ns): #{prefix(prefix)}, #{localname}")) if expression.respond_to?(:info)
-        ns(prefix, localname.to_s)
+        add_debug('process_qname(ns)', "#{prefix(prefix)}, #{name}")
+        ns(prefix, name)
       elsif prefix == '_'
-        add_debug(*expression.info("build_uri: (bnode)")) if expression.respond_to?(:info)
-        bnode(localname)
-      elsif prefix == "rdf"
-        add_debug(*expression.info("build_uri: (rdf)")) if expression.respond_to?(:info)
-        # A special case
-        RDF::RDF[localname.to_s]
-      elsif prefix == "xsd"
-        add_debug(*expression.info("build_uri: (xsd)")) if expression.respond_to?(:info)
-        # A special case
-        RDF::XSD[localname.to_s]
+        add_debug('process_qname(bnode)', name)
+        bnode(name)
       else
-        add_debug(*expression.info("build_uri: (default_ns)")) if expression.respond_to?(:info)
+        add_debug('process_qname(default_ns)', name)
         @default_ns ||= uri("#{@uri}#")
-        ns(nil, localname.to_s)
+        ns(nil, name)
       end
-      add_debug(*expression.info("build_uri: #{uri.inspect}")) if expression.respond_to?(:info)
+      add_debug('process_qname', uri.inspect)
       uri
     end
     

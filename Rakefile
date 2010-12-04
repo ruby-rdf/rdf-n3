@@ -59,9 +59,10 @@ desc "Generate test manifest yaml"
 namespace :spec do
   task :prepare do
     $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
+    $:.unshift(File.join(File.dirname(__FILE__), 'spec'))
     require 'rdf/rdfxml'
     require 'rdf/n3'
-    require 'spec/rdf_helper'
+    require 'rdf_helper'
     require 'fileutils'
 
     yaml = File.join(SWAP_DIR, "n3parser.yml")
