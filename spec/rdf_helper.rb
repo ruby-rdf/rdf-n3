@@ -126,7 +126,8 @@ module RdfHelper
       when :array
         @parser.graph.should be_equivalent_graph(self.output, self)
       else
-        output_graph = RDF::Graph.load(self.outputDocument, :format => detect_format(self.outputDocument))
+        #puts "parse #{self.outputDocument} as #{RDF::Reader.for(self.outputDocument)}"
+        output_graph = RDF::Graph.load(self.outputDocument)
         puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if ::RDF::N3::debug?
         graph.should Matchers::be_equivalent_graph(output_graph, self)
       end
