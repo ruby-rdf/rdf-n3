@@ -347,9 +347,9 @@ describe "RDF::N3::Reader" do
     describe "syntactic expressions" do
       it "should create typed literals with qname" do
         n3doc = %(
-          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-          @prefix foaf: <http://xmlns.com/foaf/0.1/>
-          @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+          @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+          @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
           <http://example.org/joe> foaf:name \"Joe\"^^xsd:string .
         )
         statement = parse(n3doc).statements.first
@@ -575,7 +575,7 @@ describe "RDF::N3::Reader" do
         it "should require @ if keywords set to empty for '#{n3}'" do
           lambda do
             parse("@keywords . #{n3}", :base_uri => "http://a/b")
-          end.should raise_error(/unqualified keyword '\w+' used without @keyword directive/)
+          end.should raise_error(RDF::ReaderError)
         end
       end
       
@@ -609,7 +609,7 @@ describe "RDF::N3::Reader" do
         n3 = %(@keywords foo.)
         lambda do
           parse(n3, :base_uri => "http://a/b")
-        end.should raise_error(RDF::ReaderError, "undefined keywords used: foo")
+        end.should raise_error(RDF::ReaderError, /Undefined keywords used: foo/)
       end
     end
     
@@ -1069,13 +1069,13 @@ describe "RDF::N3::Reader" do
 #    end
 
     {
-      %("+1"^^xsd:integer) => %("1"^^xsd:integer),
-      %(+1) => %("1"^^xsd:integer),
-      %(true) => %("true"^^xsd:boolean),
+      %("+1"^^xsd:integer) => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(+1) => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(true) => %("true"^^<http://www.w3.org/2001/XMLSchema#boolean>),
       %("lang"@EN) => %("lang"@en),
     }.each_pair do |input, result|
       it "returns object #{result} given #{input}" do
-        n3 = %(:a :b #{input} .)
+        n3 = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{input} .)
         nt = %(<http://a/b#a> <http://a/b#b> #{result} .)
         parse(n3, :base_uri => "http://a/b", :canonicalize => true).should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
@@ -1088,10 +1088,10 @@ describe "RDF::N3::Reader" do
       %(:y :p1 "12xyz"^^xsd:integer .) => %r("12xyz" is not a valid .*),
       %(:y :p1 "xy.z"^^xsd:double .) => %r("xy\.z" is not a valid .*),
       %(:y :p1 "+1.0z"^^xsd:double .) => %r("\+1.0z" is not a valid .*),
-      %(:a :b .) => %r(Illegal statment: ".*" missing object),
+      %(:a :b .) =>RDF::ReaderError,
       %(:a :b 'single quote' .) => RDF::ReaderError,
       %(:a "literal value" :b .) => RDF::ReaderError,
-      %(@keywords prefix. :e prefix :f .) => %r(Keyword ".*" used as expression)
+      %(@keywords prefix. :e prefix :f .) => RDF::ReaderError
     }.each_pair do |n3, error|
       it "should raise '#{error}' for '#{n3}'" do
         lambda {
