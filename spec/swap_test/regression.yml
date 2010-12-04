@@ -4,90 +4,105 @@
   description: Parse a small RDF file, generate N3
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/animal.rdf
   name: t1001
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/animal.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/xml_prefix.n3
   description: "Do not redefine the xml: prefix"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/xml_prefix.n3
   name: t1002a
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/xml-redefine.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/xmlbase3.rdf
   description: Allow for relative xml:base
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/xmlbase3.rdf
   name: t1002b
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/xml-base3.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/xml_prefix2.n3
   description: "do not redefine xml: and xmlns: even if told told"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/xml_prefix2.n3
   name: t1002c
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/xml-redefine2.rdf
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/rdf_prefix.n3
   description: "Allow for redefinition of rdf:"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/rdf_prefix.n3
   name: t1002d
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/rdf-redefine.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/xmllit.rdf
   description: rdf:parseType="Literal"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/xmllit.rdf
   name: t1002e
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/xmllit.nt
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/in-xml.xml
   description: Parse RDF embedded in foreign XML
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/in-xml.xml
   name: t1003
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/in-xml-t.n3
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/reluri-1.n3
   description: test generation of relative URIs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/reluri-1.n3
   name: t1005
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/reluri-1.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/no-last-nl.n3
   description: An N3 file with no final newline character
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/no-last-nl.n3
   name: t1005a
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/no-last-nl.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/dot-dash.n3
   description: combinations of - and _ in identifiers
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/dot-dash.n3
   name: t1005b
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/dot-dash.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/keywords1.n3
   description: "@keywords in n3"
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords1.n3
   name: t1005c
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/keywords1.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/keywords2.n3
   description: using no keywords in n3
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/keywords2.n3
   name: t1005d
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/keywords2.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/djb1a.n3
   description: djb noticed a:b was parsed as rdf:type token
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/djb1a.n3
   name: t1005e
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/djb1a-out.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/contexts.n3
   description: Parse and generate simple contexts
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/contexts.n3
   name: t1006
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/contexts-1.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/anon-prop.n3
   description: Parse and regen anonymous property
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/anon-prop.n3
   name: t1007
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/anon-prop-1.n3
   rdf_type: CwmProofTest
   status: pending
 - !ruby/object:RdfHelper::TestCase 
@@ -95,54 +110,63 @@
   description: Parse RDF/XML nodeID to N3
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/ex1.rdf
   name: t1007a
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/bnode.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/nodeID/ex1.rdf
   description: Parse RDF/XML nodeID and regen RDF/XML
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/ex1.rdf
   name: t1007b
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/bnode.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/nodeID/classes.n3
   description: use nodeID's with classes
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/classes.n3
   name: t1007c
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/nodeID/classes.ref.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/anonymous_loop.n3
   description: A loop of anonymous nodes wasn't being printed at all
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/anonymous_loop.n3
   name: t1007d
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/anonymous_loop.ref
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/daml-pref.n3
   description: Convert some RDF/XML into RDF/N3
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/daml-pref.n3
   name: t1008
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/daml-ont.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/colon-in-uri.rdf
   description: When rdf/xml localnames are not valid qNames
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/colon-in-uri.rdf
   name: t1008a
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/colon-in-uri.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/strquot.n3
   description: N3 string quoting with escaping
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
   name: t1009
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/strquot.n3
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/strquot.n3
   description: N3 string quoting with utf-8 literals
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/strquot.n3
   name: t1009aa
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/strquot_a.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/i18n/n3string.n3
   description: log:n3string genertating utf-8 literals was double encoding
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/i18n/n3string.n3
   name: t1009ab
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/n3string.n3
   rdf_type: CwmProofTest
   status: pending
 - !ruby/object:RdfHelper::TestCase 
@@ -150,18 +174,21 @@
   description: XML to XML with utf-8 non-ascii characters
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/non-ascii-pred.rdf
   name: t1009b
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/non-ascii-pred.rdf
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/path1.n3
   description: Path syntax, simple
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path1.n3
   name: t1010
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/path1.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/path2.n3
   description: Path syntax, more
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/path2.n3
   name: t1011
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/path2.n3
   rdf_type: CwmProofTest
   status: pending
 - !ruby/object:RdfHelper::TestCase 
@@ -169,58 +196,68 @@
   description: Number syntax
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/numbers.n3
   name: t10115
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/numbers.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/lstring.n3
   description: N3 string nested triple quoting
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/lstring.n3
   name: t1014
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/lstring-out.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/lists.n3
   description: parsing and generation of N3 list syntax
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/lists.n3
   name: t1017
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/lists.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/lists-simple.n3
   description: conversion of subset of N3 list syntax to RDF
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/lists-simple.n3
   name: t1018
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/lists-simple-1.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/list/itemType.rdf
   description: make sure typeNodes in RDF/XML Collections are parsed
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/list/itemType.rdf
   name: t1018a1
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/itemType.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/norm/fix.rdf
   description: Avoiding default namespace on attrs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
   name: t1019
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/prefix1.rdf
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/norm/fix.rdf
   description: Avoiding default namespace on attrs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
   name: t1020
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/prefix2.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/norm/fix.rdf
   description: Avoiding default namespace on attrs
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/norm/fix.rdf
   name: t1021
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/prefix3.rdf
   rdf_type: CwmTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/owl-ex.rdf
   description: Early DAML (now OWL) example in XML/RDF
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/owl-ex.rdf
   name: t1022
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/daml-ex.n3
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/xml-syntax/basic-serialization.n3
   description: extremely basic RDF serialization test
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/xml-syntax/basic-serialization.n3
   name: t1063
+  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/xml-syntax-basic-serialization.rdf
   rdf_type: CwmTest

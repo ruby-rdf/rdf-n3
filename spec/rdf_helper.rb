@@ -52,7 +52,8 @@ module RdfHelper
         pred = statement.predicate.to_s.split(/[\#\/]/).last
         obj  = statement.object.is_a?(RDF::Literal) ? statement.object.value : statement.object.to_s
 
-        puts "#{pred}: #{obj}" if ::RDF::N3::debug?
+        puts "#{pred.inspect}: #{obj}" if ::RDF::N3::debug?
+        pred = "outputDocument" if pred == "referenceOutput"
         if statement.predicate == RDF.type
           self.rdf_type = obj.to_s.split(/[\#\/]/).last
           #puts statement.subject.to_s
@@ -66,11 +67,7 @@ module RdfHelper
             self.about ||= about
             self.name ||= statement.subject.to_s.split(/[\#\/]/).last
           end
-        elsif pred == "referenceOutput"
-          puts "referenceOutput: #{obj}" if ::RDF::N3::debug?
-          outputDocument = obj.sub(uri_prefix, test_dir)
-          puts "referenceOutput: " + self.send(pred) if ::RDF::N3::debug?
-        elsif self.respond_to?("#{pred}=")
+       elsif self.respond_to?("#{pred}=")
           self.send("#{pred}=", obj)
         end
       end
