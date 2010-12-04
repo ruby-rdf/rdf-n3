@@ -20,6 +20,13 @@ module RDF::N3
     
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
+    # FIXME: temporary patch until fixed in RDF.rb
+    # Allow for nil prefix mapping
+    def prefix(name, uri = nil)
+      name = name.to_s.empty? ? nil : (name.respond_to?(:to_sym) ? name.to_sym : name.to_s.to_sym)
+      uri.nil? ? prefixes[name] : prefixes[name] = (uri.respond_to?(:to_sym) ? uri.to_sym : uri.to_s.to_sym)
+    end
+
     ##
     # Initializes the N3 reader instance.
     #
@@ -45,7 +52,7 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if _validate_
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @uri = uri(options[:base_uri])
+        @uri = uri(options[:base_uri]) if options[:base_uri]
 
         @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
         @lineno = 0
@@ -62,8 +69,10 @@ module RDF::N3
         
         @formulae = []    # Nodes used as Formluae context identifiers
 
-        @default_ns = uri("#{options[:base_uri]}#") if @uri
-        add_debug("@default_ns", "#{@default_ns.inspect}")
+        if @uri
+          add_debug("@uri", "#{@uri.inspect}")
+          namespace(nil, uri("#{options[:base_uri]}#"))
+        end
         add_debug("validate", "#{validate?.inspect}")
         add_debug("canonicalize", "#{canonicalize?.inspect}")
         add_debug("intern", "#{intern?.inspect}")
@@ -120,8 +129,8 @@ module RDF::N3
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      send(handler) if respond_to?(handler)
       add_debug("#{handler}(#{respond_to?(handler)})", "#{prod}: #{@prod_data.last.inspect}")
+      send(handler) if respond_to?(handler)
     end
 
     # Process of a token
@@ -144,6 +153,10 @@ module RDF::N3
       case prod
       when "@prefix", "@base", "@keywords"
         add_prod_data(:prod, prod)
+      when "prefix"
+        add_prod_data(:prefix, tok[0..-2])
+      when "explicituri"
+        add_prod_data(:explicituri, tok[1..-2])
       else
         add_prod_data(prod.to_sym, tok)
       end
@@ -154,7 +167,7 @@ module RDF::N3
       case decl[:prod]
       when "@prefix"
         uri = process_uri(decl[:explicituri])
-        namespace(uri, decl[:prefix])
+        namespace(decl[:prefix], uri)
       when "@base"
         # Base, set or update document URI
         uri = decl[:explicituri]
@@ -166,8 +179,8 @@ module RDF::N3
         # just before the file.
         # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
         
-        @default_ns =  uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#")
-        add_debug("declarationFinish[@base]", "@default_ns=#{@default_ns.inspect}, @base=#{@uri}")
+        namespace(nil, uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#"))
+        add_debug("declarationFinish[@base]", "@base=#{@uri}")
       when "@keywords"
         add_debug("declarationFinish[@keywords]", @keywords.inspect)
         # Keywords are handled in tokenizer and maintained in @keywords array
@@ -226,7 +239,8 @@ module RDF::N3
     end
     
     def literalToken(prod, tok)
-      add_prod_data(:string, tok) if prod == "string"
+      tok = tok[0, 3] == '"""' ? tok[3..-4] : tok[1..-2]
+      add_prod_data(:string, tok)
     end
     
     def literalFinish
@@ -333,7 +347,8 @@ module RDF::N3
       properties = [statement[:propertylist]].flatten.compact
       properties.each do |p|
         predicate = p[:verb]
-        add_debug("simpleStatementFinish", predicate)
+        next unless predicate
+        add_debug("simpleStatementFinish(pred)", predicate)
         error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
         objects =[ p[:object]].flatten.compact
         objects.each do |object|
@@ -363,7 +378,7 @@ module RDF::N3
     def symbolToken(prod, tok)
       term = case prod
       when 'explicituri'
-        process_uri(tok)
+        process_uri(tok[1..-2])
       when 'qname'
         process_qname(tok)
       else
@@ -451,8 +466,8 @@ module RDF::N3
     # @param [XML Node, any] node:: XML Node or string for showing context
     # @param [String] message::
     def add_debug(node, message)
-      puts "#{' ' * @productions.length}#{node}[#{@lineno},#{@pos}]: #{message}" if ::RDF::N3::debug?
-      @options[:debug] << "[#{@lineno},#{@pos}]: #{message}" if @options[:debug].is_a?(Array)
+      puts "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if ::RDF::N3::debug?
+      @options[:debug] << "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if @options[:debug].is_a?(Array)
     end
 
     # add a statement, object can be literal or URI or bnode
@@ -469,10 +484,10 @@ module RDF::N3
       @callback.call(statement)
     end
 
-    def namespace(uri, prefix)
+    def namespace(prefix, uri)
       uri = uri.to_s
       if uri == "#"
-        uri = @default_ns
+        uri = prefix(nil)
       end
       add_debug("namesspace", "'#{prefix}' <#{uri}>")
       prefix(prefix, uri(uri))
@@ -662,6 +677,14 @@ module RDF::N3
         # If the @keywords directive is given, the keywords given will thereafter be recognized
         # without a "@" prefix, and anything else is a local name in the default namespace.
         prefix, name = "", tok
+      elsif %w(true false).include?(tok)
+        # The words true and false are boolean literals.
+        #
+        # They were added to Notation3 in 2006-02 in discussion with the SPARQL language developers, the Data
+        # Access Working Group. Note that no existing documents will have used a naked true or false word, without a
+        # @keyword statement which would make it clear that they were not to be treated as keywords. Furthermore any
+        # old parser encountering true or false naked or in a @keywords
+        return RDF::Literal.new(tok, :datatype => RDF::XSD.boolean)
       else
         error("Set user @keywords to use barenames.")
       end
@@ -674,7 +697,7 @@ module RDF::N3
         bnode(name)
       else
         add_debug('process_qname(default_ns)', name)
-        @default_ns ||= uri("#{@uri}#")
+        namespace(nil, uri("#{@uri}#")) unless prefix(nil)
         ns(nil, name)
       end
       add_debug('process_qname', uri.inspect)
@@ -699,10 +722,10 @@ module RDF::N3
     end
     
     def ns(prefix, suffix)
-      prefix = prefix.nil? ? @default_ns.to_s : prefix(prefix).to_s
-      suffix = suffix.to_s.sub(/^\#/, "") if prefix.index("#")
-      add_debug("ns", "prefix: '#{prefix}', suffix: '#{suffix}'")
-      uri(prefix + suffix)
+      base = prefix(prefix).to_s
+      suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
+      add_debug("ns", "base: '#{base}', suffix: '#{suffix}'")
+      uri(base + suffix.to_s)
     end
   end
 end

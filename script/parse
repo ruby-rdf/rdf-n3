@@ -20,7 +20,7 @@ def run(input, base)
     end
   elsif $format == :ntriples
     RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
-      puts statement
+      puts statement.to_ntriples
     end
   else
     puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
@@ -64,6 +64,7 @@ opts.each do |opt, arg|
   when '--debug' then ::RDF::N3::debug = true
   when '--execute' then input = arg
   when '--format' then $format = arg
+  when '--uri' then base_uri = arg
   end
 end
 

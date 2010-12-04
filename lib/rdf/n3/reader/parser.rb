@@ -29,7 +29,7 @@ module RDF::N3
           error("No branches found for '#{todo_stack.last[:prod]}'") if prod_branch.nil?
           sequence = prod_branch[tok]
           if sequence.nil?
-            dump_stack(todo_stack)
+            dump_stack(todo_stack) if $verbose
             error("Found '#{tok}' when expecting a #{todo_stack.last[:prod]}. keys='#{prod_branch.keys.to_sentence}'")
           end
           todo_stack.last[:terms] += sequence
