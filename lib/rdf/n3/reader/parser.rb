@@ -23,7 +23,7 @@ module RDF::N3
           
           # Got an opened production
           onStart(abbr(todo_stack.last[:prod]))
-          return nil if tok.nil?
+          break if tok.nil?
           
           prod_branch = @branches[todo_stack.last[:prod]]
           error("No branches found for '#{todo_stack.last[:prod]}'") if prod_branch.nil?
@@ -44,7 +44,7 @@ module RDF::N3
             if word == term
               onToken(term, word)
               consume(term.length)
-            elsif '@' + word.chop == term # FIXME: Huh? don't get this
+            elsif '@' + word.chop == term && @keywords.include?(word.chop)
               onToken(term, word.chop)
               consume(term.length - 1)
             else
@@ -79,10 +79,13 @@ module RDF::N3
         end
         
         while !pushed && todo_stack.last[:terms].to_a.empty?
-          #puts "parse: pop"
           todo_stack.pop
           self.onFinish
         end
+      end
+      while !todo_stack.empty?
+        todo_stack.pop
+        self.onFinish
       end
     end
 
@@ -114,7 +117,7 @@ module RDF::N3
         return '@' if @pos > 0 && @line[@pos-1] == '"'
 
         j = 0
-        j += 1 while !NOT_NAME_CHARS.include?(buffer[j+1])
+        j += 1 while buffer[j+1] && !NOT_NAME_CHARS.include?(buffer[j+1])
         name = buffer[1, j]
         if name == 'keywords'
           @keywords = []
@@ -123,9 +126,8 @@ module RDF::N3
         return '@' + name
       end
 
-      
       j = 0
-      j += 1 while !NOT_QNAME_CHARS.include?(buffer[j])
+      j += 1 while buffer[j] && !NOT_QNAME_CHARS.include?(buffer[j])
       word = buffer[0, j]
       error("Tokenizer expected qname, found #{buffer[0, 10]}") unless word
       if @keyword_mode
@@ -157,7 +159,7 @@ module RDF::N3
       @pos = 0
       @line
     rescue EOFError => e
-      @line = @pos = nil
+      @line, @pos = nil, 0
     end
     
     # Return data from current off set to end of line
