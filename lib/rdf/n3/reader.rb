@@ -78,8 +78,8 @@ module RDF::N3
         add_debug("intern", "#{intern?.inspect}")
 
         # Prefixes that may be used without being defined
-        prefix(:rdf, RDF.to_uri.to_s)
-        prefix(:xsd, RDF::XSD.to_uri.to_s)
+        #prefix(:rdf, RDF.to_uri.to_s)
+        #prefix(:xsd, RDF::XSD.to_uri.to_s)
 
         if block_given?
           case block.arity
@@ -143,6 +143,11 @@ module RDF::N3
       else
         error("Token has no parent production")
       end
+    end
+    
+    def booleanToken(prod, tok)
+      lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => true)
+      add_prod_data(:literal, lit)
     end
     
     def declarationStart(prod)
@@ -431,7 +436,9 @@ module RDF::N3
     def verbFinish
       verb = @prod_data.pop
       if verb[:expression]
+        error("Literal may not be used as a predicate") if verb[:expression].is_a?(RDF::Literal)
         add_prod_data(:verb, verb[:expression])
+        add_prod_data(:invert, true) if verb[:invert]
       else
         error("verbFinish: FIXME #{verb.inspect}")
       end
@@ -525,34 +532,6 @@ module RDF::N3
       bnode
     end
 
-    def process_verb(verb)
-      add_debug(*verb.info("process_verb"))
-      case verb.text_value
-      when "a"
-        # If "a" is a keyword, then it's rdf:type, otherwise it's expanded from the default namespace
-        if @keywords.nil? || @keywords.include?("a")
-          RDF.type
-        else
-          process_qname("a")
-        end
-      when "@a"           then RDF.type
-      when "="            then RDF::OWL.sameAs
-      when "=>"           then RDF::LOG.implies
-      when "<="           then RDF::LOG.implies
-      when /^(@?is)\s+.*\s+(@?of)$/
-        keyword_check("is") if $1 == "is"
-        keyword_check("of") if $2 == "of"
-        process_expression(verb.prop)
-      when /^has\s+/
-        keyword_check("has")
-        process_expression(verb.prop)
-      else
-        res = process_expression(verb.respond_to?(:prop) ? verb.prop : verb)
-        raise RDF::ReaderError, %(Property "#{res}" may not be a literal) if res.literal?
-        res
-      end
-    end
-
     def process_expression(expression)
       if expression.respond_to?(:pathitem) && expression.respond_to?(:expression)
         add_debug(*expression.info("process_expression(pathitem && expression)"))
@@ -608,7 +587,7 @@ module RDF::N3
     #   :a.:b.:c means [is :c of [ is :b of :a]]
     #   :a!:b^:c meands [:c [ is :b of :a]]
     def process_path(expression)
-      add_debug("process_path")
+      add_debug("process_path", expression.inspect)
 
       object = process_pathitem(expression[:pathitem])
       

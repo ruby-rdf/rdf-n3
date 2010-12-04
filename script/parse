@@ -19,9 +19,13 @@ def run(input, base)
       $stdout = STDOUT
       print "."
     end
-  elsif $format == :ntriples
+  elsif $format == :ntriples || $quiet
     RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
-      puts statement.to_ntriples
+      if $quiet
+        print "."
+      else
+        puts statement.to_ntriples
+      end
     end
   else
     puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base) { |writer|
@@ -30,6 +34,7 @@ def run(input, base)
       end
     }
   end
+  puts
 rescue
   fname = input.respond_to?(:path) ? input.path : "-stdin-"
   STDERR.puts("Error in #{fname}")
