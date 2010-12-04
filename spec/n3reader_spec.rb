@@ -564,7 +564,6 @@ describe "RDF::N3::Reader" do
     
     describe "keywords" do
       [
-        %(prefix :<>.),
         %(base <>.),
         %(keywords a.),
         %(:a is :b of :c.),
@@ -579,6 +578,15 @@ describe "RDF::N3::Reader" do
         end
       end
       
+      [
+        %(prefix :<>.),
+      ].each do |n3|
+        it "parses as local name if keywords set to empty for '#{n3}'" do
+          lambda do
+            parse("@keywords . #{n3}", :base_uri => "http://a/b")
+          end.should_not raise_error(RDF::ReaderError)
+        end
+      end
       {
         %(:a a :b)  => %(<http://a/b#a> <http://a/b#a> <http://a/b#b> .),
         %(:a :b true) => %(<http://a/b#a> <http://a/b#b> <http://a/b#true> .),
