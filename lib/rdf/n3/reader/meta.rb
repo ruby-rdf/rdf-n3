@@ -2,57 +2,19 @@
 # Branch and Regexp tables derived from http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3
 module RDF::N3::Meta
   BRANCHES = {
-    :"#_g0" => {
+    :"_:g2164543080" => {
+      "," => [",",
+        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:g2164543080"],
       "." => [],
       ":" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g5"],
+        :"_:g2164543080"],
       "<" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g5"],
-      "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g5"],
-      "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g5"],
-      "}" => [],
-    },
-    :"#_g1" => {
-      "." => [],
-      ":" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g4"],
-      "<" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g4"],
-      "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g4"],
-      "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g4"],
-      "}" => [],
-    },
-    :"#_g2" => {
-      "." => [],
+        :"_:g2164543080"],
       "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#barename",
-        :"#_g3"],
+        :"_:g2164543080"],
       "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#barename",
-        :"#_g3"],
-      "}" => [],
-    },
-    :"#_g3" => {
-      "," => [",",
-        :"http://www.w3.org/2000/10/swap/grammar/n3#barename",
-        :"#_g3"],
-      "." => [],
-      "}" => [],
-    },
-    :"#_g4" => {
-      "," => [",",
-        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g4"],
-      "." => [],
-      "}" => [],
-    },
-    :"#_g5" => {
-      "," => [",",
-        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"#_g5"],
-      "." => [],
+        :"_:g2164543080"],
       "}" => [],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#boolean" => {
@@ -63,7 +25,7 @@ module RDF::N3::Meta
       "@base" => ["@base",
         :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri"],
       "@keywords" => ["@keywords",
-        :"#_g2"],
+        :"_:g2164543080"],
       "@prefix" => ["@prefix",
         :"http://www.w3.org/2000/10/swap/grammar/n3#prefix",
         :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri"],
@@ -147,7 +109,7 @@ module RDF::N3::Meta
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#existential" => {
       "@forSome" => ["@forSome",
-        :"#_g1"],
+        :"_:g2164543080"],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#expression" => {
       "\"" => [:"http://www.w3.org/2000/10/swap/grammar/n3#pathitem",
@@ -199,6 +161,7 @@ module RDF::N3::Meta
       "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#statementlist"],
       "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#statementlist"],
       "{" => [:"http://www.w3.org/2000/10/swap/grammar/n3#statementlist"],
+      "}" => [],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#literal" => {
       "\"" => [:"http://www.w3.org/2000/10/swap/grammar/n3#string",
@@ -588,7 +551,7 @@ module RDF::N3::Meta
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#universal" => {
       "@forAll" => ["@forAll",
-        :"#_g0"],
+        :"_:g2164543080"],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#verb" => {
       "\"" => [:"http://www.w3.org/2000/10/swap/grammar/n3#expression"],
