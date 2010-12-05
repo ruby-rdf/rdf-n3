@@ -25,12 +25,14 @@ module RDF::N3
           onStart(abbr(todo_stack.last[:prod]))
           break if tok.nil?
           
-          prod_branch = @branches[todo_stack.last[:prod]]
-          error("No branches found for '#{todo_stack.last[:prod]}'") if prod_branch.nil?
+          cur_prod = todo_stack.last[:prod]
+          prod_branch = @branches[cur_prod]
+          error("No branches found for '#{abbr(cur_prod)}'") if prod_branch.nil?
           sequence = prod_branch[tok]
           if sequence.nil?
             dump_stack(todo_stack) if $verbose
-            error("Found '#{tok}' when expecting a #{todo_stack.last[:prod]}. keys='#{prod_branch.keys.to_sentence}'")
+            expected = prod_branch.values.uniq.map {|u| u.map {|v| abbr(v).inspect}.join(",")}
+            error("Found '#{tok}' when parsing a #{abbr(cur_prod)}. expected #{expected.join(' | ')}")
           end
           todo_stack.last[:terms] += sequence
         end
