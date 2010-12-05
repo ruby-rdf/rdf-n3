@@ -21,6 +21,9 @@ describe RDF::N3::Reader do
           if t.name =~ /1018/
             pending("matcher does not stop")
             next
+          elsif t.rdf_type == "CwmProofTest"
+            pending("proofs not supported")
+            next
           end
           t.run_test do |rdf_string|
             t.debug = []
@@ -33,7 +36,7 @@ describe RDF::N3::Reader do
             end
             g
           end
-        rescue #Spec::Expectations::ExpectationNotMetError => e
+        rescue Spec::Expectations::ExpectationNotMetError => e
           if t.status == "pending"
             pending("Formulae not supported") {  raise } 
           else
