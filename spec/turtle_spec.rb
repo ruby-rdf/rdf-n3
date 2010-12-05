@@ -70,7 +70,7 @@ describe RDF::N3::Reader do
                  end
               end.should raise_error(RDF::ReaderError)
             end
-          rescue #Spec::Expectations::ExpectationNotMetError => e
+          rescue Spec::Expectations::ExpectationNotMetError => e
             pending() {  raise }
           end
         end

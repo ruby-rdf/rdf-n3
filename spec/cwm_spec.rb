@@ -12,11 +12,19 @@ describe RDF::N3::Reader do
 
     # Negative parser tests should raise errors.
     test_cases.each do |t|
+      next unless t.about.to_s =~ /n3$/
       #next unless t.about.uri.to_s =~ /rdfms-rdf-names-use/
-      #next unless t.name =~ /11/
+      #next unless t.name =~ /1018/
       #puts t.inspect
-      specify "test #{t.name}: " + (t.description || "#{t.inputDocument} against #{t.outputDocument}") do
+      specify "test #{t.name}: #{t.description}: #{t.inputDocument} against #{t.outputDocument}" do
         begin
+          if t.name =~ /1018/
+            pending("matcher does not stop")
+            next
+          elsif t.rdf_type == "CwmProofTest"
+            pending("proofs not supported")
+            next
+          end
           t.run_test do |rdf_string|
             t.debug = []
             g = RDF::Graph.new
@@ -28,7 +36,7 @@ describe RDF::N3::Reader do
             end
             g
           end
-        rescue #Spec::Expectations::ExpectationNotMetError => e
+        rescue Spec::Expectations::ExpectationNotMetError => e
           if t.status == "pending"
             pending("Formulae not supported") {  raise } 
           else

@@ -52,7 +52,8 @@ module RdfHelper
         pred = statement.predicate.to_s.split(/[\#\/]/).last
         obj  = statement.object.is_a?(RDF::Literal) ? statement.object.value : statement.object.to_s
 
-        puts "#{pred}: #{obj}" if ::RDF::N3::debug?
+        puts "#{pred.inspect}: #{obj}" if ::RDF::N3::debug?
+        pred = "outputDocument" if pred == "referenceOutput"
         if statement.predicate == RDF.type
           self.rdf_type = obj.to_s.split(/[\#\/]/).last
           #puts statement.subject.to_s
@@ -66,11 +67,7 @@ module RdfHelper
             self.about ||= about
             self.name ||= statement.subject.to_s.split(/[\#\/]/).last
           end
-        elsif pred == "referenceOutput"
-          puts "referenceOutput: #{obj}" if ::RDF::N3::debug?
-          outputDocument = obj.sub(uri_prefix, test_dir)
-          puts "referenceOutput: " + self.send(pred) if ::RDF::N3::debug?
-        elsif self.respond_to?("#{pred}=")
+       elsif self.respond_to?("#{pred}=")
           self.send("#{pred}=", obj)
         end
       end
@@ -78,13 +75,14 @@ module RdfHelper
 
     def parse_mf(subject, uri_prefix, test_dir, graph)
       props = graph.properties(subject)
-      @name = (props[MF['name'].to_s] || []).first.to_s
+      puts "MF #{subject}: #{props.inspect}" if ::RDF::N3::debug?
+      @name = (props[MF["name"].to_s] || []).first.to_s
       @description =  (props[RDF::RDFS.comment.to_s] || []).first.to_s
       @outputDocument = (props[MF.result.to_s] || []).first
       @outputDocument = @outputDocument.to_s.sub(uri_prefix, test_dir) if @outputDocument
       action = (props[MF.action.to_s] || []).first
       a_props = graph.properties(action)
-      @about = (a_props[QT.data.to_s] || []).first
+      @about = (a_props[QT.data.to_s] || []).first.to_s
       @inputDocument = @about.to_s.sub(uri_prefix, test_dir)
     end
 
@@ -97,6 +95,7 @@ module RdfHelper
         issue
         status
         approval
+        rdf_type
         description
         discussion
         issue
@@ -129,7 +128,9 @@ module RdfHelper
       when :array
         @parser.graph.should be_equivalent_graph(self.output, self)
       else
-        output_graph = RDF::Graph.load(self.outputDocument, :format => detect_format(self.outputDocument))
+        #puts "parse #{self.outputDocument} as #{RDF::Reader.for(self.outputDocument)}"
+        format = detect_format(File.open(self.outputDocument))
+        output_graph = RDF::Graph.load(self.outputDocument, :format => format, :base_uri => self.about)
         puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if ::RDF::N3::debug?
         graph.should Matchers::be_equivalent_graph(output_graph, self)
       end
@@ -166,12 +167,10 @@ module RdfHelper
         case graph.type_of(t_uri).first
         when MF.Manifest
           # Get test entries
-          entries = graph.query(:subject => t_uri, :predicate => MF["entries"]).to_a
-          entries = entries.first
+          entries = graph.first(:subject => t_uri, :predicate => MF["entries"])
           raise "No entires found for MF Manifest" unless entries.is_a?(RDF::Statement)
 
-          entries = RDF::List.new(entries.object, graph)
-          @test_cases = entries.each_subject.to_a.map do |subject|
+          @test_cases = RDF::List.new(entries.object, graph).to_a.map do |subject|
             TestCase.new(subject, uri_base, test_dir, :test_type => :mf, :graph => graph)
           end
         else

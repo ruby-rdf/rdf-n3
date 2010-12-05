@@ -1,0 +1,225 @@
+
+module RDF::N3
+  module Parser
+    START = 'http://www.w3.org/2000/10/swap/grammar/n3#document'
+    R_WHITESPACE = Regexp.compile('\A\s*(?:#.*$)?')
+    R_MLSTRING = Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")")
+    SINGLE_CHARACTER_SELECTORS = %{\t\r\n !\"#$\%&'()*.,+/;<=>?[\\]^`{|}~}
+    NOT_QNAME_CHARS = SINGLE_CHARACTER_SELECTORS + "@"
+    NOT_NAME_CHARS = NOT_QNAME_CHARS + ":"
+    
+    def error(str)
+      raise RDF::ReaderError, "\n#{@line}\n#{'-' * @pos}^\nError on line #{@lineno} at offset #{@pos}: #{str}"
+    end
+    
+    def parse(prod)
+      todo_stack = [{:prod => prod, :terms => nil}]
+      while !todo_stack.empty?
+        pushed = false
+        if todo_stack.last[:terms].nil?
+          todo_stack.last[:terms] = []
+          tok = self.token
+          #puts "parse tok: #{tok}, prod #{todo_stack.last[:prod]}"
+          
+          # Got an opened production
+          onStart(abbr(todo_stack.last[:prod]))
+          break if tok.nil?
+          
+          prod_branch = @branches[todo_stack.last[:prod]]
+          error("No branches found for '#{todo_stack.last[:prod]}'") if prod_branch.nil?
+          sequence = prod_branch[tok]
+          if sequence.nil?
+            dump_stack(todo_stack) if $verbose
+            error("Found '#{tok}' when expecting a #{todo_stack.last[:prod]}. keys='#{prod_branch.keys.to_sentence}'")
+          end
+          todo_stack.last[:terms] += sequence
+        end
+        
+        #puts "parse: #{todo_stack.last.inspect}"
+        while !todo_stack.last[:terms].to_a.empty?
+          term = todo_stack.last[:terms].shift
+          if term.is_a?(String)
+            puts "parse term(string): #{term}" if $verbose
+            word = buffer[0, term.length]
+            if word == term
+              onToken(term, word)
+              consume(term.length)
+            elsif '@' + word.chop == term && @keywords.include?(word.chop)
+              onToken(term, word.chop)
+              consume(term.length - 1)
+            else
+              error("Found '#{buffer[0, 10]}...'; #{term} expected")
+            end
+          elsif regexp = @regexps[term]
+            if abbr(term) == 'string' && buffer[0, 3] == '"""'
+              # Read until end of multi-line comment if this is the start of a multi-line comment
+              until R_MLSTRING.match(buffer)
+                begin
+                  next_line = @input.readline
+                  @line += next_line
+                  @lineno += 1
+                rescue EOFError => e
+                  error("EOF reached searching for end of multi-line comment")
+                end
+              end
+              #puts "ml-str now #{buffer.dump}"
+            end
+            md = regexp.match(buffer)
+            error("Token '#{buffer[0, 10]}...' should match #{regexp}") unless md
+            puts "parse term(regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
+            onToken(abbr(term), md.to_s)
+            consume(md[0].length)
+          else
+            puts "parse term(push): #{term}" if $verbose
+            todo_stack << {:prod => term, :terms => nil}
+            pushed = true
+            break
+          end
+          self.token
+        end
+        
+        while !pushed && todo_stack.last[:terms].to_a.empty?
+          todo_stack.pop
+          self.onFinish
+        end
+      end
+      while !todo_stack.empty?
+        todo_stack.pop
+        self.onFinish
+      end
+    end
+
+    # Memoizer for get_token
+    def token
+      unless @memo.has_key?(@pos)
+        tok = self.get_token
+        @memo[@pos] = tok
+        puts "token: '#{tok}'('#{buffer[0, 10]}...')" if buffer && $verbose
+      end
+      @memo[@pos]
+    end
+
+    def get_token
+      whitespace
+      
+      return nil if buffer.nil?
+      
+      ch2 = buffer[0, 2]
+      return ch2 if %w(=> <= ^^).include?(ch2)
+      
+      ch = buffer[0]
+      @keyword_mode = false if ch == '.' && @keyword_mode
+      
+      return ch if SINGLE_CHARACTER_SELECTORS.include?(ch)
+      return "0" if "+-0123456789".include?(ch)
+      
+      if ch == '@'
+        return '@' if @pos > 0 && @line[@pos-1] == '"'
+
+        j = 0
+        j += 1 while buffer[j+1] && !NOT_NAME_CHARS.include?(buffer[j+1])
+        name = buffer[1, j]
+        if name == 'keywords'
+          @keywords = []
+          @keyword_mode = true
+        end
+        return '@' + name
+      end
+
+      j = 0
+      j += 1 while buffer[j] && !NOT_QNAME_CHARS.include?(buffer[j])
+      word = buffer[0, j]
+      error("Tokenizer expected qname, found #{buffer[0, 10]}") unless word
+      if @keyword_mode
+        @keywords << word
+      elsif @keywords.include?(word)
+        if word == 'keywords'
+          @keywords = []
+          @keyword_mode = true
+        end
+        return '@' + word.to_s # implicit keyword
+      end
+
+      'a'
+    end
+    
+    def whitespace
+      while buffer && md = R_WHITESPACE.match(buffer)
+        return unless md[0].length > 0
+        consume(md[0].length)
+        #puts "ws: '#{md[0]}', pos=#{@pos}"
+      end
+    end
+    
+    def readline
+      @line = @input.readline
+      @lineno += 1
+      @line.force_encoding(Encoding::UTF_8) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
+      puts "readline[#{@lineno}]: '#{@line}'" if $verbose
+      @pos = 0
+      @line
+    rescue EOFError => e
+      @line, @pos = nil, 0
+    end
+    
+    # Return data from current off set to end of line
+    def buffer
+      @line[@pos, @line.length - @pos] unless @line.nil?
+    end
+    
+    # Cause n characters of line to be consumed. Read new line while line is empty or until eof
+    def consume(n)
+      @memo = {}
+      @pos += n
+      readline while @line && @line.length <= @pos
+      #puts "consume[#{n}]: '#{buffer}'" if $verbose
+    end
+    
+    def abbr(prodURI)
+      prodURI.to_s.split('#').last
+    end
+    
+    def onStart(prod)
+      $stdout.puts ' ' * @productions.length + prod
+      @productions << prod
+    end
+
+    def onFinish
+      prod = @productions.pop()
+      $stdout.puts ' ' * @productions.length + '/' + prod
+    end
+
+    def onToken(prod, tok)
+      $stdout.puts ' ' * @productions.length + "#{prod}(#{tok})"
+    end
+    
+    def dump_stack(stack)
+      STDERR.puts "\nstack trace:"
+      stack.reverse.each do |se|
+        STDERR.puts "#{se[:prod]}"
+        STDERR.puts "  " + case se[:terms]
+        when nil then "nil"
+        when [] then "empty"
+        else          se[:terms].join(",\n  ")
+        end
+      end
+    end
+    
+    def test(input, branches, regexps)
+      # FIXME: for now, read in entire doc, eventually, process as stream
+      @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
+      @lineno = 0
+      readline  # Prime the pump
+      $stdout ||= STDOUT
+      
+      @memo = {}
+      @keyword_mode = false
+      @keywords = %w(a is of this has)
+      @productions = []
+
+      @branches = branches
+      @regexps = regexps
+      parse(START.to_sym)
+    end
+  end
+end

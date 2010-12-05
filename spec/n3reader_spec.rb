@@ -347,9 +347,9 @@ describe "RDF::N3::Reader" do
     describe "syntactic expressions" do
       it "should create typed literals with qname" do
         n3doc = %(
-          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-          @prefix foaf: <http://xmlns.com/foaf/0.1/>
-          @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+          @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+          @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
           <http://example.org/joe> foaf:name \"Joe\"^^xsd:string .
         )
         statement = parse(n3doc).statements.first
@@ -564,7 +564,6 @@ describe "RDF::N3::Reader" do
     
     describe "keywords" do
       [
-        %(prefix :<>.),
         %(base <>.),
         %(keywords a.),
         %(:a is :b of :c.),
@@ -575,10 +574,19 @@ describe "RDF::N3::Reader" do
         it "should require @ if keywords set to empty for '#{n3}'" do
           lambda do
             parse("@keywords . #{n3}", :base_uri => "http://a/b")
-          end.should raise_error(/unqualified keyword '\w+' used without @keyword directive/)
+          end.should raise_error(RDF::ReaderError)
         end
       end
       
+      [
+        %(prefix :<>.),
+      ].each do |n3|
+        it "parses as local name if keywords set to empty for '#{n3}'" do
+          lambda do
+            parse("@keywords . #{n3}", :base_uri => "http://a/b")
+          end.should_not raise_error(RDF::ReaderError)
+        end
+      end
       {
         %(:a a :b)  => %(<http://a/b#a> <http://a/b#a> <http://a/b#b> .),
         %(:a :b true) => %(<http://a/b#a> <http://a/b#b> <http://a/b#true> .),
@@ -609,7 +617,7 @@ describe "RDF::N3::Reader" do
         n3 = %(@keywords foo.)
         lambda do
           parse(n3, :base_uri => "http://a/b")
-        end.should raise_error(RDF::ReaderError, "undefined keywords used: foo")
+        end.should raise_error(RDF::ReaderError, /Undefined keywords used: foo/)
       end
     end
     
@@ -742,12 +750,6 @@ describe "RDF::N3::Reader" do
       end
 
       describe "from paths" do
-        it "should create bnode for path x.p" do
-          n3 = %(:x2.:y2 :p2 "3" .)
-          nt = %(:x2 :y2 _:bnode0 . _:bnode0 :p2 "3" .)
-          parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
-        end
-      
         it "should create bnode for path x!p" do
           n3 = %(:x2!:y2 :p2 "3" .)
           nt = %(:x2 :y2 _:bnode0 . _:bnode0 :p2 "3" .)
@@ -792,7 +794,7 @@ describe "RDF::N3::Reader" do
         it "should decode path with property list." do
           n3 = %(
           @prefix a: <http://a/ns#>.
-          :a2.a:b2.a:c2 :q1 "3" ; :q2 "4" , "5" .
+          :a2!a:b2!a:c2 :q1 "3" ; :q2 "4" , "5" .
           )
           nt = %(
           :a2 <http://a/ns#b2> _:bnode0 .
@@ -814,7 +816,7 @@ describe "RDF::N3::Reader" do
         end
 
         it "should decode path as object(2)" do
-          n3 = %(@prefix a: <http://a/ns#>. :r :p :o.a:p1.a:p2 .)
+          n3 = %(@prefix a: <http://a/ns#>. :r :p :o!a:p1!a:p2 .)
           nt = %(
           :o <http://a/ns#p1> _:bnode0 .
           _:bnode0 <http://a/ns#p2> _:bnode1 .
@@ -917,31 +919,32 @@ describe "RDF::N3::Reader" do
         nt = %(<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> <http://foo/a#prop> "nilProp" .)
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
+
       it "should parse with compound items" do
         n3 = %(
-        @prefix a: <http://foo/a#> .
-
-        a:a a:p ( [ a:p2 "v1" ] 
-        	  <http://resource1>
-        	  <http://resource2>
-        	  ("inner list") ) .
-
-        <http://resource1> a:p "value" .
+          @prefix a: <http://foo/a#> .
+          a:a a:p (
+            [ a:p2 "v1" ] 
+            <http://resource1>
+            <http://resource2>
+            ("inner list")
+          ) .
+          <http://resource1> a:p "value" .
         )
         nt = %(
-        <http://foo/a#a> <http://foo/a#p> _:bnode5 .
-        _:bnode5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode4 .
-        _:bnode5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode2 .
-        _:bnode4 <http://foo/a#p2> "v1" .
-        _:bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://resource1> .
+        <http://foo/a#a> <http://foo/a#p> _:bnode3 .
         <http://resource1> <http://foo/a#p> "value" .
+        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode5 .
+        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode2 .
+        _:bnode5 <http://foo/a#p2> "v1" .
+        _:bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://resource1> .
         _:bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode1 .
         _:bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://resource2> .
         _:bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode0 .
-        _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode3 .
+        _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode4 .
         _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "inner list" .
-        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        _:bnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "inner list" .
+        _:bnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
         )
         g = parse(n3, :base_uri => "http://a/b")
         normalize_bnodes(g, "bnode0").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
@@ -1069,13 +1072,13 @@ describe "RDF::N3::Reader" do
 #    end
 
     {
-      %("+1"^^xsd:integer) => %("1"^^xsd:integer),
-      %(+1) => %("1"^^xsd:integer),
-      %(true) => %("true"^^xsd:boolean),
+      %("+1"^^xsd:integer) => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(+1) => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(true) => %("true"^^<http://www.w3.org/2001/XMLSchema#boolean>),
       %("lang"@EN) => %("lang"@en),
     }.each_pair do |input, result|
       it "returns object #{result} given #{input}" do
-        n3 = %(:a :b #{input} .)
+        n3 = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{input} .)
         nt = %(<http://a/b#a> <http://a/b#b> #{result} .)
         parse(n3, :base_uri => "http://a/b", :canonicalize => true).should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
@@ -1088,10 +1091,10 @@ describe "RDF::N3::Reader" do
       %(:y :p1 "12xyz"^^xsd:integer .) => %r("12xyz" is not a valid .*),
       %(:y :p1 "xy.z"^^xsd:double .) => %r("xy\.z" is not a valid .*),
       %(:y :p1 "+1.0z"^^xsd:double .) => %r("\+1.0z" is not a valid .*),
-      %(:a :b .) => %r(Illegal statment: ".*" missing object),
+      %(:a :b .) =>RDF::ReaderError,
       %(:a :b 'single quote' .) => RDF::ReaderError,
       %(:a "literal value" :b .) => RDF::ReaderError,
-      %(@keywords prefix. :e prefix :f .) => %r(Keyword ".*" used as expression)
+      %(@keywords prefix. :e prefix :f .) => RDF::ReaderError
     }.each_pair do |n3, error|
       it "should raise '#{error}' for '#{n3}'" do
         lambda {
