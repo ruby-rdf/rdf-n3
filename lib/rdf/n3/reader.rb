@@ -146,7 +146,7 @@ module RDF::N3
     end
     
     def booleanToken(prod, tok)
-      lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => true)
+      lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
       add_prod_data(:literal, lit)
     end
     
@@ -294,12 +294,12 @@ module RDF::N3
         else RDF::XSD.integer
         end
         
-        lit = RDF::Literal.new(nl, :datatype => datatype, :validate => validate?, :canonicalize => true)
+        lit = RDF::Literal.new(nl, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)
         add_prod_data(:literal, lit)
       when "quickvariable"
         error("pathitemToken(quickvariable): FIXME #{pathitem.inspect}")
       when "boolean"
-        lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => true)
+        lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
         add_prod_data(:literal, lit)
       when "[", "("
         # Push on state for content of blank node

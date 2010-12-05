@@ -9,10 +9,9 @@ begin
     gemspec.summary = "Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb."
     gemspec.description = %q(RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.)
     gemspec.email = "gregg@kellogg-assoc.com"
-    gemspec.homepage = "http://github.com/gkellogg/rdf-rdfa"
+    gemspec.homepage = "http://github.com/gkellogg/rdf-n3"
     gemspec.authors = ["Gregg Kellogg"]
     gemspec.add_dependency('rdf', '= 0.3.0.pre')
-    gemspec.add_dependency('treetop',  '>= 1.4.0')
     gemspec.add_development_dependency('rspec', '~> 1.3.0')
     gemspec.add_development_dependency('rdf-spec', '>= 0.2.1')
     gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.1')
