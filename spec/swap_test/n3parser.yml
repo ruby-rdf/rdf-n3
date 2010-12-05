@@ -118,20 +118,6 @@
   outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10018.nt
   rdf_type: PositiveParserTest
 - !ruby/object:RdfHelper::TestCase 
-  about: http://www.w3.org/2000/10/swap/test/syntax/this-quantifiers.n3
-  description: Can still read the old 'this log:forSome' syntax?
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/this-quantifiers.n3
-  name: n3_10019
-  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10019.nt
-  rdf_type: NegativeParserTest
-- !ruby/object:RdfHelper::TestCase 
-  about: http://www.w3.org/2000/10/swap/test/syntax/this-rules.n3
-  description: Can still read the old 'this log:forAll' syntax
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/this-rules.n3
-  name: n3_10020
-  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/n3/n3parser.tests_n3_10020.nt
-  rdf_type: NegativeParserTest
-- !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/equals1.n3
   description: The = keyword
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/equals1.n3
