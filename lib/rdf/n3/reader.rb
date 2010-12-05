@@ -52,8 +52,6 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if _validate_
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @uri = uri(options[:base_uri]) if options[:base_uri]
-
         @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
         @lineno = 0
         readline  # Prime the pump
@@ -67,9 +65,11 @@ module RDF::N3
         @branches = BRANCHES # Get from meta class
         @regexps = REGEXPS # Get from meta class
         
-        @formulae = []    # Nodes used as Formluae context identifiers
+        @formulae = []      # Nodes used as Formluae context identifiers
+        @variables = {}    # variable definitions along with defining formula
 
-        if @uri
+        if options[:base_uri]
+          @uri = uri(options[:base_uri])
           add_debug("@uri", "#{@uri.inspect}")
           namespace(nil, uri("#{options[:base_uri]}#"))
         end
@@ -200,7 +200,7 @@ module RDF::N3
     
     # Document start, instantiate
     def documentStart(prod)
-      @formulae.push(bnode)
+      @formulae.push(nil)
       @prod_data << {}
     end
     
@@ -212,13 +212,18 @@ module RDF::N3
       @prod_data << {}
     end
 
+    # Apart from the set of statements, a formula also has a set of URIs of symbols which are universally quantified,
+    # and a set of URIs of symbols which are existentially quantified.
+    # Variables are then in general symbols which have been quantified.
+    #
+    # Here we allocate a variable (making up a name) and record with the defining formula. Quantification is done
+    # when the formula is completed against all in-scope variables
     def existentialFinish
       pd = @prod_data.pop
       forSome = [pd[:symbol]].flatten.compact
       forSome.each do |term|
-#        b = bnode
-#        @existentials[term] = {:formula => @formulae.last, :node => b}
-#        quantify(@formulae.last, b)
+        b = bnode
+        @variables[term.to_s.to_sym] = {:formula => @formulae.last, :var => b}
       end
     end
     
@@ -297,7 +302,11 @@ module RDF::N3
         lit = RDF::Literal.new(nl, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)
         add_prod_data(:literal, lit)
       when "quickvariable"
-        error("pathitemToken(quickvariable): FIXME #{pathitem.inspect}")
+        # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
+        # universally quantified not in the formula but in its parent formula
+        uri = process_qname(tok.sub('?'), ':')
+        @variables[uri.to_s.to_sym] = { :formula => @formulae[-2], :var => univar(uri) }
+        add_prod_data(:symbol, uri)
       when "boolean"
         lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
         add_prod_data(:literal, lit)
@@ -308,6 +317,15 @@ module RDF::N3
         # Construct
         symbol = process_anonnode(@prod_data.pop)
         add_prod_data(:symbol, symbol)
+      when "{"
+        # A new formula, push on a graph as a formula context
+        context = RDF::Graph.new
+        @formulae << context
+      when "}"
+        # Pop off the formula, and remove any variables defined in this context
+        formula = @formulae.pop
+        @variables.delete_if {|v| v[:formula] == formula}
+        add_prod_data(:symbol, formula)
       else
         error("pathitemToken(#{prod}, #{tok}): FIXME")
       end
@@ -426,13 +444,17 @@ module RDF::N3
       @prod_data << {}
     end
 
+    # Apart from the set of statements, a formula also has a set of URIs of symbols which are universally quantified,
+    # and a set of URIs of symbols which are existentially quantified.
+    # Variables are then in general symbols which have been quantified.
+    #
+    # Here we allocate a variable (making up a name) and record with the defining formula. Quantification is done
+    # when the formula is completed against all in-scope variables
     def universalFinish
       pd = @prod_data.pop
       forAll = [pd[:symbol]].flatten.compact
       forAll.each do |term|
-#        v = self.univar('var')
-#        @universals[term] = {:formula => @formulae,last, :var => v}
-#        quantify(@formulae.last, v)
+        @variables[term.to_s.to_sym] = { :formula => @formulae.last, :var => univar(term) }
       end
     end
 
@@ -478,56 +500,6 @@ module RDF::N3
     ###################
     # Utility Functions
     ###################
-
-    # Add values to production data, values aranged as an array
-    def add_prod_data(sym, value)
-      case @prod_data.last[sym]
-      when nil
-        @prod_data.last[sym] = value
-      when Array
-        @prod_data.last[sym] << value
-      else
-        @prod_data.last[sym] = [@prod_data.last[sym], value]
-      end
-    end
-
-    # Keep track of allocated BNodes
-    def bnode(value = nil)
-      @bnode_cache ||= {}
-      @bnode_cache[value.to_s] ||= RDF::Node.new(value)
-    end
-
-    # Add debug event to debug array, if specified
-    #
-    # @param [XML Node, any] node:: XML Node or string for showing context
-    # @param [String] message::
-    def add_debug(node, message)
-      puts "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if ::RDF::N3::debug?
-      @options[:debug] << "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if @options[:debug].is_a?(Array)
-    end
-
-    # add a statement, object can be literal or URI or bnode
-    #
-    # @param [Nokogiri::XML::Node, any] node:: XML Node or string for showing context
-    # @param [URI, Node] subject:: the subject of the statement
-    # @param [URI] predicate:: the predicate of the statement
-    # @param [URI, Node, Literal] object:: the object of the statement
-    # @return [Statement]:: Added statement
-    # @raise [RDF::ReaderError]:: Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
-    def add_triple(node, subject, predicate, object)
-      statement = RDF::Statement.new(subject, predicate, object)
-      add_debug(node, statement.to_s)
-      @callback.call(statement)
-    end
-
-    def namespace(prefix, uri)
-      uri = uri.to_s
-      if uri == "#"
-        uri = prefix(nil)
-      end
-      add_debug("namesspace", "'#{prefix}' <#{uri}>")
-      prefix(prefix, uri(uri))
-    end
 
     def process_anonnode(anonnode)
       add_debug("process_anonnode", anonnode.inspect)
@@ -626,6 +598,65 @@ module RDF::N3
       uri
     end
     
+    # Add values to production data, values aranged as an array
+    def add_prod_data(sym, value)
+      case @prod_data.last[sym]
+      when nil
+        @prod_data.last[sym] = value
+      when Array
+        @prod_data.last[sym] << value
+      else
+        @prod_data.last[sym] = [@prod_data.last[sym], value]
+      end
+    end
+
+    # Keep track of allocated BNodes
+    def bnode(value = nil)
+      @bnode_cache ||= {}
+      @bnode_cache[value.to_s] ||= RDF::Node.new(value)
+    end
+
+    def univar(label)
+      unless label
+        @unnamed_label ||= "var0"
+        label = @unnamed_label = @unnamed_label.succ
+      end
+      RDF::Query::Variable.new(label.to_s)
+    end
+
+    # Add debug event to debug array, if specified
+    #
+    # @param [XML Node, any] node:: XML Node or string for showing context
+    # @param [String] message::
+    def add_debug(node, message)
+      puts "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if ::RDF::N3::debug?
+      @options[:debug] << "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if @options[:debug].is_a?(Array)
+    end
+
+    # add a statement, object can be literal or URI or bnode
+    #
+    # @param [Nokogiri::XML::Node, any] node:: XML Node or string for showing context
+    # @param [URI, Node] subject:: the subject of the statement
+    # @param [URI] predicate:: the predicate of the statement
+    # @param [URI, Node, Literal] object:: the object of the statement
+    # @return [Statement]:: Added statement
+    # @raise [RDF::ReaderError]:: Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
+    def add_triple(node, subject, predicate, object)
+      context_opts = {:context => @formulae.last} if @formulae.last
+      statement = RDF::Statement.new(subject, predicate, object, context_opts || {})
+      add_debug(node, statement.to_s)
+      @callback.call(statement)
+    end
+
+    def namespace(prefix, uri)
+      uri = uri.to_s
+      if uri == "#"
+        uri = prefix(nil)
+      end
+      add_debug("namesspace", "'#{prefix}' <#{uri}>")
+      prefix(prefix, uri(uri))
+    end
+
     # Is this an allowable keyword?
     def keyword_check(kw)
       unless (@keywords || %w(a is of has)).include?(kw)
@@ -640,6 +671,12 @@ module RDF::N3
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
       value = RDF::URI.intern(value) if intern?
+      
+      # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
+      # the current formula
+      var = @variables[value.to_s.to_sym]
+      value = var[:var] if var
+
       value
     end
     
