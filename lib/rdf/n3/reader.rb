@@ -214,11 +214,11 @@ module RDF::N3
 
     def existentialFinish
       pd = @prod_data.pop
-      forSome = pd.has_key?(:symbol) ? pd[:symbol] : []
+      forSome = [pd[:symbol]].flatten.compact
       forSome.each do |term|
-        b = bnode
-        @existentials[term] = {:formula => @formulae.last, :node => b}
-        quantify(@formulae.last, b)
+#        b = bnode
+#        @existentials[term] = {:formula => @formulae.last, :node => b}
+#        quantify(@formulae.last, b)
       end
     end
     
@@ -230,7 +230,16 @@ module RDF::N3
     def expressionFinish
       expression = @prod_data.pop
       
-      if expression[:pathitem] && expression[:expression]
+      # If we're in teh middle of a pathtail, append
+      if @prod_data.last[:pathtail] && expression[:pathitem] && expression[:pathtail]
+        path_list = [expression[:pathitem]] + expression[:pathtail]
+        add_debug("expressionFinish(pathtail)", "set pathtail to #{path_list.inspect}")
+        @prod_data.last[:pathtail] = path_list
+
+        dir_list = [expression[:direction]] if expression[:direction]
+        dir_list += expression[:directiontail] if expression[:directiontail]
+        @prod_data.last[:directiontail] = dir_list if dir_list
+      elsif expression[:pathitem] && expression[:pathtail]
         add_prod_data(:expression, process_path(expression))
       elsif expression[:pathitem]
         add_prod_data(:expression, expression[:pathitem])
@@ -329,6 +338,26 @@ module RDF::N3
       add_prod_data(:pathlist, pathlist[:pathlist]) if pathlist[:pathlist]
     end
     
+    def pathtailStart(prod)
+      @prod_data << {:pathtail => []}
+    end
+    
+    def pathtailToken(prod, tok)
+      case tok
+      when "!", "."
+        add_prod_data(:direction, :forward)
+      when "^"
+        add_prod_data(:direction, :reverse)
+      end
+    end
+    
+    def pathtailFinish
+      pathtail = @prod_data.pop
+      add_prod_data(:pathtail, pathtail[:pathtail])
+      add_prod_data(:direction, pathtail[:direction]) if pathtail[:direction]
+      add_prod_data(:directiontail, pathtail[:directiontail]) if pathtail[:directiontail]
+    end
+    
     def propertylistStart(prod)
       @prod_data << {}
     end
@@ -399,7 +428,7 @@ module RDF::N3
 
     def universalFinish
       pd = @prod_data.pop
-      forAll = pd.has_key?(:symbol) ? pd[:symbol] : []
+      forAll = [pd[:symbol]].flatten.compact
       forAll.each do |term|
 #        v = self.univar('var')
 #        @universals[term] = {:formula => @formulae,last, :var => v}
@@ -532,121 +561,35 @@ module RDF::N3
       bnode
     end
 
-    def process_expression(expression)
-      if expression.respond_to?(:pathitem) && expression.respond_to?(:expression)
-        add_debug(*expression.info("process_expression(pathitem && expression)"))
-        process_path(expression)  # Returns last object in chain
-      elsif expression.respond_to?(:uri)
-        add_debug(*expression.info("process_expression(uri)"))
-        process_uri(expression.uri)
-      elsif expression.respond_to?(:localname)
-        add_debug(*expression.info("process_expression(localname)"))
-        process_qname(expression)
-      elsif expression.respond_to?(:anonnode)
-        add_debug(*expression.info("process_expression(anonnode)"))
-        process_anonnode(expression)
-      elsif expression.respond_to?(:literal)
-        add_debug(*expression.info("process_expression(literal)"))
-        process_literal(expression)
-      elsif expression.respond_to?(:numericliteral)
-        add_debug(*expression.info("process_expression(numericliteral)"))
-        process_numeric_literal(expression)
-      elsif expression.respond_to?(:boolean)
-        add_debug(*expression.info("process_expression(boolean)"))
-        barename = expression.text_value.to_s
-        if @keywords && !@keywords.include?(barename)
-          process_qname(barename)
-        else
-          RDF::Literal.new(barename.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
-        end
-      elsif expression.respond_to?(:barename)
-        add_debug(*expression.info("process_expression(barename)"))
-        barename = expression.text_value.to_s
-        
-        # Should only happen if @keywords is defined, and text_value is not a defined keyword
-        case barename
-        when "true"   then RDF::Literal.new("true", :datatype => RDF::XSD.boolean)
-        when "false"  then RDF::Literal.new("false", :datatype => RDF::XSD.boolean)
-        else
-          # create URI using barename, unless it's in defined set, in which case it's an error
-          raise RDF::ReaderError, %Q(Keyword "#{barename}" used as expression) if @keywords && @keywords.include?(barename)
-          process_qname(barename)
-        end
-      else
-        add_debug(*expression.info("process_expression(else)"))
-        process_qname(expression)
-      end
-    end
-
     # Process a path, such as:
-    #   :a.:b means [is :b of :a]
-    #   :a!:b means [is :b of :a]
-    #   :a^:b means [:b :a]
+    #   :a.:b means [is :b of :a] Deprecated
+    #   :a!:b means [is :b of :a] => :a :b []
+    #   :a^:b means [:b :a]       => [] :b :a
     #
-    # Elements may be strug together, with the last element the verb applied to the previous expression:
-    #   :a.:b.:c means [is :c of [ is :b of :a]]
-    #   :a!:b^:c meands [:c [ is :b of :a]]
+    # Create triple and return property used for next iteration
     def process_path(expression)
       add_debug("process_path", expression.inspect)
 
-      object = process_pathitem(expression[:pathitem])
+      pathitem = expression[:pathitem]
+      pathtail = expression[:pathtail]
       
-      # Create a list of direction/predicate pairs
-      path_list = process_path_list(path.expression, path.respond_to?(:reverse))
-      #puts path_list.inspect
-      # Now we should have the following
-      # [
-      #   [:forward, b]
-      #   [:forward, c]
-      # ]
-      path_list.each do |p|
-        reverse, pred = p
+      direction_list = [expression[:direction], expression[:directiontail]].flatten.compact
+
+      pathtail.each do |pred|
+        direction = direction_list.shift
         bnode = RDF::Node.new
-        if reverse
-          add_triple("path(#{reverse})", bnode, pred, object)
+        if direction == :reverse
+          add_triple("process_path(reverse)", bnode, pred, pathitem)
         else
-          add_triple("path(#{reverse})", object, pred, bnode)
+          add_triple("process_path(forward)", pathitem, pred, bnode)
         end
-        object = bnode
+        pathitem = bnode
       end
-      object
+      pathitem
     end
 
-    # Returns array of [:forward/:reverse, element] pairs
-    def process_path_list(path, reverse)
-      add_debug(*path.info("process_path_list(#{reverse})"))
-      if path.respond_to?(:pathitem)
-        [[reverse, process_expression(path.pathitem)]] + process_path_list(path.expression, path.respond_to?(:reverse))
-      else
-        [[reverse, process_expression(path)]]
-      end
-    end
-    
     def process_uri(uri)
       uri(@uri, RDF::NTriples.unescape(uri))
-    end
-    
-    def process_objects(objects)
-      add_debug(*objects.info("process_objects"))
-      result = []
-      if objects.respond_to?(:object)
-        result << process_expression(objects.object)
-      elsif objects.respond_to?(:pathitem)
-        result << process_expression(objects)
-      elsif objects.respond_to?(:expression)
-        result << process_expression(objects.expression)
-        result << process_objects(objects.path_list) if objects.respond_to?(:path_list)
-      elsif !objects.text_value.empty? || objects.respond_to?(:nprefix)
-        result << process_expression(objects)
-      end
-      result << process_objects(objects.object_list) if objects.respond_to?(:object_list)
-      result.flatten
-    end
-
-    def process_numeric_literal(object)
-      add_debug(*object.info("process_numeric_literal"))
-
-      RDF::Literal.new(RDF::NTriples.unescape(object.text_value), :datatype => RDF::XSD[object.numericliteral], :validate => validate?, :canonicalize => canonicalize?)
     end
     
     def process_qname(tok)
