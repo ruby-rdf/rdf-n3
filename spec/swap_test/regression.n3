@@ -120,11 +120,11 @@
   test:description   "A loop of anonymous nodes wasn't being printed at all";
   test:arguments     """anonymous_loop.n3""".
 
-:t1008 a test:CwmTest, test:CwmProofTest;
-  test:referenceOutput <ref/daml-ont.n3>;
-  n3test:inputDocument <daml-pref.n3> ;
-  test:description   "Convert some RDF/XML into RDF/N3";
-  test:arguments     """daml-pref.n3 -rdf daml-ont.rdf -n3""".
+#:t1008 a test:CwmTest, test:CwmProofTest;
+#  test:referenceOutput <ref/daml-ont.n3>;
+#  n3test:inputDocument <daml-pref.n3> ;
+#  test:description   "Convert some RDF/XML into RDF/N3";
+#  test:arguments     """daml-pref.n3 -rdf daml-ont.rdf -n3""".
 
 :t1008a a test:CwmTest, test:CwmProofTest;
   test:referenceOutput <ref/colon-in-uri.n3>;

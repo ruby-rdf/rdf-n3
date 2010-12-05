@@ -134,13 +134,6 @@
   outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/anonymous_loop.ref
   rdf_type: CwmProofTest
 - !ruby/object:RdfHelper::TestCase 
-  about: http://www.w3.org/2000/10/swap/test/daml-pref.n3
-  description: Convert some RDF/XML into RDF/N3
-  inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/daml-pref.n3
-  name: t1008
-  outputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/ref/daml-ont.n3
-  rdf_type: CwmProofTest
-- !ruby/object:RdfHelper::TestCase 
   about: http://www.w3.org/2000/10/swap/test/syntax/colon-in-uri.rdf
   description: When rdf/xml localnames are not valid qNames
   inputDocument: /Users/gregg/Projects/rdf-n3/spec/swap_test/syntax/colon-in-uri.rdf
