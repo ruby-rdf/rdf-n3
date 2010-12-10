@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2010-11-18}
+  s.date = %q{2010-12-10}
   s.description = %q{RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.}
   s.email = %q{gregg@kellogg-assoc.com}
   s.extra_rdoc_files = [
@@ -25,21 +25,21 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "example-files/sp2b.n3",
      "example.rb",
      "lib/rdf/n3.rb",
      "lib/rdf/n3/format.rb",
      "lib/rdf/n3/patches/array_hacks.rb",
      "lib/rdf/n3/patches/graph_properties.rb",
-     "lib/rdf/n3/patches/seq.rb",
      "lib/rdf/n3/reader.rb",
-     "lib/rdf/n3/reader/n3_grammar.rb",
-     "lib/rdf/n3/reader/n3_grammar.treetop",
-     "lib/rdf/n3/reader/n3_grammar_18.rb",
-     "lib/rdf/n3/reader/n3_grammar_18.treetop",
+     "lib/rdf/n3/reader/meta.rb",
+     "lib/rdf/n3/reader/n3-selectors.n3",
+     "lib/rdf/n3/reader/parser.rb",
      "lib/rdf/n3/version.rb",
      "lib/rdf/n3/vocab.rb",
      "lib/rdf/n3/writer.rb",
      "rdf-n3.gemspec",
+     "script/build_meta",
      "script/console",
      "script/parse",
      "script/tc",
@@ -530,7 +530,9 @@ Gem::Specification.new do |s|
      "spec/turtle/bad-13.ttl",
      "spec/turtle/bad-14.ttl",
      "spec/turtle/manifest-bad.ttl",
+     "spec/turtle/manifest-bad.yml",
      "spec/turtle/manifest.ttl",
+     "spec/turtle/manifest.yml",
      "spec/turtle/rdf-schema.out",
      "spec/turtle/rdf-schema.ttl",
      "spec/turtle/rdfq-results.out",
@@ -603,7 +605,7 @@ Gem::Specification.new do |s|
      "spec/turtle_spec.rb",
      "spec/writer_spec.rb"
   ]
-  s.homepage = %q{http://github.com/gkellogg/rdf-rdfa}
+  s.homepage = %q{http://github.com/gkellogg/rdf-n3}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
@@ -626,16 +628,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rdf>, ["= 0.3.0.pre"])
-      s.add_runtime_dependency(%q<treetop>, [">= 1.4.0"])
-      s.add_development_dependency(%q<rspec>, ["= 1.3.0"])
+      s.add_development_dependency(%q<rspec>, ["~> 1.3.0"])
       s.add_development_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_development_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
       s.add_development_dependency(%q<rdf-isomorphic>, [">= 0"])
       s.add_development_dependency(%q<yard>, [">= 0"])
     else
       s.add_dependency(%q<rdf>, ["= 0.3.0.pre"])
-      s.add_dependency(%q<treetop>, [">= 1.4.0"])
-      s.add_dependency(%q<rspec>, ["= 1.3.0"])
+      s.add_dependency(%q<rspec>, ["~> 1.3.0"])
       s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
       s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
@@ -643,8 +643,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<rdf>, ["= 0.3.0.pre"])
-    s.add_dependency(%q<treetop>, [">= 1.4.0"])
-    s.add_dependency(%q<rspec>, ["= 1.3.0"])
+    s.add_dependency(%q<rspec>, ["~> 1.3.0"])
     s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
     s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
     s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
