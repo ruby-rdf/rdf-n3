@@ -153,7 +153,7 @@ module RDF::N3
       start_document
 
       order_subjects.each do |subject|
-        #puts "subj: #{subject.inspect}"
+        #STDERR.puts "subj: #{subject.inspect}"
         unless is_done?(subject)
           statement(subject)
         end
@@ -188,7 +188,7 @@ module RDF::N3
       end
       
       @uri_to_qname[uri]
-    rescue Addressable::URI::InvalidURIError
+    rescue Addressable::URI::InvalidURIError => e
        @uri_to_qname[uri] = nil
     end
     
@@ -384,23 +384,23 @@ module RDF::N3
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
       props = @graph.properties(l)
-      #puts "is_valid_list: #{props.inspect}" if ::RDF::N3::debug?
+      #STDERR.puts "is_valid_list: #{props.inspect}" if ::RDF::N3::debug?
       return false unless props.has_key?(RDF.first.to_s) || l == RDF.nil
       while l && l != RDF.nil do
-        #puts "is_valid_list(length): #{props.length}" if ::RDF::N3::debug?
+        #STDERR.puts "is_valid_list(length): #{props.length}" if ::RDF::N3::debug?
         return false unless props.has_key?(RDF.first.to_s) && props.has_key?(RDF.rest.to_s)
         n = props[RDF.rest.to_s]
-        #puts "is_valid_list(n): #{n.inspect}" if ::RDF::N3::debug?
+        #STDERR.puts "is_valid_list(n): #{n.inspect}" if ::RDF::N3::debug?
         return false unless n.is_a?(Array) && n.length == 1
         l = n.first
         props = @graph.properties(l)
       end
-      #puts "is_valid_list: valid" if ::RDF::N3::debug?
+      #STDERR.puts "is_valid_list: valid" if ::RDF::N3::debug?
       true
     end
     
     def do_list(l)
-      puts "do_list: #{l.inspect}" if ::RDF::N3::debug?
+      STDERR.puts "do_list: #{l.inspect}" if ::RDF::N3::debug?
       position = :subject
       while l do
         p = @graph.properties(l)
@@ -416,7 +416,7 @@ module RDF::N3
     
     def p_list(node, position)
       return false if !is_valid_list(node)
-      #puts "p_list: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #STDERR.puts "p_list: #{node.inspect}, #{position}" if ::RDF::N3::debug?
 
       @output.write(position == :subject ? "(" : " (")
       @depth += 2
@@ -434,7 +434,7 @@ module RDF::N3
     def p_squared(node, position)
       return false unless p_squared?(node, position)
 
-      #puts "p_squared: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #STDERR.puts "p_squared: #{node.inspect}, #{position}" if ::RDF::N3::debug?
       subject_done(node)
       @output.write(position == :subject ? '[' : ' [')
       @depth += 2
@@ -446,18 +446,18 @@ module RDF::N3
     end
     
     def p_default(node, position)
-      #puts "p_default: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #STDERR.puts "p_default: #{node.inspect}, #{position}" if ::RDF::N3::debug?
       l = (position == :subject ? "" : " ") + format_value(node)
       @output.write(l)
     end
     
     def path(node, position)
-      puts "path: #{node.inspect}, pos: #{position}, []: #{is_valid_list(node)}, p2?: #{p_squared?(node, position)}, rc: #{ref_count(node)}" if ::RDF::N3::debug?
+      STDERR.puts "path: #{node.inspect}, pos: #{position}, []: #{is_valid_list(node)}, p2?: #{p_squared?(node, position)}, rc: #{ref_count(node)}" if ::RDF::N3::debug?
       raise RDF::WriterError, "Cannot serialize node '#{node}'" unless p_list(node, position) || p_squared(node, position) || p_default(node, position)
     end
     
     def verb(node)
-      puts "verb: #{node.inspect}" if ::RDF::N3::debug?
+      STDERR.puts "verb: #{node.inspect}" if ::RDF::N3::debug?
       if node == RDF.type
         @output.write(" a")
       else
@@ -466,7 +466,7 @@ module RDF::N3
     end
     
     def object_list(objects)
-      puts "object_list: #{objects.inspect}" if ::RDF::N3::debug?
+      STDERR.puts "object_list: #{objects.inspect}" if ::RDF::N3::debug?
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
@@ -478,13 +478,18 @@ module RDF::N3
     def predicate_list(subject)
       properties = @graph.properties(subject)
       prop_list = sort_properties(properties) - [RDF.first.to_s, RDF.rest.to_s]
-      puts "predicate_list: #{prop_list.inspect}" if ::RDF::N3::debug?
+      STDERR.puts "predicate_list: #{prop_list.inspect}" if ::RDF::N3::debug?
       return if prop_list.empty?
 
       prop_list.each_with_index do |prop, i|
-        @output.write(";\n#{indent(2)}") if i > 0
-        verb(RDF::URI.intern(prop))
-        object_list(properties[prop])
+        begin
+          @output.write(";\n#{indent(2)}") if i > 0
+          prop[0, 2] == "_:"
+          verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
+          object_list(properties[prop])
+        rescue Addressable::URI::InvalidURIError => e
+          STDERR.puts "Predicate #{prop.inspect} is an invalid URI: #{e.message}"
+        end
       end
     end
     
@@ -512,7 +517,7 @@ module RDF::N3
     end
     
     def statement(subject)
-      puts "statement: #{subject.inspect}, s2?: #{s_squared(subject)}" if ::RDF::N3::debug?
+      STDERR.puts "statement: #{subject.inspect}, s2?: #{s_squared(subject)}" if ::RDF::N3::debug?
       subject_done(subject)
       s_squared(subject) || s_default(subject)
     end
