@@ -19,6 +19,8 @@ Based on original parser by Patrick Sinclair (metade)
 
 == Limitations:
 * Full support of Unicode input requires Ruby version 1.9 or greater.
+* Support for Variables in Formulae dependent on underlying repository. Existential variables are translated to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
+* No support for N3 Reification. If there were, it would be through a :reify option to the reader.
 
 == Usage:
 Instantiate a reader from a local file:
@@ -34,9 +36,35 @@ Define @base and @prefix definitions, and use for serialization using :base_uri 
 Write a graph to a file:
 
   RDF::N3::Writer.open("etc/test.n3") do |writer|
-    writer << graph
+    writer &lt;&lt; graph
   end
 
+== Formulae
+N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
+
+  { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
+  
+results in
+
+  f = RDF::Node.new
+  s = RDF::Node.new
+  o = RDF::Node.new
+  RDF::Statement(f, rdf:type n3:falsehood)
+  RDF::Statement(s, x:firstname, "Ora", :context => f)
+  RDF::Statement(s, dc:wrote, o, :context => f)
+  RDF::Statement(o, dc:title, "Moby Dick", :context => f)
+
+== Variables
+N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
+
+  @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
+
+results in:
+
+  h = RDF::Query::Variable.new(<#h>)
+  g = RDF::Node.new()
+  RDF::Statement.new(f, <#loves>, h)
+  
 == Dependencies
   * [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.2.0)
   * [Treetop](http://rubygems.org/gems/treetop) (>= 1.4.0)
@@ -47,6 +75,7 @@ Write a graph to a file:
 * History[http://github.com/gkellogg/rdf-n3/blob/master/History.txt]
 * "N3 Specification"[http://www.w3.org/DesignIssues/Notation3.html]
 * "N3 Primer"[http://www.w3.org/2000/10/swap/Primer.html]
+* "N3 Reification"[http://www.w3.org/DesignIssues/Reify.html]
 * Turtle[http://www.w3.org/TeamSubmission/turtle/]
 * "RDF Tests"[http://www.w3.org/2000/10/rdf-tests/rdfcore/allTestCases.html]
 * "W3C Turtle Test suite"[http://www.w3.org/2000/10/swap/test/regression.n3]
