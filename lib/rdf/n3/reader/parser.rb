@@ -34,6 +34,7 @@ module RDF::N3
             expected = prod_branch.values.uniq.map {|u| u.map {|v| abbr(v).inspect}.join(",")}
             error("Found '#{tok}' when parsing a #{abbr(cur_prod)}. expected #{expected.join(' | ')}")
           end
+          #puts "sequence: #{sequence.inspect}"
           todo_stack.last[:terms] += sequence
         end
         
@@ -67,8 +68,8 @@ module RDF::N3
               #puts "ml-str now #{buffer.dump}"
             end
             md = regexp.match(buffer)
-            error("Token '#{buffer[0, 10]}...' should match #{regexp}") unless md
-            puts "parse term(regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
+            error("Token(#{abbr(term)}) '#{buffer[0, 10]}...' should match #{regexp}") unless md
+            puts "parse term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
             onToken(abbr(term), md.to_s)
             consume(md[0].length)
           else
@@ -113,6 +114,7 @@ module RDF::N3
       @keyword_mode = false if ch == '.' && @keyword_mode
       
       return ch if SINGLE_CHARACTER_SELECTORS.include?(ch)
+      return ":" if ch == ":"
       return "0" if "+-0123456789".include?(ch)
       
       if ch == '@'
