@@ -584,15 +584,15 @@ module RDF::N3::Meta
   BARENAME_TAIL = "0-9#{BARENAME_START}\u00b7\u0300-\u036f\u203f-\u2040-"
 
   REGEXPS = {
-    :"http://www.w3.org/2000/10/swap/grammar/n3#barename" => Regexp.compile(%([#{BARENAME_START}][#{BARENAME_TAIL}]*)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri" => Regexp.compile("<[^>]*>"),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#langcode" => Regexp.compile("[a-zA-Z]+(-[a-zA-Z0-9]+)*"),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#prefix" => Regexp.compile(%(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#qname" => Regexp.compile(%((([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#quickvariable" => Regexp.compile(%(\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#barename" => Regexp.compile(%(^[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri" => Regexp.compile("^<[^>]*>"),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#langcode" => Regexp.compile("^[a-zA-Z]+(-[a-zA-Z0-9]+)*"),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#prefix" => Regexp.compile(%(^([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#qname" => Regexp.compile(%(^(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?)),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#quickvariable" => Regexp.compile(%(^\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("^(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
 
     # Hack to replace integer|double|decimal with numericliteral
-    :"http://www.w3.org/2000/10/swap/grammar/n3#numericliteral" => Regexp.compile(%([-+]?[0-9]+(\\.[0-9]+)?(e[-+]?[0-9]+)?))
+    :"http://www.w3.org/2000/10/swap/grammar/n3#numericliteral" => Regexp.compile(%(^[-+]?[0-9]+(\\.[0-9]+)?(e[-+]?[0-9]+)?))
   }
 end
