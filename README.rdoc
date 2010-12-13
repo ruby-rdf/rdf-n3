@@ -6,16 +6,16 @@ Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.
 
 RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
 
+Reader inspired from TimBL predictiveParser and Python librdf implementation.
+
 == FEATURES:
 RDF::N3 parses Notation-3, Turtle and N-Triples into statements or triples. It also serializes to Turtle.
 
-* Fully compliant N3-rdf parser (N3-rdf level)
+* Fully compliant N3-rdf parser
 * Also parses Turtle and N-Triples
 * Turtle serializer
 
 Install with 'gem install rdf-n3'
-
-Based on original parser by Patrick Sinclair (metade)
 
 == Limitations:
 * Full support of Unicode input requires Ruby version 1.9 or greater.
