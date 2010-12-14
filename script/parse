@@ -27,6 +27,10 @@ def run(input, base)
         puts statement.to_ntriples
       end
     end
+  elsif $format == :inspect
+    RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+      puts statement.inspect
+    end
   else
     puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base, :standard_prefixes => true) { |writer|
       RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
@@ -69,7 +73,7 @@ opts.each do |opt, arg|
   when '--quiet' then $quiet = true
   when '--debug' then ::RDF::N3::debug = true
   when '--execute' then input = arg
-  when '--format' then $format = arg
+  when '--format' then $format = arg.to_sym
   when '--uri' then base_uri = arg
   end
 end
