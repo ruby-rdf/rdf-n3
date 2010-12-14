@@ -862,12 +862,67 @@ describe "RDF::N3::Reader" do
     end
     
     describe "formulae" do
-      it "should require that graph be formula_aware when encountering a formlua" do
-        pending
+      before(:each) { @repo = RDF::Repository.new }
+
+      it "creates an RDF::Graph instance for formula" do
+        n3 = %(:a :b {})
+        parse(n3, :graph => @repo, :base_uri => "http://a/b")
+        statement = @repo.statements.first
+        statement.object.should be_a(RDF::Node)
+      end
+
+      it "adds statements with context" do
+        
+      end
+
+      it "creates variables with ?" do
+        
       end
       
-      it "should separate triples between specified and quoted graphs" do
-        pending
+      context "contexts" do
+        before(:each) do
+          n3 = %(
+            # Test data in notation3 http://www.w3.org/DesignIssues/Notation3.html
+            #    
+            @prefix u: <http://www.example.org/utilities#> .
+            @prefix : <#> .
+
+            :assumption = { :fred u:knows :john .
+                            :john u:knows :mary .} .
+
+            :conclusion = { :fred u:knows :mary . } .
+
+            # The empty context is trivially true.
+            # Check that we can input it and output it!
+
+            :trivialTruth = { }.
+
+            # ENDS
+          )
+          @repo = RDF::Repository.new
+          parse(n3, :graph => @repo, :base_uri => "http://a/b")
+        end
+
+        it "assumption graph has 2 statements" do
+          tt = @repo.first(:subject => RDF::URI.new("http://a/b#assumption"), :predicate => RDF::OWL.sameAs)
+          tt.object.should be_a(RDF::Node)
+          @repo.query(:context => tt.object).to_a.length.should == 2
+        end
+
+        it "conclusion graph has 1 statements" do
+          tt = @repo.first(:subject => RDF::URI.new("http://a/b#conclusion"), :predicate => RDF::OWL.sameAs)
+          tt.object.should be_a(RDF::Node)
+          @repo.query(:context => tt.object).to_a.length.should == 1
+        end
+
+        it "trivialTruth equivalent to empty graph" do
+          tt = @repo.first(:subject => RDF::URI.new("http://a/b#trivialTruth"), :predicate => RDF::OWL.sameAs)
+          tt.object.should be_a(RDF::Node)
+          @repo.query(:context => tt.object) do |s|
+            puts "statement: #{s}"
+          end
+        end
+
       end
     end
     
@@ -1159,7 +1214,7 @@ EOF
   
   def parse(input, options = {})
     @debug = []
-    graph = RDF::Graph.new
+    graph = options[:graph] || RDF::Graph.new
     RDF::N3::Reader.new(input, {:debug => @debug, :validate => true, :canonicalize => false}.merge(options)).each do |statement|
       graph << statement
     end
