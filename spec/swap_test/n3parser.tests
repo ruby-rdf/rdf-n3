@@ -22,7 +22,7 @@
 
 :n3_10004 a n3test:PositiveParserTest;
 	n3test:description	"using no keywords in n3";
-	n3test:outputDocument <n3/n3parser.tests_n3_10004.nt> ;
+#	n3test:outputDocument <n3/n3parser.tests_n3_10004.nt> ;
 	n3test:inputDocument		<syntax/keywords2.n3>.
 
 :n3_10005 a n3test:PositiveParserTest;
@@ -37,7 +37,7 @@
 
 :n3_10007 a n3test:PositiveParserTest;
     n3test:description   	"Parse and generate simple contexts";
-	n3test:outputDocument <n3/n3parser.tests_n3_10007.nt> ;
+#	n3test:outputDocument <n3/n3parser.tests_n3_10007.nt> ;
     n3test:inputDocument     	<contexts.n3>.
 
 :n3_10008 a n3test:PositiveParserTest;
@@ -72,12 +72,12 @@
 
 :n3_10014 a n3test:PositiveParserTest;
     n3test:description   "Quick variable syntax, simple";
-	n3test:outputDocument <n3/n3parser.tests_n3_10014.nt> ;
+#	n3test:outputDocument <n3/n3parser.tests_n3_10014.nt> ;
     n3test:inputDocument  <syntax/qvars1.n3> .
 
 :n3_10015 a n3test:PositiveParserTest;
     n3test:description   "Quick variable syntax, more";
-	n3test:outputDocument <n3/n3parser.tests_n3_10015.nt> ;
+#	n3test:outputDocument <n3/n3parser.tests_n3_10015.nt> ;
     n3test:inputDocument  <syntax/qvars2.n3> .
 
 :n3_10016 a n3test:PositiveParserTest;
@@ -87,7 +87,7 @@
 
 :n3_10017 a n3test:PositiveParserTest;
     n3test:description    "parsing and generation of N3 list syntax";
-	n3test:outputDocument <n3/n3parser.tests_n3_10017.nt> ;
+#	n3test:outputDocument <n3/n3parser.tests_n3_10017.nt> ;
     n3test:inputDocument  <lists.n3> .
 
 :n3_10018 a n3test:PositiveParserTest;
