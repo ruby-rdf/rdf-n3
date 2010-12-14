@@ -463,12 +463,46 @@ describe "RDF::N3::Reader" do
         parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
       
-      it "should do something for @forAll" do
-        pending
+      it "substitutes variable for URI with @forAll" do
+        n3 = %(@forAll :x . :x :y :z .)
+        g = parse(n3, :base_uri => "http://a/b")
+        statement = g.statements.first
+        statement.subject.should be_a(RDF::Query::Variable)
+        statement.predicate.to_s.should == "http://a/b#y"
+        statement.object.to_s.should == "http://a/b#z"
       end
 
-      it "should do something for @forSome" do
-        pending
+      it "substitutes variable for URIs with @forAll" do
+        n3 = %(@forAll :x, :y, :z . :x :y :z .)
+        g = parse(n3, :base_uri => "http://a/b")
+        statement = g.statements.first
+        statement.subject.should be_a(RDF::Query::Variable)
+        statement.predicate.should be_a(RDF::Query::Variable)
+        statement.object.should be_a(RDF::Query::Variable)
+        statement.subject.should_not == statement.predicate
+        statement.object.should_not == statement.predicate
+        statement.predicate.should_not == statement.object
+      end
+
+      it "substitutes node for URI with @forEach" do
+        n3 = %(@forSome :x . :x :y :z .)
+        g = parse(n3, :base_uri => "http://a/b")
+        statement = g.statements.first
+        statement.subject.should be_a(RDF::Node)
+        statement.predicate.to_s.should == "http://a/b#y"
+        statement.object.to_s.should == "http://a/b#z"
+      end
+
+      it "substitutes node for URIs with @forEach" do
+        n3 = %(@forSome :x, :y, :z . :x :y :z .)
+        g = parse(n3, :base_uri => "http://a/b")
+        statement = g.statements.first
+        statement.subject.should be_a(RDF::Node)
+        statement.predicate.should be_a(RDF::Node)
+        statement.object.should be_a(RDF::Node)
+        statement.subject.should_not == statement.predicate
+        statement.object.should_not == statement.predicate
+        statement.predicate.should_not == statement.object
       end
     end
     
