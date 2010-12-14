@@ -222,8 +222,7 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = [pd[:symbol]].flatten.compact
       forSome.each do |term|
-        b = bnode
-        @variables[term.to_s.to_sym] = {:formula => @formulae.last, :var => b}
+        @variables[term.to_s.to_sym] = {:formula => @formulae.last, :var => RDF::Node.new(term.to_s.split(/[\/#]/).last)}
       end
     end
     
@@ -304,7 +303,7 @@ module RDF::N3
       when "quickvariable"
         # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
         # universally quantified not in the formula but in its parent formula
-        uri = process_qname(tok.sub('?'), ':')
+        uri = process_qname(tok.sub('?', ':'))
         @variables[uri.to_s.to_sym] = { :formula => @formulae[-2], :var => univar(uri) }
         add_prod_data(:symbol, uri)
       when "boolean"
@@ -324,7 +323,7 @@ module RDF::N3
       when "}"
         # Pop off the formula, and remove any variables defined in this context
         formula = @formulae.pop
-        @variables.delete_if {|v| v[:formula] == formula}
+        @variables.delete_if {|k, v| v[:formula] == formula}
         add_prod_data(:symbol, formula)
       else
         error("pathitemToken(#{prod}, #{tok}): FIXME")
@@ -488,6 +487,7 @@ module RDF::N3
       verb = @prod_data.pop
       if verb[:expression]
         error("Literal may not be used as a predicate") if verb[:expression].is_a?(RDF::Literal)
+        error("Formula may not be used as a peredicate") if verb[:expression].is_a?(RDF::Graph)
         add_prod_data(:verb, verb[:expression])
         add_prod_data(:invert, true) if verb[:invert]
       else
