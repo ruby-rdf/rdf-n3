@@ -177,17 +177,18 @@ class PredictiveParser
       next if prod.to_s =~ /(integer|double|decimal)/
       io.puts "#{ind1}#{litOrNot(prod)} => Regexp.compile(" +
       case prod.to_s
-      when /barename/ then  %q(%([#{BARENAME_START}][#{BARENAME_TAIL}]*))
-      when /prefix/   then  %q(%(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:))
-      when /qname/    then  %q(%((([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?))
-      when /variable/ then  %q(%(\\\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*))
-      when /langcode/ then  %q("[a-zA-Z]+(-[a-zA-Z0-9]+)*")
-      else                  tokenRegexps[prod].dump
+      when /barename/     then  %q(%(^[#{BARENAME_START}][#{BARENAME_TAIL}]*))
+      when /explicituri/  then  %q("^^<[^>]*>")
+      when /langcode/     then  %q("^[a-zA-Z]+(-[a-zA-Z0-9]+)*")
+      when /prefix/       then  %q(%(^([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:))
+      when /qname/        then  %q(%(^(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?))
+      when /variable/     then  %q(%(^\\\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*))
+      else                      tokenRegexps[prod].dump
       end + "),"
     end
 
     io.puts "\n#{ind1}# Hack to replace integer|double|decimal with numericliteral"
-    io.puts "#{ind1}#{litOrNot(N3.numericliteral)} => Regexp.compile(" + %q(%([-+]?[0-9]+(\\\\.[0-9]+)?(e[-+]?[0-9]+)?)) + ")"
+    io.puts "#{ind1}#{litOrNot(N3.numericliteral)} => Regexp.compile(" + %q(^%([-+]?[0-9]+(\\\\.[0-9]+)?(e[-+]?[0-9]+)?)) + ")"
     io.puts "#{ind0}}\n"
   end
 end
