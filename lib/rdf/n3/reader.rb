@@ -318,7 +318,7 @@ module RDF::N3
         add_prod_data(:symbol, symbol)
       when "{"
         # A new formula, push on a graph as a formula context
-        context = RDF::Graph.new
+        context = RDF::Graph.new(RDF::Node.new)
         @formulae << context
       when "}"
         # Pop off the formula, and remove any variables defined in this context
@@ -642,7 +642,11 @@ module RDF::N3
     # @return [Statement]:: Added statement
     # @raise [RDF::ReaderError]:: Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
     def add_triple(node, subject, predicate, object)
-      context_opts = {:context => @formulae.last} if @formulae.last
+      context_opts = {:context => @formulae.last.context} if @formulae.last
+      
+      # Replace graph with it's context
+      subject = subject.context if subject.graph?
+      object = object.context if object.graph?
       statement = RDF::Statement.new(subject, predicate, object, context_opts || {})
       add_debug(node, statement.to_s)
       @callback.call(statement)
