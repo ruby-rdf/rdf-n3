@@ -40,13 +40,13 @@ Write a graph to a file:
   end
 
 == Formulae
-N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
+N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Graph instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
   { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
   
 results in
 
-  f = RDF::Node.new
+  f = RDF::Graph.new
   s = RDF::Node.new
   o = RDF::Node.new
   RDF::Statement(f, rdf:type n3:falsehood)
