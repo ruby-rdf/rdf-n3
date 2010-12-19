@@ -1,11 +1,11 @@
---title "RDF::RDFa - RDFa Support for RDF.rb"
+--title "Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb."
 --output-dir doc/yard
 --protected
 --no-private
 --hide-void-return
 --markup rdoc
---readme README.rdoc
+--readme README.md
 -
 AUTHORS
 VERSION
-History.txt
+History.md

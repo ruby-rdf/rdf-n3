@@ -1,4 +1,5 @@
-=== 0.3.0.pre
+0.3.0.pre
+---------
 * New Predictive-Parser based N3 Reader, substantially faster than previous Treetop-based parser
 * RDF.rb 0.3.0 compatibility updates
   * Remove literal_normalization and qname_hacks, add back uri_hacks (until 0.3.0)
@@ -13,14 +14,16 @@
     * Change :strict option to :validate.
     * Add check to ensure that predicates are not literals, it's not legal in any RDF variant.
 
-=== 0.2.3
+0.2.3
+-----
 * In Writer, set @base_uri not @base, as :base_uri is an attribute.
 * Relativize URLs without matching as regexp.
 * Allow mixed case literal languages.
 * Improve N3 Unicode support for Ruby 1.9
 * Improve Turtle/N3 Writer to use unescaped and qname'd values
 
-=== 0.2.2
+0.2.2
+-----
 * Ruby 1.9.2 compatibility
 * Added script/tc to run test cases
 * Fixed RDF.to_s != RDF.to_uri.to_s in writer, it worke for every other vocabulary
@@ -30,13 +33,16 @@
 * URI normalization isn't required for N3, so removed.
 * Added Reader#rewind and #close as stubs because document is parsed on initialize and input is closed.
 
-=== 0.2.1
+0.2.1
+-----
 * Compatible with RDF.rb 0.2.1
 
-=== 0.0.3
+0.0.3
+-----
 * Replace require against rdf/rdfxml/patches/* with rdf/n3/patches/*
 
-=== 0.0.2
+0.0.2
+-----
 * N3 parsing and Turtle serialization substantially complete.
   * A little more work needed on some tests and some lingering issues in RDF.rb to be resolved.
 * Added script/console and script/parse
@@ -45,5 +51,6 @@
 * rdf_escape Literals when serializing via to_s
 * Remove trailing "#" from URIs when normalizing.
 
-=== 0.0.1
+0.0.1
+-----
 * First port from RdfContext version 0.5.4

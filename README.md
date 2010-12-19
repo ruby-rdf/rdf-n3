@@ -1,14 +1,15 @@
-= RDF::N3 reader/writer
-
+RDF::N3 reader/writer
+=====================
 Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.
 
-== DESCRIPTION:
-
+Description
+-----------
 RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
-== FEATURES:
+Features
+--------
 RDF::N3 parses Notation-3, Turtle and N-Triples into statements or triples. It also serializes to Turtle.
 
 * Fully compliant N3-rdf parser
@@ -17,12 +18,14 @@ RDF::N3 parses Notation-3, Turtle and N-Triples into statements or triples. It a
 
 Install with 'gem install rdf-n3'
 
-== Limitations:
+Limitations
+-----------
 * Full support of Unicode input requires Ruby version 1.9 or greater.
-* Support for Variables in Formulae dependent on underlying repository. Existential variables are translated to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
+* Support for Variables in Formulae dependent on underlying repository. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
 * No support for N3 Reification. If there were, it would be through a :reify option to the reader.
 
-== Usage:
+Usage
+-----
 Instantiate a reader from a local file:
 
   RDF::N3::Reader.open("etc/foaf.n3") do |reader|
@@ -39,7 +42,8 @@ Write a graph to a file:
     writer &lt;&lt; graph
   end
 
-== Formulae
+Formulae
+--------
 N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
   { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
@@ -54,7 +58,8 @@ results in
   RDF::Statement(s, dc:wrote, o, :context => f)
   RDF::Statement(o, dc:title, "Moby Dick", :context => f)
 
-== Variables
+Variables
+---------
 N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
 
   @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
@@ -65,11 +70,12 @@ results in:
   g = RDF::Node.new()
   RDF::Statement.new(f, <#loves>, h)
   
-== Dependencies
-  * [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.2.0)
-  * [Treetop](http://rubygems.org/gems/treetop) (>= 1.4.0)
+Dependencies
+------------
+* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.2.0)
 
-== Resources:
+Resources
+---------
 * Distiller[http://kellogg-assoc/distiller]
 * RDoc[http://rdoc.info/projects/gkellogg/rdf-n3]
 * History[http://github.com/gkellogg/rdf-n3/blob/master/History.txt]
@@ -80,8 +86,8 @@ results in:
 * "RDF Tests"[http://www.w3.org/2000/10/rdf-tests/rdfcore/allTestCases.html]
 * "W3C Turtle Test suite"[http://www.w3.org/2000/10/swap/test/regression.n3]
 
-== LICENSE:
-
+License
+-------
 (The MIT License)
 
 Copyright (c) 2009-2010 Gregg Kellogg
@@ -105,8 +111,8 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-== FEEDBACK
-
+Feedback
+--------
 * gregg@kellogg-assoc.com
 * rubygems.org/rdf-n3
 * github.com/gkellogg/rdf-n3

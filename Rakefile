@@ -17,7 +17,7 @@ begin
     gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.1')
     gemspec.add_development_dependency('rdf-isomorphic')
     gemspec.add_development_dependency('yard')
-    gemspec.extra_rdoc_files     = %w(README.rdoc History.txt AUTHORS)
+    gemspec.extra_rdoc_files     = %w(README.md History.md AUTHORS VERSION)
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -45,13 +45,7 @@ Spec::Rake::SpecTask.new("doc:spec") do |spec|
 end
 
 YARD::Rake::YardocTask.new do |t|
-  t.files   = %w(lib/**/*.rb README.rdoc History.txt AUTHORS)   # optional
-end
-
-desc "Update N3 grammar"
-task :grammar do
-  sh "tt -o lib/rdf/n3/reader/n3_grammar.rb lib/rdf/n3/reader/n3_grammar.treetop"
-  sh "tt -o lib/rdf/n3/reader/n3_grammar_18.rb lib/rdf/n3/reader/n3_grammar_18.treetop"
+  t.files   = %w(lib/**/*.rb README.md History.md AUTHORS VERSION)   # optional
 end
 
 desc "Generate test manifest yaml"
