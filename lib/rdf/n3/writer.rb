@@ -59,13 +59,6 @@ module RDF::N3
     # @return [URI] Base URI used for relativizing URIs
     attr_accessor :base_uri
     
-    # FIXME: temporary patch until fixed in RDF.rb
-    # Allow for nil prefix mapping
-    def prefix(name, uri = nil)
-      name = name.to_s.empty? ? nil : (name.respond_to?(:to_sym) ? name.to_sym : name.to_s.to_sym)
-      uri.nil? ? prefixes[name] : prefixes[name] = (uri.respond_to?(:to_sym) ? uri.to_sym : uri.to_s.to_sym)
-    end
-
     ##
     # Initializes the Turtle writer instance.
     #
