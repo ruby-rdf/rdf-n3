@@ -24,29 +24,20 @@ describe RDF::N3::Reader do
         specify "#{t.name}: " + (t.description || "#{t.inputDocument} against #{t.outputDocument}") do
           #puts t.inspect
           # Skip tests for very long files, too long
-          if %w(test-14 test-15 test-16 rdfq-results).include?(t.name)
-            pending("Skip very long input file")
-          elsif !defined?(::Encoding) && %w(test-18).include?(t.name)
+          if !defined?(::Encoding) && %w(test-18).include?(t.name)
             pending("Not supported in Ruby 1.8")
-          elsif %w(test-29).include?(t.name)
-            pending("Silly test")
           else
-            begin
-              t.run_test do |rdf_string, parser|
-                t.debug = []
-                g = RDF::Graph.new
-                RDF::Reader.for(t.inputDocument).new(rdf_string,
-                    :base_uri => t.about,
-                    :strict => true,
-                    :canonicalize => true,
-                    :debug => t.debug).each do |statement|
-                  g << statement
-                end
-                #t.compare = :array if g.bnodes.empty?
-                g
+            t.run_test do |rdf_string, parser|
+              t.debug = []
+              g = RDF::Graph.new
+              RDF::Reader.for(t.inputDocument).new(rdf_string,
+                  :base_uri => t.about,
+                  :strict => true,
+                  :canonicalize => true,
+                  :debug => t.debug).each do |statement|
+                g << statement
               end
-            #rescue #Spec::Expectations::ExpectationNotMetError => e
-            #  pending() {  raise }
+              g
             end
           end
         end

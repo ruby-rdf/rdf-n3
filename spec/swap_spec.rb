@@ -56,24 +56,16 @@ describe RDF::N3::Reader do
         #puts t.inspect
         specify "#{t.name}: #{t.about}" do
           t.run_test do |rdf_string, parser|
-            begin
-              lambda do
-                t.debug = []
-                g = RDF::Graph.new
-                RDF::N3::Reader.new(rdf_string,
-                    :base_uri => t.about,
-                    :strict => true,
-                    :debug => t.debug).each do |statement|
-                  g << statement
-                end
-              end.should raise_error(RDF::ReaderError)
-            rescue Spec::Expectations::ExpectationNotMetError => e
-              if %w(n3_20000).include?(t.name)
-                pending("figure out how to tell that these are errors")
-              else
-                raise
+            lambda do
+              t.debug = []
+              g = RDF::Graph.new
+              RDF::N3::Reader.new(rdf_string,
+                  :base_uri => t.about,
+                  :strict => true,
+                  :debug => t.debug).each do |statement|
+                g << statement
               end
-            end
+            end.should raise_error(RDF::ReaderError)
           end
         end
       end
