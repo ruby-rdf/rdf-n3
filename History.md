@@ -14,6 +14,7 @@
     * Added #prefixes method returning a hash of prefix definitions.
     * Change :strict option to :validate.
     * Add check to ensure that predicates are not literals, it's not legal in any RDF variant.
+* RSpec 2 compatibility
 
 0.2.3
 -----

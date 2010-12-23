@@ -34,7 +34,7 @@ describe RDF::N3::Reader do
               end
               g
             end
-          rescue #Spec::Expectations::ExpectationNotMetError => e
+          rescue #RSpec::Expectations::ExpectationNotMetError => e
             if %w(n3_10012).include?(t.name)
               pending("check visually, graph compare times too long")
             elsif %w(n3_10010).include?(t.name)

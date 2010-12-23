@@ -3,12 +3,13 @@ $:.unshift(File.join(File.dirname(__FILE__), '..', '..', 'rdf-rdfxml', 'lib'))
 $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
-require 'spec'
+require 'rspec'
 require 'matchers'
 require 'bigdecimal'  # XXX Remove Me
 require 'rdf/n3'
 require 'rdf/ntriples'
 require 'rdf/spec'
+require 'rdf/spec/matchers'
 require 'rdf/isomorphic'
 
 include Matchers
@@ -35,10 +36,15 @@ module RDF
   end
 end
 
-Spec::Runner.configure do |config|
-  config.include(RDF::Spec::Matchers)
+::RSpec.configure do |c|
+  c.filter_run :focus => true
+  c.run_all_when_everything_filtered = true
+  c.exclusion_filter = {
+    :ruby => lambda { |version| !(RUBY_VERSION.to_s =~ /^#{version.to_s}/) },
+  }
+  c.include(Matchers)
+  c.include(RDF::Spec::Matchers)
 end
-
 
 # Serialize graph and replace bnodes with predictable versions, return as sorted array  
 def normalize_bnodes(graph, anon = "a")

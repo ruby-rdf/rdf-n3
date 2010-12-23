@@ -233,7 +233,7 @@ describe RDF::N3::Writer do
               t.compare = :none
               serialize(rdf_string, t.about.to_s)
             end
-          #rescue #Spec::Expectations::ExpectationNotMetError => e
+          #rescue #RSpec::Expectations::ExpectationNotMetError => e
           #  pending() {  raise }
           end
         end

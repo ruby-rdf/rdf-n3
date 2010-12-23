@@ -36,7 +36,7 @@ describe RDF::N3::Reader do
             end
             g
           end
-        rescue Spec::Expectations::ExpectationNotMetError => e
+        rescue RSpec::Expectations::ExpectationNotMetError => e
           if t.status == "pending"
             pending("Formulae not supported") {  raise } 
           else
