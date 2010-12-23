@@ -9,20 +9,21 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2010-12-10}
+  s.date = %q{2010-12-23}
   s.description = %q{RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.}
   s.email = %q{gregg@kellogg-assoc.com}
   s.extra_rdoc_files = [
     "AUTHORS",
-     "History.txt",
-     "README.rdoc"
+     "History.md",
+     "README.md",
+     "VERSION"
   ]
   s.files = [
     ".gitignore",
      ".yardopts",
      "AUTHORS",
-     "History.txt",
-     "README.rdoc",
+     "History.md",
+     "README.md",
      "Rakefile",
      "VERSION",
      "example-files/sp2b.n3",
@@ -448,6 +449,7 @@ Gem::Specification.new do |s|
      "spec/swap_test/ref/bnode.n3",
      "spec/swap_test/ref/bnode.rdf",
      "spec/swap_test/ref/colon-in-uri.n3",
+     "spec/swap_test/ref/contexts-1.n3",
      "spec/swap_test/ref/daml-ex.n3",
      "spec/swap_test/ref/daml-ont.n3",
      "spec/swap_test/ref/djb1a-out.n3",
@@ -465,6 +467,7 @@ Gem::Specification.new do |s|
      "spec/swap_test/ref/path1.n3",
      "spec/swap_test/ref/path2.n3",
      "spec/swap_test/ref/prefix1.rdf",
+     "spec/swap_test/ref/prefix2.rdf",
      "spec/swap_test/ref/prefix3.rdf",
      "spec/swap_test/ref/rdf-redefine.rdf",
      "spec/swap_test/ref/reluri-1.rdf",
@@ -628,14 +631,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rdf>, ["= 0.3.0.pre"])
-      s.add_development_dependency(%q<rspec>, ["~> 1.3.0"])
+      s.add_development_dependency(%q<rspec>, [">= 2.1.0"])
       s.add_development_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_development_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
       s.add_development_dependency(%q<rdf-isomorphic>, [">= 0"])
       s.add_development_dependency(%q<yard>, [">= 0"])
     else
       s.add_dependency(%q<rdf>, ["= 0.3.0.pre"])
-      s.add_dependency(%q<rspec>, ["~> 1.3.0"])
+      s.add_dependency(%q<rspec>, [">= 2.1.0"])
       s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
       s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
@@ -643,7 +646,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<rdf>, ["= 0.3.0.pre"])
-    s.add_dependency(%q<rspec>, ["~> 1.3.0"])
+    s.add_dependency(%q<rspec>, [">= 2.1.0"])
     s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
     s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
     s.add_dependency(%q<rdf-isomorphic>, [">= 0"])
