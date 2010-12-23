@@ -364,6 +364,20 @@ module RDF::N3
       @started = false
     end
 
+    ##
+    # Use single- or multi-line quotes. If literal contains \t, \n, or \r, use a multiline quote,
+    # otherwise, use a single-line
+    # @param  [String] string
+    # @return [String]
+    def quoted(string)
+      if string.to_s.match(/[\t\n\r]/)
+        string = string.gsub('\\', '\\\\').gsub('"""', '\\"""')
+        %("""#{string}""")
+      else
+        "\"#{escaped(string)}\""
+      end
+    end
+
     private
     
     # Add debug event to debug array, if specified

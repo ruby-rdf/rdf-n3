@@ -7,6 +7,7 @@
   * In Writer
     * Use only :prefixes for creating QNames.
     * Add :standard_prefixes and :default_namespace options.
+    * Use """ for multi-line quotes, or anything including escaped characters
   * In Reader
     * URI canonicalization and validation.
     * Added :canonicalize, and :intern options.

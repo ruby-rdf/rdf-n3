@@ -198,6 +198,19 @@ describe RDF::N3::Writer do
     end
   end
   
+  describe "strings" do
+    it "encodes embedded \"\"\"" do
+      n3 = %(:a :b """testing string parsing in N3.
+""" .)
+      serialize(n3, nil, [/testing string parsing in N3.\n/])
+    end
+
+    it "encodes embedded \"" do
+      n3 = %(:a :b """string with " escaped quote marks""" .)
+      serialize(n3, nil, [/string with \\" escaped quote mark/])
+    end
+  end
+  
   # W3C Turtle Test suite from http://www.w3.org/2000/10/swap/test/regression.n3
   describe "w3c turtle tests" do
     require 'rdf_helper'
@@ -212,12 +225,8 @@ describe RDF::N3::Writer do
       
       specify "#{t.name}: " + (t.description || "#{t.inputDocument}") do
         # Skip tests for very long files, too long
-        if %w(test-14 test-15 test-16 rdfq-results).include?(t.name)
-          pending("Skip very long input file")
-        elsif !defined?(::Encoding) && %w(test-18).include?(t.name)
+        if !defined?(::Encoding) && %w(test-18).include?(t.name)
           pending("Not supported in Ruby 1.8")
-        elsif %w(test-29).include?(t.name)
-          pending("Silly test")
         else
           begin
             t.run_test do |rdf_string|
