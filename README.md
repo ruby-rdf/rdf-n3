@@ -1,10 +1,10 @@
 RDF::N3 reader/writer
 =====================
-Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.
+Notation-3 and Turtle reader/writer for RDF.rb.
 
 Description
 -----------
-RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.
+RDF::N3 is an Notation-3 parser for Ruby using the RDF.rb library suite.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
@@ -39,7 +39,7 @@ Define @base and @prefix definitions, and use for serialization using :base_uri 
 Write a graph to a file:
 
   RDF::N3::Writer.open("etc/test.n3") do |writer|
-    writer &lt;&lt; graph
+    writer << graph
   end
 
 Formulae
@@ -72,7 +72,7 @@ results in:
   
 Dependencies
 ------------
-* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.2.0)
+* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.0)
 
 Resources
 ---------
