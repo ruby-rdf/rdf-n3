@@ -2,19 +2,57 @@
 # Branch and Regexp tables derived from http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3
 module RDF::N3::Meta
   BRANCHES = {
-    :"_:g2164543080" => {
-      "," => [",",
-        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"_:g2164543080"],
+    :"_:_g0" => {
       "." => [],
       ":" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"_:g2164543080"],
+        :"_:_g5"],
       "<" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
-        :"_:g2164543080"],
+        :"_:_g5"],
+      "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g5"],
+      "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g5"],
+      "}" => [],
+    },
+    :"_:_g1" => {
+      "." => [],
+      ":" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g4"],
+      "<" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g4"],
+      "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g4"],
+      "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g4"],
+      "}" => [],
+    },
+    :"_:_g2" => {
+      "." => [],
       "_" => [:"http://www.w3.org/2000/10/swap/grammar/n3#barename",
-        :"_:g2164543080"],
+        :"_:_g3"],
       "a" => [:"http://www.w3.org/2000/10/swap/grammar/n3#barename",
-        :"_:g2164543080"],
+        :"_:_g3"],
+      "}" => [],
+    },
+    :"_:_g3" => {
+      "," => [",",
+        :"http://www.w3.org/2000/10/swap/grammar/n3#barename",
+        :"_:_g3"],
+      "." => [],
+      "}" => [],
+    },
+    :"_:_g4" => {
+      "," => [",",
+        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g4"],
+      "." => [],
+      "}" => [],
+    },
+    :"_:_g5" => {
+      "," => [",",
+        :"http://www.w3.org/2000/10/swap/grammar/n3#symbol",
+        :"_:_g5"],
+      "." => [],
       "}" => [],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#boolean" => {
@@ -25,7 +63,7 @@ module RDF::N3::Meta
       "@base" => ["@base",
         :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri"],
       "@keywords" => ["@keywords",
-        :"_:g2164543080"],
+        :"_:_g2"],
       "@prefix" => ["@prefix",
         :"http://www.w3.org/2000/10/swap/grammar/n3#prefix",
         :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri"],
@@ -109,7 +147,7 @@ module RDF::N3::Meta
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#existential" => {
       "@forSome" => ["@forSome",
-        :"_:g2164543080"],
+        :"_:_g1"],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#expression" => {
       "\"" => [:"http://www.w3.org/2000/10/swap/grammar/n3#pathitem",
@@ -551,7 +589,7 @@ module RDF::N3::Meta
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#universal" => {
       "@forAll" => ["@forAll",
-        :"_:g2164543080"],
+        :"_:_g0"],
     },
     :"http://www.w3.org/2000/10/swap/grammar/n3#verb" => {
       "\"" => [:"http://www.w3.org/2000/10/swap/grammar/n3#expression"],
@@ -580,9 +618,13 @@ module RDF::N3::Meta
     },
   }
 
-  BARENAME_START = "A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\u{10000}-\u{effff}"
-  BARENAME_TAIL = "0-9#{BARENAME_START}\u00b7\u0300-\u036f\u203f-\u2040-"
-
+  if RUBY_VERSION >= "1.9.0"
+    BARENAME_START = "A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\u{10000}-\u{effff}"
+    BARENAME_TAIL = "0-9#{BARENAME_START}\u00b7\u0300-\u036f\u203f-\u2040\\-"
+  else
+    BARENAME_START = "A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\xff"
+    BARENAME_TAIL = "0-9#{BARENAME_START}\xb7\\-"
+  end
   REGEXPS = {
     :"http://www.w3.org/2000/10/swap/grammar/n3#barename" => Regexp.compile(%(^[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
     :"http://www.w3.org/2000/10/swap/grammar/n3#explicituri" => Regexp.compile("^<[^>]*>"),
@@ -590,7 +632,7 @@ module RDF::N3::Meta
     :"http://www.w3.org/2000/10/swap/grammar/n3#prefix" => Regexp.compile(%(^([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)),
     :"http://www.w3.org/2000/10/swap/grammar/n3#qname" => Regexp.compile(%(^(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?)),
     :"http://www.w3.org/2000/10/swap/grammar/n3#quickvariable" => Regexp.compile(%(^\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("^(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
 
     # Hack to replace integer|double|decimal with numericliteral
     :"http://www.w3.org/2000/10/swap/grammar/n3#numericliteral" => Regexp.compile(%(^[-+]?[0-9]+(\\.[0-9]+)?(e[-+]?[0-9]+)?))

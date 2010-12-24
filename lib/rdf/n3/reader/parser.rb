@@ -19,7 +19,7 @@ module RDF::N3
         if todo_stack.last[:terms].nil?
           todo_stack.last[:terms] = []
           tok = self.token
-          #puts "parse tok: #{tok}, prod #{todo_stack.last[:prod]}"
+          #puts "parse tok: '#{tok}', prod #{todo_stack.last[:prod]}"
           
           # Got an opened production
           onStart(abbr(todo_stack.last[:prod]))
@@ -110,7 +110,7 @@ module RDF::N3
       ch2 = buffer[0, 2]
       return ch2 if %w(=> <= ^^).include?(ch2)
       
-      ch = buffer[0]
+      ch = buffer[0, 1]
       @keyword_mode = false if ch == '.' && @keyword_mode
       
       return ch if SINGLE_CHARACTER_SELECTORS.include?(ch)
@@ -118,10 +118,10 @@ module RDF::N3
       return "0" if "+-0123456789".include?(ch)
       
       if ch == '@'
-        return '@' if @pos > 0 && @line[@pos-1] == '"'
+        return '@' if @pos > 0 && @line[@pos-1, 1] == '"'
 
         j = 0
-        j += 1 while buffer[j+1] && !NOT_NAME_CHARS.include?(buffer[j+1])
+        j += 1 while buffer[j+1, 1] && !NOT_NAME_CHARS.include?(buffer[j+1, 1])
         name = buffer[1, j]
         if name == 'keywords'
           @keywords = []
@@ -131,7 +131,7 @@ module RDF::N3
       end
 
       j = 0
-      j += 1 while buffer[j] && !NOT_QNAME_CHARS.include?(buffer[j])
+      j += 1 while buffer[j, 1] && !NOT_QNAME_CHARS.include?(buffer[j, 1])
       word = buffer[0, j]
       error("Tokenizer expected qname, found #{buffer[0, 10]}") unless word
       if @keyword_mode

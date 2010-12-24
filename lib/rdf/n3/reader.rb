@@ -215,7 +215,7 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = [pd[:symbol]].flatten.compact
       forSome.each do |term|
-        @variables[term.to_s.to_sym] = {:formula => @formulae.last, :var => RDF::Node.new(term.to_s.split(/[\/#]/).last)}
+        @variables[term.to_s] = {:formula => @formulae.last, :var => RDF::Node.new(term.to_s.split(/[\/#]/).last)}
       end
     end
     
@@ -297,7 +297,7 @@ module RDF::N3
         # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
         # universally quantified not in the formula but in its parent formula
         uri = process_qname(tok.sub('?', ':'))
-        @variables[uri.to_s.to_sym] = { :formula => @formulae[-2], :var => univar(uri) }
+        @variables[uri.to_s] = { :formula => @formulae[-2], :var => univar(uri) }
         add_prod_data(:symbol, uri)
       when "boolean"
         lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
@@ -446,7 +446,7 @@ module RDF::N3
       pd = @prod_data.pop
       forAll = [pd[:symbol]].flatten.compact
       forAll.each do |term|
-        @variables[term.to_s.to_sym] = { :formula => @formulae.last, :var => univar(term) }
+        @variables[term.to_s] = { :formula => @formulae.last, :var => univar(term) }
       end
     end
 
@@ -671,7 +671,7 @@ module RDF::N3
       
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
       # the current formula
-      var = @variables[value.to_s.to_sym]
+      var = @variables[value.to_s]
       value = var[:var] if var
 
       value

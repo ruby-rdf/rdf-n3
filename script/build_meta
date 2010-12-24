@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby -s
+#!/usr/bin/env ruby
 require 'rubygems'
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require 'rdf/n3'
@@ -178,7 +178,7 @@ class PredictiveParser
       io.puts "#{ind1}#{litOrNot(prod)} => Regexp.compile(" +
       case prod.to_s
       when /barename/     then  %q(%(^[#{BARENAME_START}][#{BARENAME_TAIL}]*))
-      when /explicituri/  then  %q("^^<[^>]*>")
+      when /explicituri/  then  %q("^<[^>]*>")
       when /langcode/     then  %q("^[a-zA-Z]+(-[a-zA-Z0-9]+)*")
       when /prefix/       then  %q(%(^([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:))
       when /qname/        then  %q(%(^(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?))
@@ -188,13 +188,10 @@ class PredictiveParser
     end
 
     io.puts "\n#{ind1}# Hack to replace integer|double|decimal with numericliteral"
-    io.puts "#{ind1}#{litOrNot(N3.numericliteral)} => Regexp.compile(" + %q(^%([-+]?[0-9]+(\\\\.[0-9]+)?(e[-+]?[0-9]+)?)) + ")"
+    io.puts "#{ind1}#{litOrNot(N3.numericliteral)} => Regexp.compile(" + %q(%(^[-+]?[0-9]+(\\\\.[0-9]+)?(e[-+]?[0-9]+)?)) + ")"
     io.puts "#{ind0}}\n"
   end
 end
-
-mode = ARGV.shift
-raise "Mode must be one of 'parse'" unless mode == "parse"
 
 $verbose = false
 $debug = false
@@ -231,9 +228,13 @@ unless output == STDOUT
 end
 pp.outputBranchTable(output, 1)
 output.puts %q(
-  BARENAME_START = "A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\u{10000}-\u{effff}"
-  BARENAME_TAIL = "0-9#{BARENAME_START}\u00b7\u0300-\u036f\u203f-\u2040-"
-
+  if RUBY_VERSION >= "1.9.0"
+    BARENAME_START = "A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\u{10000}-\u{effff}"
+    BARENAME_TAIL = "0-9#{BARENAME_START}\u00b7\u0300-\u036f\u203f-\u2040\\\\-"
+  else
+    BARENAME_START = "A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\xff"
+    BARENAME_TAIL = "0-9#{BARENAME_START}\xb7\\\\-"
+  end
 )
 pp.outputRegexpTable(output, 1)
 unless output == STDOUT

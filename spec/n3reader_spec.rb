@@ -1036,7 +1036,15 @@ describe "RDF::N3::Reader" do
         _:bnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
         )
         g = parse(n3, :base_uri => "http://a/b")
-        normalize_bnodes(g, "bnode0").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
+        g.subjects.to_a.length.should == 8
+        n = g.first_object(:subject => RDF::URI.new("http://foo/a#a"), :predicate => RDF::URI.new("http://foo/a#p"))
+        n.should be_a(RDF::Node)
+        seq = RDF::List.new(n, g)
+        seq.to_a.length.should == 4
+        seq.first.should be_a(RDF::Node)
+        seq.second.should == RDF::URI.new("http://resource1")
+        seq.third.should == RDF::URI.new("http://resource2")
+        seq.fourth.should be_a(RDF::Node)
       end
       
     end
