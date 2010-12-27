@@ -11,7 +11,7 @@ begin
     gemspec.email = "gregg@kellogg-assoc.com"
     gemspec.homepage = "http://github.com/gkellogg/rdf-n3"
     gemspec.authors = ["Gregg Kellogg"]
-    gemspec.add_dependency('rdf', '= 0.3.0.pre')
+    gemspec.add_dependency('rdf', '>= 0.3.0')
     gemspec.add_development_dependency('rspec', '>= 2.1.0')
     gemspec.add_development_dependency('rdf-spec', '>= 0.2.1')
     gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.1')

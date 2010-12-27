@@ -1,4 +1,4 @@
-0.3.0.pre
+0.3.0
 ---------
 * New Predictive-Parser based N3 Reader, substantially faster than previous Treetop-based parser
 * RDF.rb 0.3.0 compatibility updates
