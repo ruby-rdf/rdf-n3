@@ -4,8 +4,16 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require 'rdf/n3'
 require 'rdf/ntriples'
 require 'getoptlong'
+require 'open-uri'
 
 def run(input, base)
+  reader_class = RDF::Reader.for($input_format.to_sym)
+  writer_class = RDF::Writer.for($output_format.to_sym)
+  raise "Reader not found for #{$input_format}" unless reader_class
+  raise "Writer not found for #{$output_format}" unless writer_class
+
+  start = Time.new
+  num = 0
   if $parse_only
     include RDF::N3::Meta
     include RDF::N3::Parser
@@ -19,43 +27,40 @@ def run(input, base)
       $stdout = STDOUT
       print "."
     end
-  elsif $format == :ntriples || $quiet
-    RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+  elsif $output_format == :ntriples || $quiet
+    reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
+      num += 1
       if $quiet
-        print "."
+        #print "."
       else
         puts statement.to_ntriples
       end
     end
-  elsif $format == :inspect
-    RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+  elsif $output_format == :inspect
+    reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
+      num += 1
       puts statement.inspect
     end
   else
-    puts RDF::Writer.for($format.to_sym).buffer(:base_uri => base, :standard_prefixes => true) { |writer|
-      RDF::N3::Reader.new(input, :base_uri => base, :strict => true).each do |statement|
+    puts writer_class.buffer(:base_uri => base, :standard_prefixes => true) { |writer|
+      reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
+        num += 1
         writer << statement
       end
     }
   end
   puts
+  secs = Time.new - start
+  puts "Parsed #{num} statements in #{secs} seconds @ #{num/secs} statements/second."
 rescue
   fname = input.respond_to?(:path) ? input.path : "-stdin-"
   STDERR.puts("Error in #{fname}")
   raise
 end
 
-case ARGV.shift
-when "parse"
-  $parse_only = false
-when "test"
-  $parse_only = true
-else
-  raise "Mode must be one of 'parse' or 'test'"
-end
-
 $verbose = false
-$format = :ntriples
+$output_format = :ntriples
+$input_format = :n3
 base_uri  = "http://example.com"
 input = nil
 
@@ -64,7 +69,9 @@ opts = GetoptLong.new(
   ["--verbose", GetoptLong::NO_ARGUMENT],
   ["--quiet", GetoptLong::NO_ARGUMENT],
   ["--format", GetoptLong::REQUIRED_ARGUMENT],
+  ["--input-format", GetoptLong::REQUIRED_ARGUMENT],
   ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
+  ["--parse-only", GetoptLong::NO_ARGUMENT],
   ["--uri", GetoptLong::REQUIRED_ARGUMENT]
 )
 opts.each do |opt, arg|
@@ -73,8 +80,10 @@ opts.each do |opt, arg|
   when '--quiet' then $quiet = true
   when '--debug' then ::RDF::N3::debug = true
   when '--execute' then input = arg
-  when '--format' then $format = arg.to_sym
+  when '--format' then $output_format = arg.to_sym
+  when '--input-format' then $input_format = arg.to_sym
   when '--uri' then base_uri = arg
+  when '--parse-only' then $parse_only = true
   end
 end
 
@@ -83,7 +92,7 @@ if ARGV.empty?
   run(StringIO.new(s), base_uri)
 else
   ARGV.each do |test_file|
-    run(File.open(test_file), base_uri)
+    run(Kernel.open(test_file), base_uri)
   end
 end
 puts
