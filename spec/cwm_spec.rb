@@ -1,35 +1,30 @@
 $:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
-require 'rdf/rdfxml'
 
 describe RDF::N3::Reader do
   describe "w3c cwm tests" do
-    require 'rdf_helper'
-
-    def self.test_cases
-      RdfHelper::TestCase.test_cases(CWM_TEST, SWAP_DIR)
-    end
+    require 'cwm_test'
 
     # Negative parser tests should raise errors.
-    test_cases.each do |t|
-      next unless t.about.to_s =~ /n3$/
+    Fixtures::Cwm::CwmTest.each do |t|
+      next unless t.inputDocument
       #next unless t.about.uri.to_s =~ /rdfms-rdf-names-use/
       #next unless t.name =~ /1018/
       #puts t.inspect
-      specify "test #{t.name}: #{t.description}: #{t.inputDocument} against #{t.outputDocument}" do
+      specify "test #{t.name}: #{t.description}: #{t.inputDocument} against #{t.referenceOutput}" do
         begin
           if t.name =~ /1018/
             pending("matcher does not stop")
             next
-          elsif t.rdf_type == "CwmProofTest"
+          elsif !t.arguments.to_s.empty?
             pending("proofs not supported")
             next
           end
-          t.run_test do |rdf_string|
+          t.run_test do
             t.debug = []
             g = RDF::Graph.new
-            RDF::Reader.for(t.inputDocument).new(rdf_string,
-                :base_uri => t.about,
+            RDF::Reader.for(t.inputDocument).new(t.input,
+                :base_uri => t.inputDocument,
                 :strict => true,
                 :debug => t.debug).each do |statement|
               g << statement

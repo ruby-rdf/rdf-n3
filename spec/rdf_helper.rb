@@ -3,9 +3,6 @@ autoload :CGI, 'cgi'
 
 RDFCORE_DIR = File.join(File.dirname(__FILE__), 'rdfcore')
 RDFCORE_TEST = "http://www.w3.org/2000/10/rdf-tests/rdfcore/Manifest.rdf"
-SWAP_DIR = File.join(File.dirname(__FILE__), 'swap_test')
-SWAP_TEST = "http://www.w3.org/2000/10/swap/test/n3parser.tests"
-CWM_TEST = "http://www.w3.org/2000/10/swap/test/regression.n3"
 TURTLE_DIR = File.join(File.dirname(__FILE__), 'turtle')
 TURTLE_TEST = "http://www.w3.org/2001/sw/DataAccess/df1/tests/manifest.ttl"
 TURTLE_BAD_TEST = "http://www.w3.org/2001/sw/DataAccess/df1/tests/manifest-bad.ttl"

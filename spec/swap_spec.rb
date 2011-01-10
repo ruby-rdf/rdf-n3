@@ -4,11 +4,11 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c swap tests" do
-    require 'n3_test'
+    require 'swap_test'
 
     # Negative parser tests should raise errors.
     describe "positive parser tests" do
-      Fixtures::N3Test::PositiveParserTest.each do |t|
+      Fixtures::SWAPTest::PositiveParserTest.each do |t|
         #next unless t.subject.to_s =~ /rdfms-rdf-names-use/
         #next unless t.name =~ /11/
         #puts t.inspect
@@ -46,7 +46,7 @@ describe RDF::N3::Reader do
     end
 
     describe "negative parser tests" do
-      Fixtures::N3Test::NegativeParserTest.each do |t|
+      Fixtures::SWAPTest::NegativeParserTest.each do |t|
         #next unless t.subject.uri.to_s =~ /rdfms-empty-property-elements/
         #next unless t.name =~ /1/
         #puts t.inspect

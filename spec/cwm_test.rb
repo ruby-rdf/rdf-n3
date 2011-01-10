@@ -5,20 +5,24 @@ require 'rdf/n3'
 require 'open-uri'
 
 module Fixtures
-  module N3Test
-    class N3T < RDF::Vocabulary("http://www.w3.org/2004/11/n3test#"); end
+  module Cwm
+    class SWAP < RDF::Vocabulary("http://www.w3.org/2000/10/swap/test.n3#"); end
 
-    class Entry
+    class CwmTest
       attr_accessor :debug
       attr_accessor :compare
       include Spira::Resource
 
-      property :description, :predicate => N3T.description, :type => XSD.string
-      property :inputDocument, :predicate => N3T.inputDocument
-      property :outputDocument, :predicate => N3T.outputDocument
+      default_source :cwm
 
-      repo = RDF::Repository.load("http://www.w3.org/2000/10/swap/test/n3parser.tests", :format => :n3)
-      Spira.add_repository! :default, repo
+      type SWAP.CwmTest
+      property :description, :predicate => SWAP.description, :type => XSD.string
+      property :referenceOutput, :predicate => SWAP.referenceOutput
+      property :arguments, :predicate => SWAP.arguments, :type => XSD.string
+
+      def inputDocument
+        self.arguments if self.arguments.match(/\w+[^\s]*.n3$/)
+      end
       
       def name
         subject.to_s.split("#").last
@@ -28,8 +32,8 @@ module Fixtures
         Kernel.open(self.inputDocument)
       end
       
-      def output
-        self.outputDocument ? Kernel.open(self.outputDocument) : ""
+      def reference
+        self.referenceOutput ? Kernel.open(self.referenceOutput) : ""
       end
 
       def information; self.description; end
@@ -39,7 +43,7 @@ module Fixtures
           subject
           description
           inputDocument
-          outputDocument
+          referenceOutput
         ).map {|a| v = self.send(a); "#{a}='#{v}'" if v}.compact.join(", ") +
         "]"
       end
@@ -58,20 +62,15 @@ module Fixtures
           @parser.graph.should be_equivalent_graph(self.output, self)
         else
           #puts "parse #{self.outputDocument} as #{RDF::Reader.for(self.outputDocument)}"
-          format = detect_format(self.output)
-          output_graph = RDF::Graph.load(self.outputDocument, :format => format, :base_uri => self.subject)
+          format = detect_format(self.reference)
+          output_graph = RDF::Graph.load(self.referenceOutput, :format => format, :base_uri => self.subject)
           puts "result: #{CGI.escapeHTML(graph.to_ntriples)}" if ::RDF::N3::debug?
           graph.should Matchers::be_equivalent_graph(output_graph, self)
         end
       end
     end
-    
-    class PositiveParserTest < Entry
-      type N3T.PositiveParserTest
-    end
 
-    class NegativeParserTest < Entry
-      type N3T.NegativeParserTest
-    end
+    repo = RDF::Repository.load("http://www.w3.org/2000/10/swap/test/regression.n3", :format => :n3)
+    Spira.add_repository! :cwm, repo
   end
 end
