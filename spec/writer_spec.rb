@@ -213,21 +213,18 @@ describe RDF::N3::Writer do
   
   # W3C Turtle Test suite from http://www.w3.org/2000/10/swap/test/regression.n3
   describe "w3c turtle tests" do
-    require 'rdf_helper'
+    require 'turtle_test'
 
-    def self.positive_tests
-      RdfHelper::TestCase.test_cases(TURTLE_TEST, TURTLE_DIR)
-    end
-
-    positive_tests.each do |t|
+    Fixtures::TurtleTest::Good.each do |t|
+      next unless t.comment
       #puts t.inspect
       #next unless t.name == "test-04"
       next if t.name == "test-29" # FIXME
       
-      specify "#{t.name}: " + (t.description || "#{t.outputDocument}") do
-        @graph = parse(t.output, :base_uri => t.about, :format => :ntriples)
-        n3 = serialize(t.output, t.about, [], :format => :n3)
-        g2 = parse(n3, :base_uri => t.about)
+      specify "#{t.name}: #{t.comment}" do
+        @graph = parse(t.output, :base_uri => t.result, :format => :ntriples)
+        n3 = serialize(t.output, t.result, [], :format => :n3)
+        g2 = parse(n3, :base_uri => t.result)
         g2.should be_equivalent_graph(@graph, :trace => @debug.join("\n"))
       end
     end

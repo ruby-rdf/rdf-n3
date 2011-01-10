@@ -12,6 +12,7 @@ begin
     gemspec.homepage = "http://github.com/gkellogg/rdf-n3"
     gemspec.authors = ["Gregg Kellogg"]
     gemspec.add_dependency('rdf', '>= 0.3.0')
+    gemspec.add_development_dependency('oopen-uri-cached')
     gemspec.add_development_dependency('rspec', '>= 2.1.0')
     gemspec.add_development_dependency('rdf-spec', '>= 0.2.1')
     gemspec.add_development_dependency('rdf-rdfxml', '>= 0.2.1')
@@ -40,34 +41,6 @@ end
 
 YARD::Rake::YardocTask.new do |t|
   t.files   = %w(lib/**/*.rb README.md History.md AUTHORS VERSION)   # optional
-end
-
-desc "Generate test manifest yaml"
-namespace :spec do
-  task :prepare do
-    $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
-    $:.unshift(File.join(File.dirname(__FILE__), 'spec'))
-    require 'rdf/rdfxml'
-    require 'rdf/n3'
-    require 'rdf_helper'
-    require 'fileutils'
-
-    yaml = File.join(SWAP_DIR, "n3parser.yml")
-    FileUtils.rm_f(yaml)
-    RdfHelper::TestCase.to_yaml(SWAP_TEST, SWAP_DIR, yaml)
-    
-    yaml = File.join(SWAP_DIR, "regression.yml")
-    FileUtils.rm_f(yaml)
-    RdfHelper::TestCase.to_yaml(CWM_TEST, SWAP_DIR, yaml)
-    
-    yaml = File.join(TURTLE_DIR, "manifest.yml")
-    FileUtils.rm_f(yaml)
-    RdfHelper::TestCase.to_yaml(TURTLE_TEST, TURTLE_DIR, yaml)
-    
-    yaml = File.join(TURTLE_DIR, "manifest-bad.yml")
-    FileUtils.rm_f(yaml)
-    RdfHelper::TestCase.to_yaml(TURTLE_BAD_TEST, TURTLE_DIR, yaml)
-  end
 end
 
 task :default => :spec
