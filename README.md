@@ -69,7 +69,21 @@ results in:
   h = RDF::Query::Variable.new(<#h>)
   g = RDF::Node.new()
   RDF::Statement.new(f, <#loves>, h)
-  
+
+Implementation Notes
+--------------------
+The parser is driven through a rules table contained in lib/rdf/n3/reader/meta.rb. This includes
+branch rules to indicate productions to be taken based on a current production. Terminals are denoted
+through a set of regular expressions used to match each type of terminal.
+
+The meta.rb file is generated from lib/rdf/n3/reader/n3-selectors.n3
+(taken from http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3) which is the result of parsing
+http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm using the following command sequence:
+
+    cwm n3.n3 bnf-rules.n3 --think --purge --data > n3-selectors.n3
+
+n3-selectors.n3 is itself used to generate meta.rb using script/build_meta.
+
 Dependencies
 ------------
 * [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.0)

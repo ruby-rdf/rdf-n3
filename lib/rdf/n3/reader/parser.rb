@@ -1,4 +1,4 @@
-
+# Simple parser to go through productions without attempting evaluation
 module RDF::N3
   module Parser
     START = 'http://www.w3.org/2000/10/swap/grammar/n3#document'
