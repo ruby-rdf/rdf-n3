@@ -12,7 +12,11 @@ describe RDF::N3::Format do
       ".n3" => RDF::Format.for(:file_extension => "n3"),
       ".ttl" => RDF::Format.for(:file_extension => "ttl"),
       "text/n3" => RDF::Format.for(:content_type   => "text/n3"),
+      "text/rdf+n3" => RDF::Format.for(:content_type   => "text/rdf+n3"),
+      "application/rdf+n3" => RDF::Format.for(:content_type   => "application/rdf+n3"),
       "text/turtle" => RDF::Format.for(:content_type   => "text/turtle"),
+      "application/turtle" => RDF::Format.for(:content_type   => "application/turtle"),
+      "application/x-turtle" => RDF::Format.for(:content_type   => "application/x-turtle"),
     }.each_pair do |label, format|
       it "should discover '#{label}'" do
         format.should == RDF::N3::Format

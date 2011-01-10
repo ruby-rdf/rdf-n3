@@ -23,8 +23,12 @@ module RDF::N3
   #
   # @see http://www.w3.org/TR/rdf-testcases/#ntriples
   class Format < RDF::Format
-    content_type     'text/turtle', :extension => :ttl
-    content_type     'text/n3', :extension => :n3
+    content_type     'text/turtle',         :extension => :ttl
+    content_type     'application/turtle',  :extension => :ttl
+    content_type     'application/x-turtle',:extension => :ttl
+    content_type     'text/n3',             :extension => :n3
+    content_type     'text/rdf+n3',         :extension => :n3
+    content_type     'application/rdf+n3',  :extension => :n3
     content_encoding 'utf-8'
 
     reader { RDF::N3::Reader }
