@@ -1,5 +1,10 @@
+0.3.1
+-----
+* Add application/turtle, application/x-turtle, text/rdf+n3 and application/rdf+n3 as mime types
+  matching this format, even though only text/turtle and text/n3 are valid.
+
 0.3.0
----------
+-----
 * New Predictive-Parser based N3 Reader, substantially faster than previous Treetop-based parser
 * RDF.rb 0.3.0 compatibility updates
   * Remove literal_normalization and qname_hacks, add back uri_hacks (until 0.3.0)
