@@ -436,7 +436,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rdf>, [">= 0.3.0"])
-      s.add_development_dependency(%q<oopen-uri-cached>, [">= 0"])
+      s.add_development_dependency(%q<open-uri-cached>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 2.1.0"])
       s.add_development_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_development_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
@@ -444,7 +444,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<yard>, [">= 0"])
     else
       s.add_dependency(%q<rdf>, [">= 0.3.0"])
-      s.add_dependency(%q<oopen-uri-cached>, [">= 0"])
+      s.add_dependency(%q<open-uri-cached>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 2.1.0"])
       s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
       s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
@@ -453,7 +453,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<rdf>, [">= 0.3.0"])
-    s.add_dependency(%q<oopen-uri-cached>, [">= 0"])
+    s.add_dependency(%q<open-uri-cached>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 2.1.0"])
     s.add_dependency(%q<rdf-spec>, [">= 0.2.1"])
     s.add_dependency(%q<rdf-rdfxml>, [">= 0.2.1"])
