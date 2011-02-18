@@ -1,3 +1,7 @@
+0.3.2
+-----
+* Assert formats for :ttl, :turtle, and :notation3 in addition to :n3
+
 0.3.1
 -----
 * Add application/turtle, application/x-turtle, text/rdf+n3 and application/rdf+n3 as mime types

@@ -22,5 +22,20 @@ describe RDF::N3::Format do
         format.should == RDF::N3::Format
       end
     end
+    
+    it "should discover 'notation3'" do
+      RDF::Format.for(:notation3).reader.should == RDF::N3::Reader
+      RDF::Format.for(:notation3).writer.should == RDF::N3::Writer
+    end
+    
+    it "should discover 'turtle'" do
+      RDF::Format.for(:turtle).reader.should == RDF::N3::Reader
+      RDF::Format.for(:turtle).writer.should == RDF::N3::Writer
+    end
+    
+    it "should discover 'ttl'" do
+      RDF::Format.for(:ttl).reader.should == RDF::N3::Reader
+      RDF::Format.for(:ttl).writer.should == RDF::N3::Writer
+    end
   end
 end

@@ -34,4 +34,43 @@ module RDF::N3
     reader { RDF::N3::Reader }
     writer { RDF::N3::Writer }
   end
+  
+  # Alias for N3 format
+  #
+  # This allows the following:
+  #
+  # @example Obtaining an RDFXML format class
+  #   RDF::Format.for(:ttl)         # RDF::N3::Notation3
+  #   RDF::Format.for(:ttl).reader  # RDF::N3::Reader
+  #   RDF::Format.for(:ttl).writer  # RDF::N3::Writer
+  class Notation3 < RDF::Format
+    reader { RDF::N3::Reader }
+    writer { RDF::N3::Writer }
+  end
+  
+  # Alias for N3 format
+  #
+  # This allows the following:
+  #
+  # @example Obtaining an RDFXML format class
+  #   RDF::Format.for(:ttl)         # RDF::N3::TTL
+  #   RDF::Format.for(:ttl).reader  # RDF::N3::Reader
+  #   RDF::Format.for(:ttl).writer  # RDF::N3::Writer
+  class TTL < RDF::Format
+    reader { RDF::N3::Reader }
+    writer { RDF::N3::Writer }
+  end
+  
+  # Aliases for N3 format
+  #
+  # This allows the following:
+  #
+  # @example Obtaining an RDFXML format class
+  #   RDF::Format.for(:turtle)         # RDF::N3::Turtle
+  #   RDF::Format.for(:turtle).reader  # RDF::N3::Reader
+  #   RDF::Format.for(:turtle).writer  # RDF::N3::Writer
+  class Turtle < RDF::Format
+    reader { RDF::N3::Reader }
+    writer { RDF::N3::Writer }
+  end
 end
