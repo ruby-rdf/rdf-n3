@@ -1,4 +1,4 @@
-0.3.2
+0.3.1.1
 -----
 * Assert formats for :ttl, :turtle, and :notation3 in addition to :n3
 
