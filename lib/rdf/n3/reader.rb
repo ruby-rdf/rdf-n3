@@ -257,7 +257,7 @@ module RDF::N3
     def literalFinish
       lit = @prod_data.pop
       content = RDF::NTriples.unescape(lit[:string])
-      language = lit[:langcode]
+      language = lit[:langcode].downcase if lit[:langcode]
       datatype = lit[:symbol]
       
       lit = RDF::Literal.new(content, :language => language, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)

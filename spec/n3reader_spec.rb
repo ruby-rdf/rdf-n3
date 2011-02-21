@@ -264,7 +264,7 @@ describe "RDF::N3::Reader" do
     it "should allow mixed-case language" do
       n3doc = %(:x2 :p "xyz"@EN .)
       statement = parse(n3doc).statements.first
-      statement.object.to_ntriples.should == %("xyz"@EN)
+      statement.object.to_ntriples.should == %("xyz"@en)
     end
 
     it "should create typed literals" do
