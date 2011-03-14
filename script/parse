@@ -6,48 +6,44 @@ require 'rdf/ntriples'
 require 'getoptlong'
 require 'open-uri'
 
-def run(input, base)
-  reader_class = RDF::Reader.for($input_format.to_sym)
-  writer_class = RDF::Writer.for($output_format.to_sym)
-  raise "Reader not found for #{$input_format}" unless reader_class
-  raise "Writer not found for #{$output_format}" unless writer_class
+def run(input, options)
+  reader_class = RDF::Reader.for(options[:input_format].to_sym)
+  raise "Reader not found for #{options[:input_format]}" unless reader_class
 
   start = Time.new
   num = 0
-  if $parse_only
+  if options[:parse_only]
     include RDF::N3::Meta
     include RDF::N3::Parser
-    puts "\nparse #{input.read}---\n\n" unless $quiet
+    puts "\nparse #{input.read}---\n\n" unless options[:quiet]
     input.rewind
-    if $quiet
+    if options[:quiet]
       $stdout = StringIO.new
     end
     test(input, BRANCHES, REGEXPS)
-    if $quiet
+    if options[:quiet]
       $stdout = STDOUT
       print "."
     end
-  elsif $output_format == :ntriples || $quiet
-    reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
+  elsif options[:output_format] == :ntriples || options[:quiet]
+    reader_class.new(input, :base_uri => options[:base_uri], :strict => true).each do |statement|
       num += 1
-      if $quiet
+      if options[:quiet]
         #print "."
       else
         puts statement.to_ntriples
       end
     end
-  elsif $output_format == :inspect
-    reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
+  elsif options[:output_format] == :inspect
+    reader_class.new(input, :base_uri => options[:base_uri], :strict => true).each do |statement|
       num += 1
       puts statement.inspect
     end
   else
-    puts writer_class.buffer(:base_uri => base, :standard_prefixes => true) { |writer|
-      reader_class.new(input, :base_uri => base, :strict => true).each do |statement|
-        num += 1
-        writer << statement
-      end
-    }
+    r = reader_class.new(input, :base_uri => options[:base_uri], :strict => true)
+    g = RDF::Graph.new << r
+    num = g.count
+    puts g.dump(options[:output_format], :base_uri => r.base_uri, :prefixes => r.prefixes)
   end
   puts
   secs = Time.new - start
@@ -58,10 +54,12 @@ rescue
   raise
 end
 
-$verbose = false
-$output_format = :ntriples
-$input_format = :n3
-base_uri  = "http://example.com"
+options = {
+  :verbose => false,
+  :output_format => :ntriples,
+  :input_format => :n3,
+  :base_uri => "http://example.com",
+}
 input = nil
 
 opts = GetoptLong.new(
@@ -76,23 +74,24 @@ opts = GetoptLong.new(
 )
 opts.each do |opt, arg|
   case opt
-  when '--verbose' then $verbose = true
-  when '--quiet' then $quiet = true
-  when '--debug' then ::RDF::N3::debug = true
-  when '--execute' then input = arg
-  when '--format' then $output_format = arg.to_sym
-  when '--input-format' then $input_format = arg.to_sym
-  when '--uri' then base_uri = arg
-  when '--parse-only' then $parse_only = true
+  when '--base-uri'     then options[:verbose] = true
+  when '--debug'        then ::RDF::N3::debug = true
+  when '--execute'      then input = arg
+  when '--format'       then options[:output_format] = arg.to_sym
+  when '--input-format' then options[:input_format] = arg.to_sym
+  when '--parse-only'   then options[:parse_only] = true
+  when '--quiet'        then options[:quiet] = true
+  when '--uri'          then options[:base_uri] = arg
+  when '--verbose'      then options[:verbose] = true
   end
 end
 
 if ARGV.empty?
   s = input ? input : $stdin.read
-  run(StringIO.new(s), base_uri)
+  run(StringIO.new(s), options)
 else
   ARGV.each do |test_file|
-    run(Kernel.open(test_file), base_uri)
+    run(Kernel.open(test_file), options)
   end
 end
 puts
