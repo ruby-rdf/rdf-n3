@@ -62,9 +62,8 @@ module RDF::N3
         @variables = {}    # variable definitions along with defining formula
 
         if options[:base_uri]
-          @uri = uri(options[:base_uri])
-          add_debug("@uri", "#{@uri.inspect}")
-          namespace(nil, uri("#{options[:base_uri]}#"))
+          add_debug("@uri", "#{base_uri.inspect}")
+          namespace(nil, uri("#{base_uri}#"))
         end
         add_debug("validate", "#{validate?.inspect}")
         add_debug("canonicalize", "#{canonicalize?.inspect}")
@@ -81,6 +80,19 @@ module RDF::N3
           end
         end
       end
+    end
+
+    ##
+    # XXX Remove when added to RDF::Reader
+    # Returns the base URI determined by this reader.
+    #
+    # @example
+    #   reader.prefixes[:dc]  #=> RDF::URI('http://purl.org/dc/terms/')
+    #
+    # @return [Hash{Symbol => RDF::URI}]
+    # @since  0.3.0
+    def base_uri
+      @options[:base_uri]
     end
 
     ##
@@ -169,7 +181,7 @@ module RDF::N3
       when "@base"
         # Base, set or update document URI
         uri = decl[:explicituri]
-        @uri = process_uri(uri)
+        options[:base_uri] = process_uri(uri)
         
         # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
         # The parser behaves as though there were a
@@ -177,8 +189,8 @@ module RDF::N3
         # just before the file.
         # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
         
-        namespace(nil, uri.match(/[\/\#]$/) ? @uri : process_uri("#{uri}#"))
-        add_debug("declarationFinish[@base]", "@base=#{@uri}")
+        namespace(nil, uri.match(/[\/\#]$/) ? base_uri : process_uri("#{uri}#"))
+        add_debug("declarationFinish[@base]", "@base=#{base_uri}")
       when "@keywords"
         add_debug("declarationFinish[@keywords]", @keywords.inspect)
         # Keywords are handled in tokenizer and maintained in @keywords array
@@ -554,7 +566,7 @@ module RDF::N3
     end
 
     def process_uri(uri)
-      uri(@uri, RDF::NTriples.unescape(uri))
+      uri(base_uri, RDF::NTriples.unescape(uri))
     end
     
     def process_qname(tok)
@@ -584,7 +596,7 @@ module RDF::N3
         bnode(name)
       else
         add_debug('process_qname(default_ns)', name)
-        namespace(nil, uri("#{@uri}#")) unless prefix(nil)
+        namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
         ns(nil, name)
       end
       add_debug('process_qname', uri.inspect)
