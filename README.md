@@ -28,47 +28,47 @@ Usage
 -----
 Instantiate a reader from a local file:
 
-  RDF::N3::Reader.open("etc/foaf.n3") do |reader|
-    reader.each_statement do |statement|
-      puts statement.inspect
+    RDF::N3::Reader.open("etc/foaf.n3") do |reader|
+       reader.each_statement do |statement|
+         puts statement.inspect
+       end
     end
-  end
 
 Define @base and @prefix definitions, and use for serialization using :base_uri an :prefixes options
 
 Write a graph to a file:
 
-  RDF::N3::Writer.open("etc/test.n3") do |writer|
-    writer << graph
-  end
+    RDF::N3::Writer.open("etc/test.n3") do |writer|
+       writer << graph
+    end
 
 Formulae
 --------
 N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
-  { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
+    { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
   
 results in
 
-  f = RDF::Node.new
-  s = RDF::Node.new
-  o = RDF::Node.new
-  RDF::Statement(f, rdf:type n3:falsehood)
-  RDF::Statement(s, x:firstname, "Ora", :context => f)
-  RDF::Statement(s, dc:wrote, o, :context => f)
-  RDF::Statement(o, dc:title, "Moby Dick", :context => f)
+    f = RDF::Node.new
+    s = RDF::Node.new
+    o = RDF::Node.new
+    RDF::Statement(f, rdf:type n3:falsehood)
+    RDF::Statement(s, x:firstname, "Ora", :context => f)
+    RDF::Statement(s, dc:wrote, o, :context => f)
+    RDF::Statement(o, dc:title, "Moby Dick", :context => f)
 
 Variables
 ---------
 N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
 
-  @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
+    @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
 
 results in:
 
-  h = RDF::Query::Variable.new(<#h>)
-  g = RDF::Node.new()
-  RDF::Statement.new(f, <#loves>, h)
+    h = RDF::Query::Variable.new(<#h>)
+    g = RDF::Node.new()
+    RDF::Statement.new(f, <#loves>, h)
 
 Implementation Notes
 --------------------
