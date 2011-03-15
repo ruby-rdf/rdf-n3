@@ -1,16 +1,16 @@
 RDF::N3 reader/writer
 =====================
-Notation-3 and Turtle reader/writer for [RDF.rb]().
+Notation-3 and Turtle reader/writer for [RDF.rb][RDF.rb] .
 
 Description
 -----------
-RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb]() library suite.
+RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
 Features
 --------
-RDF::N3 parses [Notation-3](), [Turtle]() and [N-Triples]() into statements or triples. It also serializes to Turtle.
+RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] into statements or triples. It also serializes to Turtle.
 
 Install with `gem install rdf-n3`
 
@@ -37,7 +37,7 @@ Write a graph to a file:
     end
 
 ### Formulae
-N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
+N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
     { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
   
@@ -67,13 +67,13 @@ The parser is driven through a rules table contained in lib/rdf/n3/reader/meta.r
 branch rules to indicate productions to be taken based on a current production. Terminals are denoted
 through a set of regular expressions used to match each type of terminal.
 
-The meta.rb file is generated from lib/rdf/n3/reader/n3-selectors.n3
+The [meta.rb][file:lib/rdf/n3/reader/meta.rb] file is generated from lib/rdf/n3/reader/n3-selectors.n3
 (taken from http://www.w3.org/2000/10/swap/grammar/n3-selectors.n3) which is the result of parsing
 http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm using the following command sequence:
 
     cwm n3.n3 bnf-rules.n3 --think --purge --data > n3-selectors.n3
 
-n3-selectors.n3 is itself used to generate meta.rb using script/build_meta.
+[n3-selectors.n3][file:lib/rdf/n3/reader/n3-selectors.rb] is itself used to generate meta.rb using script/build_meta.
 
 ## TODO
 * Generate Formulae and solutions using BGP and SPARQL CONSTRUCT mechanisms
@@ -100,17 +100,17 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 * {RDF::Graph}
 
 ## Resources
-* [RDF.rb](http://rdf.rubyforge.org/) 
+* [RDF.rb][RDF.rb]
 * [Distiller](http://distiller.kellogg-assoc)
 * [Documentation](http://rdf.rubyforge.org/n3)
 * [History](file:file.History.html)
-* [Notation-3](http://www.w3.org/DesignIssues/Notation3.html)
+* [Notation-3][N3]
 * [N3 Primer](http://www.w3.org/2000/10/swap/Primer.html)
 * [N3 Reification](http://www.w3.org/DesignIssues/Reify.html)
-* [Turtle](http://www.w3.org/TeamSubmission/turtle/)
+* [Turtle][Turtle]
 * [W3C SWAP Test suite](http://www.w3.org/2000/10/swap/test/README.html)
 * [W3C Turtle Test suite](http://www.w3.org/2001/sw/DataAccess/df1/tests/README.txt)
-* [N-Triples](http://www.w3.org/2001/sw/RDFCore/ntriples/)
+* [N-Triples][N-Triples]
 
 ## License
 
@@ -119,7 +119,12 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
 Feedback
 --------
-* gregg@kellogg-assoc.com
-* <rubygems.org/gem/rdf-n3>
-* <github.com/gkellogg/rdf-n3>
+* <gregg@kellogg-assoc.com>
+* <http://rubygems.org/gem/rdf-n3>
+* <http://github.com/gkellogg/rdf-n3>
 * <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
+
+[RDF.rb]: http://rdf.rubyforge.org/
+[N3]: http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
+[Turtle]: http://www.w3.org/TeamSubmission/turtle/
+[N-Triples]: http://www.w3.org/2001/sw/RDFCore/ntriples/
