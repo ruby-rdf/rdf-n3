@@ -1,31 +1,25 @@
 RDF::N3 reader/writer
 =====================
-Notation-3 and Turtle reader/writer for RDF.rb.
+Notation-3 and Turtle reader/writer for [RDF.rb]().
 
 Description
 -----------
-RDF::N3 is an Notation-3 parser for Ruby using the RDF.rb library suite.
+RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb]() library suite.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
 Features
 --------
-RDF::N3 parses Notation-3, Turtle and N-Triples into statements or triples. It also serializes to Turtle.
+RDF::N3 parses [Notation-3](), [Turtle]() and [N-Triples]() into statements or triples. It also serializes to Turtle.
 
-* Fully compliant N3-rdf parser
-* Also parses Turtle and N-Triples
-* Turtle serializer
+Install with `gem install rdf-n3`
 
-Install with 'gem install rdf-n3'
-
-Limitations
------------
+## Limitations
 * Full support of Unicode input requires Ruby version 1.9 or greater.
 * Support for Variables in Formulae dependent on underlying repository. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
 * No support for N3 Reification. If there were, it would be through a :reify option to the reader.
 
-Usage
------
+## Usage
 Instantiate a reader from a local file:
 
     RDF::N3::Reader.open("etc/foaf.n3") do |reader|
@@ -34,7 +28,7 @@ Instantiate a reader from a local file:
        end
     end
 
-Define @base and @prefix definitions, and use for serialization using :base_uri an :prefixes options
+Define `@base` and `@prefix` definitions, and use for serialization using `:base_uri` an `:prefixes` options
 
 Write a graph to a file:
 
@@ -42,8 +36,7 @@ Write a graph to a file:
        writer << graph
     end
 
-Formulae
---------
+### Formulae
 N3 Formulae are introduced with the { statmenent-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
     { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
@@ -58,8 +51,7 @@ results in
     RDF::Statement(s, dc:wrote, o, :context => f)
     RDF::Statement(o, dc:title, "Moby Dick", :context => f)
 
-Variables
----------
+### Variables
 N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
 
     @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
@@ -70,8 +62,7 @@ results in:
     g = RDF::Node.new()
     RDF::Statement.new(f, <#loves>, h)
 
-Implementation Notes
---------------------
+## Implementation Notes
 The parser is driven through a rules table contained in lib/rdf/n3/reader/meta.rb. This includes
 branch rules to indicate productions to be taken based on a current production. Terminals are denoted
 through a set of regular expressions used to match each type of terminal.
@@ -84,51 +75,51 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 
 n3-selectors.n3 is itself used to generate meta.rb using script/build_meta.
 
-Dependencies
-------------
-* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.0)
+## TODO
+* Generate Formulae and solutions using BGP and SPARQL CONSTRUCT mechanisms
+* Create equivalent to `--think` to iterate on solutions.
 
-Resources
----------
-* Distiller[http://kellogg-assoc/distiller]
-* RDoc[http://rdoc.info/projects/gkellogg/rdf-n3]
-* History[http://github.com/gkellogg/rdf-n3/blob/master/History.txt]
-* "N3 Specification"[http://www.w3.org/DesignIssues/Notation3.html]
-* "N3 Primer"[http://www.w3.org/2000/10/swap/Primer.html]
-* "N3 Reification"[http://www.w3.org/DesignIssues/Reify.html]
-* Turtle[http://www.w3.org/TeamSubmission/turtle/]
-* "RDF Tests"[http://www.w3.org/2000/10/rdf-tests/rdfcore/allTestCases.html]
-* "W3C Turtle Test suite"[http://www.w3.org/2000/10/swap/test/regression.n3]
+## Dependencies
+* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.1)
 
-License
--------
-(The MIT License)
+## Documentation
+Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 
-Copyright (c) 2009-2010 Gregg Kellogg
+### Principle Classes
+* {RDF::N3}
+* {RDF::N3::Format}
+* {RDF::N3::Reader}
+* {RDF::N3::Writer}
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+### Additional vocabularies
+* {RDF::LOG}
+* {RDF::REI}
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+### Patches
+* {Array}
+* {RDF::Graph}
 
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+## Resources
+* [RDF.rb](http://rdf.rubyforge.org/) 
+* [Distiller](http://distiller.kellogg-assoc)
+* [Documentation](http://rdf.rubyforge.org/n3)
+* [History](file:file.History.html)
+* [Notation-3](http://www.w3.org/DesignIssues/Notation3.html)
+* [N3 Primer](http://www.w3.org/2000/10/swap/Primer.html)
+* [N3 Reification](http://www.w3.org/DesignIssues/Reify.html)
+* [Turtle](http://www.w3.org/TeamSubmission/turtle/)
+* [W3C SWAP Test suite](http://www.w3.org/2000/10/swap/test/README.html)
+* [W3C Turtle Test suite](http://www.w3.org/2001/sw/DataAccess/df1/tests/README.txt)
+* [N-Triples](http://www.w3.org/2001/sw/RDFCore/ntriples/)
+
+## License
+
+This is free and unencumbered public domain software. For more information,
+see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
 Feedback
 --------
 * gregg@kellogg-assoc.com
-* rubygems.org/rdf-n3
-* github.com/gkellogg/rdf-n3
-* gkellogg.lighthouseapp.com for bug reports
-* public-rdf-ruby mailing list on w3.org
+* <rubygems.org/gem/rdf-n3>
+* <github.com/gkellogg/rdf-n3>
+* <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
