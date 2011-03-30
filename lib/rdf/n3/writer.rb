@@ -165,7 +165,7 @@ module RDF::N3
           if uri.to_s.index(vocab.to_s) == 0
             local_name = uri.to_s[(vocab.to_s.length)..-1]
             add_debug "get_qname(ns): #{prefix}:#{local_name}"
-            return @uri_to_qname[uri] = [prefix, local_name.to_sym]
+            return @uri_to_qname[uri] = "#{prefix}:#{local_name}"
           end
         end
         
@@ -174,7 +174,7 @@ module RDF::N3
           prefix = vocab.__name__.to_s.split('::').last.downcase
           prefixes[prefix.to_sym] = vocab.to_uri
           suffix = uri.to_s[vocab.to_uri.to_s.size..-1]
-          return @uri_to_qname[uri] = [prefix.to_sym, suffix.empty? ? nil : suffix.to_sym] if prefix && suffix
+          return @uri_to_qname[uri] = "#{prefix}:#{suffix}"
         end
         
         @uri_to_qname[uri] = nil
@@ -192,8 +192,8 @@ module RDF::N3
     def sort_properties(properties)
       properties.keys.each do |k|
         properties[k] = properties[k].sort do |a, b|
-          a_li = a.is_a?(RDF::URI) && get_qname(a) && get_qname(a).last.to_s =~ /^_\d+$/ ? a.to_i : a.to_s
-          b_li = b.is_a?(RDF::URI) && get_qname(b) && get_qname(b).last.to_s =~ /^_\d+$/ ? b.to_i : b.to_s
+          a_li = a.to_s.index(RDF._.to_s) == 0 ? a.to_s.match(/\d+$/).to_s.to_i : a.to_s
+          b_li = b.to_s.index(RDF._.to_s) == 0 ? b.to_s.match(/\d+$/).to_s.to_i : b.to_s
           
           a_li <=> b_li
         end
@@ -242,13 +242,7 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, options = {})
       md = relativize(uri)
-      if md && md != uri.to_s
-        "<%s>" % md
-      elsif qname = get_qname(uri)
-        qname.map(&:to_s).join(":")
-      else
-        "<%s>" % uri_for(uri)
-      end
+      md && md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri_for(uri)}>")
     end
     
     ##

@@ -34,6 +34,16 @@ describe RDF::N3::Writer do
       )
     end
     
+    # see example-files/arnau-registered-vocab.rb
+    it "should use qname URIs with empty suffix" do
+      input = %(<http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> .)
+      serialize(input, nil,
+        [%r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
+        %r(^foaf: foaf: foaf: \.$)],
+        :prefixes => { "foaf" => RDF::FOAF}
+      )
+    end
+    
     it "should order properties" do
       input = %(
         @prefix : <http://xmlns.com/foaf/0.1/> .
