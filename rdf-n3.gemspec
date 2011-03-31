@@ -5,17 +5,18 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rdf-n3}
-  s.version = "0.3.1.1"
+  s.version = "0.3.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2011-02-18}
+  s.date = %q{2011-03-30}
   s.description = %q{RDF::N3 is an Notation-3 (n3-rdf) parser for Ruby using the RDF.rb library suite.}
   s.email = %q{gregg@kellogg-assoc.com}
   s.extra_rdoc_files = [
     "AUTHORS",
     "History.md",
     "README.md",
+    "UNLICENSE",
     "VERSION"
   ]
   s.files = [
@@ -24,7 +25,9 @@ Gem::Specification.new do |s|
     "History.md",
     "README.md",
     "Rakefile",
+    "UNLICENSE",
     "VERSION",
+    "example-files/arnau-registered-vocab.rb",
     "example-files/sp2b.n3",
     "example.rb",
     "lib/rdf/n3.rb",
@@ -414,7 +417,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/gkellogg/rdf-n3}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.5.0}
+  s.rubygems_version = %q{1.6.2}
   s.summary = %q{Notation-3 (n3-rdf) and Turtle reader/writer for RDF.rb.}
   s.test_files = [
     "spec/cwm_spec.rb",

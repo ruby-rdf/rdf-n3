@@ -1,3 +1,7 @@
+0.3.1.2
+-----
+* Normalize language tags to lower case.
+
 0.3.1.1
 -----
 * Assert formats for :ttl, :turtle, and :notation3 in addition to :n3
