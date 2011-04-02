@@ -1,3 +1,8 @@
+0.3.1.3
+-----
+* Normalize language tags to lower case (only when canonicalizing). SPARQL specs expect the reader
+  to not screw with the language case for equivalence tests.
+
 0.3.1.2
 -----
 * Normalize language tags to lower case.
