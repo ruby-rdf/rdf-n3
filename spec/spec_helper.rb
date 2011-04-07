@@ -11,6 +11,7 @@ require 'rdf/ntriples'
 require 'rdf/spec'
 require 'rdf/spec/matchers'
 require 'rdf/isomorphic'
+require 'yaml'    # XXX should be in open-uri/cached
 require 'open-uri/cached'
 
 include Matchers

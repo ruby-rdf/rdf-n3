@@ -89,7 +89,7 @@ module RDF::N3
       super do
         @graph = RDF::Graph.new
         @uri_to_qname = {}
-        prefix(nil, @options[:default_namespace]) if @options[:default_namespace]
+        @uri_to_prefix = {}
         if block_given?
           case block.arity
             when 0 then instance_eval(&block)
@@ -154,35 +154,38 @@ module RDF::N3
     end
     
     # Return a QName for the URI, or nil. Adds namespace of QName to defined prefixes
-    # @param [URI,#to_s] uri
-    # @return [Array<Symbol,Symbol>, nil] Prefix, Suffix pair or nil, if none found
-    def get_qname(uri)
-      uri = RDF::URI.intern(uri.to_s) unless uri.is_a?(URI)
+    # @param [RDF::Resource] resource
+    # @return [String, nil] value to use to identify URI
+    def get_qname(resource)
+      case resource
+      when RDF::Node
+        return resource.to_s
+      when RDF::URI
+        uri = resource.to_s
+      else
+        return nil
+      end
 
-      unless @uri_to_qname.has_key?(uri)
-        # Find in defined prefixes
-        prefixes.each_pair do |prefix, vocab|
-          if uri.to_s.index(vocab.to_s) == 0
-            local_name = uri.to_s[(vocab.to_s.length)..-1]
-            add_debug "get_qname(ns): #{prefix}:#{local_name}"
-            return @uri_to_qname[uri] = "#{prefix}:#{local_name}"
-          end
-        end
-        
-        # Use a default vocabulary
-        if @options[:standard_prefixes] && vocab = RDF::Vocabulary.detect {|v| uri.to_s.index(v.to_uri.to_s) == 0}
-          prefix = vocab.__name__.to_s.split('::').last.downcase
-          prefixes[prefix.to_sym] = vocab.to_uri
-          suffix = uri.to_s[vocab.to_uri.to_s.size..-1]
-          return @uri_to_qname[uri] = "#{prefix}:#{suffix}"
-        end
-        
-        @uri_to_qname[uri] = nil
+      qname = case
+      when @uri_to_qname.has_key?(uri)
+        return @uri_to_qname[uri]
+      when u = @uri_to_prefix.keys.detect {|u| uri.index(u.to_s) == 0}
+        # Use a defined prefix
+        prefix = @uri_to_prefix[u]
+        prefix(prefix.to_sym, u)  # Define for output
+        uri.sub(u.to_s, "#{prefix}:")
+      when @options[:standard_prefixes] && vocab = RDF::Vocabulary.detect {|v| uri.index(v.to_uri.to_s) == 0}
+        prefix = vocab.__name__.to_s.split('::').last.downcase
+        @uri_to_prefix[vocab.to_uri.to_s] = prefix
+        prefix(prefix.to_sym, vocab.to_uri) # Define for output
+        uri.sub(vocab.to_uri.to_s, "#{prefix}:")
+      else
+        nil
       end
       
-      @uri_to_qname[uri]
+      @uri_to_qname[uri] = qname
     rescue Addressable::URI::InvalidURIError => e
-       @uri_to_qname[uri] = nil
+      raise RDF::WriterError, "Invalid URI #{resource.inspect}: #{e.message}"
     end
     
     # Take a hash from predicate uris to lists of values.
@@ -242,7 +245,7 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, options = {})
       md = relativize(uri)
-      md && md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri_for(uri)}>")
+      md && md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri}>")
     end
     
     ##
@@ -312,6 +315,14 @@ module RDF::N3
     
     # Perform any preprocessing of statements required
     def preprocess
+      # Load defined prefixes
+      (@options[:prefixes] || {}).each_pair do |k, v|
+        @uri_to_prefix[v.to_s] = k
+      end
+      @options[:prefixes] = {}  # Will define actual used when matched
+
+      prefix(nil, @options[:default_namespace]) if @options[:default_namespace]
+
       @graph.each {|statement| preprocess_statement(statement)}
     end
     
