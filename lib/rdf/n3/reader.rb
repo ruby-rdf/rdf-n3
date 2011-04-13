@@ -9,7 +9,8 @@ module RDF::N3
   # Separate pass to create branch_table from n3-selectors.n3
   #
   # @todo
-  # Existentials, Universals and Formulae
+  # * Formulae as RDF::Query representations
+  # * Formula expansion similar to SPARQL Construct
   #
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Reader < RDF::Reader
@@ -45,7 +46,8 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if _validate_
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @input = input.respond_to?(:read) ? (input.rewind; input) : StringIO.new(input.to_s)
+        input.rewind if input.respond_to?(:rewind)
+        @input = input.respond_to?(:read) ? input : StringIO.new(input.to_s)
         @lineno = 0
         readline  # Prime the pump
         
@@ -80,6 +82,10 @@ module RDF::N3
           end
         end
       end
+    end
+
+    def inspect
+      sprintf("#<%s:%#0x(%s)>", self.class.name, __id__, base_uri.to_s)
     end
 
     ##
