@@ -479,9 +479,9 @@ describe "RDF::N3::Reader" do
         statement.subject.should be_a(RDF::Query::Variable)
         statement.predicate.should be_a(RDF::Query::Variable)
         statement.object.should be_a(RDF::Query::Variable)
-        statement.subject.should_not == statement.predicate
-        statement.object.should_not == statement.predicate
-        statement.predicate.should_not == statement.object
+        statement.subject.should_not equal statement.predicate
+        statement.object.should_not equal statement.predicate
+        statement.predicate.should_not equal statement.object
       end
 
       it "substitutes node for URI with @forEach" do
