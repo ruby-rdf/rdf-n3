@@ -290,17 +290,24 @@ module RDF::N3
     
     # Order subjects for output. Override this to output subjects in another order.
     #
-    # Uses top_classes
+    # Uses #top_classes and #base_uri.
     # @return [Array<Resource>] Ordered list of subjects
     def order_subjects
       seen = {}
       subjects = []
       
+      # Start with base_uri
+      if base_uri && @subjects.keys.include?(base_uri)
+        subjects << base_uri
+        seen[subject] = true
+      end
+      
+      # Add distinguished classes
       top_classes.each do |class_uri|
         graph.query(:predicate => RDF.type, :object => class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
           #add_debug "order_subjects: #{subject.inspect}"
           subjects << subject
-          seen[subject] = @top_levels[subject] = true
+          seen[subject] = true
         end
       end
       
@@ -364,7 +371,6 @@ module RDF::N3
       @references = {}
       @serialized = {}
       @subjects = {}
-      @top_levels = {}
       @shortNames = {}
       @started = false
     end
