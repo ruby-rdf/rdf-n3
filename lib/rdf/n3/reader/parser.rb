@@ -3,7 +3,7 @@ module RDF::N3
   module Parser
     START = 'http://www.w3.org/2000/10/swap/grammar/n3#document'
     R_WHITESPACE = Regexp.compile('\A\s*(?:#.*$)?')
-    R_MLSTRING = Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")")
+    R_MLSTRING = Regexp.compile("^.*([^\"\\\\]*)\"\"\"")
     SINGLE_CHARACTER_SELECTORS = %{\t\r\n !\"#$\%&'()*.,+/;<=>?[\\]^`{|}~}
     NOT_QNAME_CHARS = SINGLE_CHARACTER_SELECTORS + "@"
     NOT_NAME_CHARS = NOT_QNAME_CHARS + ":"
@@ -56,22 +56,29 @@ module RDF::N3
           elsif regexp = @regexps[term]
             if abbr(term) == 'string' && buffer[0, 3] == '"""'
               # Read until end of multi-line comment if this is the start of a multi-line comment
-              until R_MLSTRING.match(buffer)
+              string = '"""'
+              consume(3)
+              next_line = buffer
+              #puts "ml-str(start): #{next_line.dump}" if $verbose
+              until md = R_MLSTRING.match(next_line)
                 begin
-                  next_line = @input.readline
-                  @line += next_line
-                  @lineno += 1
+                  string += next_line
+                  next_line = readline
                 rescue EOFError => e
                   error("EOF reached searching for end of multi-line comment")
                 end
               end
+              string += md[0].to_s
+              consume(md[0].to_s.length)
+              onToken('string', string)
               #puts "ml-str now #{buffer.dump}"
+            else
+              md = regexp.match(buffer)
+              error("Token(#{abbr(term)}) '#{buffer[0, 10]}...' should match #{regexp}") unless md
+              puts "parse term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
+              onToken(abbr(term), md.to_s)
+              consume(md[0].length)
             end
-            md = regexp.match(buffer)
-            error("Token(#{abbr(term)}) '#{buffer[0, 10]}...' should match #{regexp}") unless md
-            puts "parse term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
-            onToken(abbr(term), md.to_s)
-            consume(md[0].length)
           else
             puts "parse term(push): #{term}" if $verbose
             todo_stack << {:prod => term, :terms => nil}
@@ -159,7 +166,7 @@ module RDF::N3
       @line = @input.readline
       @lineno += 1
       @line.force_encoding(Encoding::UTF_8) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
-      puts "readline[#{@lineno}]: '#{@line}'" if $verbose
+      puts "readline[#{@lineno}]: #{@line.dump}" if $verbose
       @pos = 0
       @line
     rescue EOFError => e

@@ -632,7 +632,7 @@ module RDF::N3::Meta
     :"http://www.w3.org/2000/10/swap/grammar/n3#prefix" => Regexp.compile(%(^([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)),
     :"http://www.w3.org/2000/10/swap/grammar/n3#qname" => Regexp.compile(%(^(([#{BARENAME_START}][#{BARENAME_TAIL}]*)?:)?([#{BARENAME_START}][#{BARENAME_TAIL}]*)?)),
     :"http://www.w3.org/2000/10/swap/grammar/n3#quickvariable" => Regexp.compile(%(^\\?[#{BARENAME_START}][#{BARENAME_TAIL}]*)),
-    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("(\"\"\"[^\"\\\\]*(?:(?:\\\\.|\"(?!\"\"))[^\"\\\\]*)*\"\"\")|(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
+    :"http://www.w3.org/2000/10/swap/grammar/n3#string" => Regexp.compile("(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")"),
 
     # Hack to replace integer|double|decimal with numericliteral
     :"http://www.w3.org/2000/10/swap/grammar/n3#numericliteral" => Regexp.compile(%(^[-+]?[0-9]+(\\.[0-9]+)?(e[-+]?[0-9]+)?))

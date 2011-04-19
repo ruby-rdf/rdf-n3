@@ -167,32 +167,33 @@ describe "RDF::N3::Reader" do
           pending("Not supported in Ruby 1.8")
         end
       end
-
-      it "should parse multi-line literal" do
-        graph = parse(%(
-  <http://www.example.com/books#book12345> <http://purl.org/dc/terms/title> """
-          Foo
-          <html:b xmlns:html="http://www.w3.org/1999/xhtml" html:a="b">bar<rdf:Thing xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><a:b xmlns:a="foo:"></a:b>here<a:c xmlns:a="foo:"></a:c></rd
-  f:Thing></html:b>
-          baz
-          <html:i xmlns:html="http://www.w3.org/1999/xhtml">more</html:i>
-       """ .
-        ))
-
-        graph.size.should == 1
-        graph.statements.first.object.value.should == %(
-          Foo
-          <html:b xmlns:html="http://www.w3.org/1999/xhtml" html:a="b">bar<rdf:Thing xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><a:b xmlns:a="foo:"></a:b>here<a:c xmlns:a="foo:"></a:c></rd
-  f:Thing></html:b>
-          baz
-          <html:i xmlns:html="http://www.w3.org/1999/xhtml">more</html:i>
-       )
-      end
       
-      it "should parse long literal ending in double quote" do
-        graph = parse(%(:a :b """ \\"""" .), :base_uri => "http://a/b")
-        graph.size.should == 1
-        graph.statements.first.object.value.should == ' "'
+      context "string3 literals" do
+        {
+          "simple" => %q(foo),
+          "muti-line" => %q(
+              Foo
+              <html:b xmlns:html="http://www.w3.org/1999/xhtml" html:a="b">
+                bar
+                <rdf:Thing xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <a:b xmlns:a="foo:"></a:b>
+                  here
+                  <a:c xmlns:a="foo:"></a:c>
+                </rd
+                f:Thing>
+              </html:b>
+              baz
+              <html:i xmlns:html="http://www.w3.org/1999/xhtml">more</html:i>
+            ),
+          "trailing escaped double-quote" => %q( "),
+          "regression.n3" => %q(sameDan.n3 sameThing.n3 --think --apply=forgetDups.n3 --purge --n3="/" )
+        }.each do |test, string|
+          it "parses #{test}" do
+            graph = parse(%(:a :b """#{string}"""))
+            graph.size.should == 1
+            graph.statements.first.object.value.should == string
+          end
+        end
       end
     end
 
@@ -1049,7 +1050,7 @@ describe "RDF::N3::Reader" do
       
     end
     
-     # n3p tests taken from http://inamidst.com/n3p/test/
+    # n3p tests taken from http://inamidst.com/n3p/test/
     describe "with real data tests" do
       dirs = %w(misc lcsh rdflib n3p)
       dirs.each do |dir|
