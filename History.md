@@ -1,3 +1,14 @@
+0.3.3
+-----
+* Update dependencies to RDF.rb 0.3.3
+* Update specs to use open-uri-cached and Spira; no longer directly include W3C test cases.
+* Use Bundler when running specs.
+* Only output prefix definitions used in serialization.
+* Fixed stack overflow in regular expression when matching long multi-line literals.
+
+0.3.2
+-----
+* Skipped
 0.3.1.3
 -----
 * Normalize language tags to lower case (only when canonicalizing). SPARQL specs expect the reader
