@@ -1,0 +1,8 @@
+@prefix db: <http://dbpedia.org/resource/> .
+@prefix dbm: <http://dbpedia.org/meta/> .
+@prefix dbo: <http://dbpedia.org/ontology/> .
+
+db:Michael_Jackson dbo:activeYearsEndYear "2009-01-01T00:00:00Z";
+  dbo:activeYearsStartYear "1964-01-01T00:00:00Z";
+  dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> .
+

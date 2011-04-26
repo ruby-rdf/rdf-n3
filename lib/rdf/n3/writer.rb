@@ -53,6 +53,7 @@ module RDF::N3
   # @author [Gregg Kellogg](http://kellogg-assoc.com/)
   class Writer < RDF::Writer
     format RDF::N3::Format
+    QNAME = Meta::REGEXPS[:"http://www.w3.org/2000/10/swap/grammar/n3#qname"]
 
     # @return [Graph] Graph of statements serialized
     attr_accessor :graph
@@ -183,6 +184,12 @@ module RDF::N3
         nil
       end
       
+      # Make sure qname is a valid qname
+      if qname
+        md = QNAME.match(qname)
+        qname = nil unless md.to_s.length == qname.length
+      end
+
       @uri_to_qname[uri] = qname
     rescue Addressable::URI::InvalidURIError => e
       raise RDF::WriterError, "Invalid URI #{resource.inspect}: #{e.message}"
