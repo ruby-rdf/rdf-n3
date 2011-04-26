@@ -5,6 +5,7 @@
 * Use Bundler when running specs.
 * Only output prefix definitions used in serialization.
 * Fixed stack overflow in regular expression when matching long multi-line literals.
+* Fixed bug (issue 14) where illegal QNames were generated in writer.
 
 0.3.2
 -----
