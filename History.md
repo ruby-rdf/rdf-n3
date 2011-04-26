@@ -1,3 +1,7 @@
+0.3.3.1
+-------
+* Fixed bug in writer when given a base URI.
+
 0.3.3
 -----
 * Update dependencies to RDF.rb 0.3.3

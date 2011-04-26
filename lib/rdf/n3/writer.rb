@@ -136,7 +136,7 @@ module RDF::N3
     # @see    #write_triple
     def write_epilogue
       @max_depth = @options[:max_depth] || 3
-      @base_uri = @options[:base_uri]
+      @base_uri = RDF::URI(@options[:base_uri])
       @debug = @options[:debug]
 
       self.reset
@@ -147,7 +147,6 @@ module RDF::N3
       start_document
 
       order_subjects.each do |subject|
-        #STDERR.puts "subj: #{subject.inspect}"
         unless is_done?(subject)
           statement(subject)
         end
@@ -252,7 +251,8 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, options = {})
       md = relativize(uri)
-      md && md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri}>")
+      add_debug("relativize(#{uri.inspect}) => #{md.inspect}") if md != uri.to_s
+      md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri}>")
     end
     
     ##
@@ -306,13 +306,13 @@ module RDF::N3
       # Start with base_uri
       if base_uri && @subjects.keys.include?(base_uri)
         subjects << base_uri
-        seen[subject] = true
+        seen[base_uri] = true
       end
       
       # Add distinguished classes
       top_classes.each do |class_uri|
         graph.query(:predicate => RDF.type, :object => class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
-          #add_debug "order_subjects: #{subject.inspect}"
+          add_debug "order_subjects: #{subject.inspect}"
           subjects << subject
           seen[subject] = true
         end
@@ -409,23 +409,23 @@ module RDF::N3
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
       props = @graph.properties(l)
-      #STDERR.puts "is_valid_list: #{props.inspect}" if ::RDF::N3::debug?
+      #add_debug "is_valid_list: #{props.inspect}"
       return false unless props.has_key?(RDF.first.to_s) || l == RDF.nil
       while l && l != RDF.nil do
-        #STDERR.puts "is_valid_list(length): #{props.length}" if ::RDF::N3::debug?
+        #add_debug "is_valid_list(length): #{props.length}"
         return false unless props.has_key?(RDF.first.to_s) && props.has_key?(RDF.rest.to_s)
         n = props[RDF.rest.to_s]
-        #STDERR.puts "is_valid_list(n): #{n.inspect}" if ::RDF::N3::debug?
+        #add_debug "is_valid_list(n): #{n.inspect}"
         return false unless n.is_a?(Array) && n.length == 1
         l = n.first
         props = @graph.properties(l)
       end
-      #STDERR.puts "is_valid_list: valid" if ::RDF::N3::debug?
+      #add_debug "is_valid_list: valid"
       true
     end
     
     def do_list(l)
-      STDERR.puts "do_list: #{l.inspect}" if ::RDF::N3::debug?
+      add_debug "do_list: #{l.inspect}"
       position = :subject
       while l do
         p = @graph.properties(l)
@@ -441,7 +441,7 @@ module RDF::N3
     
     def p_list(node, position)
       return false if !is_valid_list(node)
-      #STDERR.puts "p_list: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #add_debug "p_list: #{node.inspect}, #{position}"
 
       @output.write(position == :subject ? "(" : " (")
       @depth += 2
@@ -459,7 +459,7 @@ module RDF::N3
     def p_squared(node, position)
       return false unless p_squared?(node, position)
 
-      #STDERR.puts "p_squared: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #add_debug "p_squared: #{node.inspect}, #{position}"
       subject_done(node)
       @output.write(position == :subject ? '[' : ' [')
       @depth += 2
@@ -471,18 +471,18 @@ module RDF::N3
     end
     
     def p_default(node, position)
-      #STDERR.puts "p_default: #{node.inspect}, #{position}" if ::RDF::N3::debug?
+      #add_debug "p_default: #{node.inspect}, #{position}"
       l = (position == :subject ? "" : " ") + format_value(node)
       @output.write(l)
     end
     
     def path(node, position)
-      STDERR.puts "path: #{node.inspect}, pos: #{position}, []: #{is_valid_list(node)}, p2?: #{p_squared?(node, position)}, rc: #{ref_count(node)}" if ::RDF::N3::debug?
+      add_debug "path: #{node.inspect}, pos: #{position}, []: #{is_valid_list(node)}, p2?: #{p_squared?(node, position)}, rc: #{ref_count(node)}"
       raise RDF::WriterError, "Cannot serialize node '#{node}'" unless p_list(node, position) || p_squared(node, position) || p_default(node, position)
     end
     
     def verb(node)
-      STDERR.puts "verb: #{node.inspect}" if ::RDF::N3::debug?
+      add_debug "verb: #{node.inspect}"
       if node == RDF.type
         @output.write(" a")
       else
@@ -491,7 +491,7 @@ module RDF::N3
     end
     
     def object_list(objects)
-      STDERR.puts "object_list: #{objects.inspect}" if ::RDF::N3::debug?
+      add_debug "object_list: #{objects.inspect}"
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
@@ -503,7 +503,7 @@ module RDF::N3
     def predicate_list(subject)
       properties = @graph.properties(subject)
       prop_list = sort_properties(properties) - [RDF.first.to_s, RDF.rest.to_s]
-      STDERR.puts "predicate_list: #{prop_list.inspect}" if ::RDF::N3::debug?
+      add_debug "predicate_list: #{prop_list.inspect}"
       return if prop_list.empty?
 
       prop_list.each_with_index do |prop, i|
@@ -513,7 +513,7 @@ module RDF::N3
           verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
           object_list(properties[prop])
         rescue Addressable::URI::InvalidURIError => e
-          STDERR.puts "Predicate #{prop.inspect} is an invalid URI: #{e.message}"
+          add_debug "Predicate #{prop.inspect} is an invalid URI: #{e.message}"
         end
       end
     end
@@ -525,6 +525,7 @@ module RDF::N3
     def s_squared(subject)
       return false unless s_squared?(subject)
       
+      add_debug "s_squared: #{subject.inspect}"
       @output.write("\n#{indent} [")
       @depth += 1
       predicate_list(subject)
@@ -542,7 +543,7 @@ module RDF::N3
     end
     
     def statement(subject)
-      STDERR.puts "statement: #{subject.inspect}, s2?: #{s_squared(subject)}" if ::RDF::N3::debug?
+      add_debug "statement: #{subject.inspect}, s2?: #{s_squared?(subject)}"
       subject_done(subject)
       s_squared(subject) || s_default(subject)
     end
