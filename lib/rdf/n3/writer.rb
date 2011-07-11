@@ -166,18 +166,21 @@ module RDF::N3
         return nil
       end
 
+      add_debug "get_qname(#{resource})"
       qname = case
       when @uri_to_qname.has_key?(uri)
         return @uri_to_qname[uri]
       when u = @uri_to_prefix.keys.detect {|u| uri.index(u.to_s) == 0}
         # Use a defined prefix
         prefix = @uri_to_prefix[u]
-        prefix(prefix, u)  # Define for output
+        prefix(prefix, u) unless u.to_s.empty? # Define for output
+        add_debug "get_qname: add prefix #{prefix.inspect} => #{u}"
         uri.sub(u.to_s, "#{prefix}:")
       when @options[:standard_prefixes] && vocab = RDF::Vocabulary.detect {|v| uri.index(v.to_uri.to_s) == 0}
         prefix = vocab.__name__.to_s.split('::').last.downcase
         @uri_to_prefix[vocab.to_uri.to_s] = prefix
         prefix(prefix, vocab.to_uri) # Define for output
+        add_debug "get_qname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"
         uri.sub(vocab.to_uri.to_s, "#{prefix}:")
       else
         nil
@@ -232,14 +235,22 @@ module RDF::N3
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_literal(literal, options = {})
+      literal = literal.dup.canonicalize! if @options[:canonicalize]
       case literal
-        when RDF::Literal
+      when RDF::Literal
+        case literal.datatype
+        when RDF::XSD.boolean, RDF::XSD.integer, RDF::XSD.decimal
+          literal.to_s
+        when RDF::XSD.double
+          literal.to_s.sub('E', 'e')  # Favor lower case exponent
+        else
           text = quoted(literal.value)
           text << "@#{literal.language}" if literal.has_language?
           text << "^^#{format_uri(literal.datatype)}" if literal.has_datatype?
           text
-        else
-          quoted(literal.to_s)
+        end
+      else
+        quoted(literal.to_s)
       end
     end
     
@@ -270,7 +281,7 @@ module RDF::N3
     def start_document
       @started = true
       
-      @output.write("#{indent}@base <#{@base_uri}> .\n") if @base_uri
+      @output.write("#{indent}@base <#{@base_uri}> .\n") unless @base_uri.to_s.empty?
       
       add_debug("start_document: #{prefixes.inspect}")
       prefixes.keys.sort_by(&:to_s).each do |prefix|
@@ -353,6 +364,7 @@ module RDF::N3
       get_qname(statement.subject)
       get_qname(statement.predicate)
       get_qname(statement.object)
+      get_qname(statement.object.datatype) if statement.object.literal? && statement.object.datatype
 
       @references[statement.predicate] = ref_count(statement.predicate) + 1
     end

@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rdf-n3}
-  s.version = "0.3.3.1"
+  s.version = "0.3.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gregg Kellogg"]
-  s.date = %q{2011-04-26}
+  s.date = %q{2011-07-10}
   s.description = %q{RDF::N3 is an Notation-3 and Turtle reader/writer for the RDF.rb library suite.}
   s.email = %q{gregg@kellogg-assoc.com}
   s.extra_rdoc_files = [
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
     "VERSION",
     "example-files/arnau-registered-vocab.rb",
     "example-files/arnau-stack-overflow.ttl",
+    "example-files/best-buy.nt",
     "example-files/dwbutler-mj.n3",
     "example-files/dwbutler-mj.ttl",
     "example-files/lee-reilly-list.rb",
@@ -72,19 +73,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.5.0}
   s.summary = %q{N3/Turtle reader/writer for RDF.rb.}
-  s.test_files = [
-    "spec/cwm_spec.rb",
-    "spec/cwm_test.rb",
-    "spec/format_spec.rb",
-    "spec/matchers.rb",
-    "spec/reader_spec.rb",
-    "spec/spec_helper.rb",
-    "spec/swap_spec.rb",
-    "spec/swap_test.rb",
-    "spec/turtle_spec.rb",
-    "spec/turtle_test.rb",
-    "spec/writer_spec.rb"
-  ]
 
   if s.respond_to? :specification_version then
     s.specification_version = 3

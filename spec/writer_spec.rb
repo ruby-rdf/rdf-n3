@@ -223,17 +223,130 @@ describe RDF::N3::Writer do
       #$verbose = false
     end
   end
-  
-  describe "strings" do
-    it "encodes embedded \"\"\"" do
-      n3 = %(:a :b """testing string parsing in N3.
-""" .)
-      serialize(n3, nil, [/testing string parsing in N3.\n/])
+
+  describe "literals" do
+    describe "plain" do
+      it "encodes embedded \"\"\"" do
+        n3 = %(:a :b """testing string parsing in N3.
+  """ .)
+        serialize(n3, nil, [/testing string parsing in N3.\n/])
+      end
+
+      it "encodes embedded \"" do
+        n3 = %(:a :b """string with " escaped quote marks""" .)
+        serialize(n3, nil, [/string with \\" escaped quote mark/])
+      end
+    end
+    
+    describe "with language" do
+      it "specifies language for literal with language" do
+        ttl = %q(:a :b "string"@en .)
+        serialize(ttl, nil, [%r("string"@en)])
+      end
+    end
+    
+    describe "xsd:anyURI" do
+      it "uses xsd namespace for datatype" do
+        ttl = %q(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b "http://foo/"^^xsd:anyURI .)
+        serialize(ttl, nil, [
+          %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+          %r("http://foo/"\^\^xsd:anyURI \.),
+        ])
+      end
+    end
+    
+    describe "xsd:boolean" do
+      [
+        [%q("true"^^xsd:boolean), /true ./],
+        [%q("TrUe"^^xsd:boolean), /true ./],
+        [%q("1"^^xsd:boolean), /true ./],
+        [%q(true), /true ./],
+        [%q("false"^^xsd:boolean), /false ./],
+        [%q("FaLsE"^^xsd:boolean), /false ./],
+        [%q("0"^^xsd:boolean), /false ./],
+        [%q(false), /false ./],
+      ].each do |(l,r)|
+        it "uses token for #{l.inspect}" do
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          serialize(ttl, nil, [
+            %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+            r,
+          ], :canonicalize => true)
+        end
+      end
+    end
+    
+    describe "xsd:integer" do
+      [
+        [%q("1"^^xsd:integer), /1 ./],
+        [%q(1), /1 ./],
+        [%q("0"^^xsd:integer), /0 ./],
+        [%q(0), /0 ./],
+        [%q("10"^^xsd:integer), /10 ./],
+        [%q(10), /10 ./],
+      ].each do |(l,r)|
+        it "uses token for #{l.inspect}" do
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          serialize(ttl, nil, [
+            %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+            r,
+          ], :canonicalize => true)
+        end
+      end
     end
 
-    it "encodes embedded \"" do
-      n3 = %(:a :b """string with " escaped quote marks""" .)
-      serialize(n3, nil, [/string with \\" escaped quote mark/])
+    describe "xsd:int" do
+      [
+        [%q("1"^^xsd:int), /"1"\^\^xsd:int ./],
+        [%q("0"^^xsd:int), /"0"\^\^xsd:int ./],
+        [%q("10"^^xsd:int), /"10"\^\^xsd:int ./],
+      ].each do |(l,r)|
+        it "uses token for #{l.inspect}" do
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          serialize(ttl, nil, [
+            %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+            r,
+          ], :canonicalize => true)
+        end
+      end
+    end
+
+    describe "xsd:decimal" do
+      [
+        [%q("1.0"^^xsd:decimal), /1.0 ./],
+        [%q(1.0), /1.0 ./],
+        [%q("0.1"^^xsd:decimal), /0.1 ./],
+        [%q(0.1), /0.1 ./],
+        [%q("10.02"^^xsd:decimal), /10.02 ./],
+        [%q(10.02), /10.02 ./],
+      ].each do |(l,r)|
+        it "uses token for #{l.inspect}" do
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          serialize(ttl, nil, [
+            %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+            r,
+          ], :canonicalize => true)
+        end
+      end
+    end
+    
+    describe "xsd:double" do
+      [
+        [%q("1.0e1"^^xsd:double), /1.0e1 ./],
+        [%q(1.0e1), /1.0e1 ./],
+        [%q("0.1e1"^^xsd:double), /1.0e0 ./],
+        [%q(0.1e1), /1.0e0 ./],
+        [%q("10.02e1"^^xsd:double), /1.002e2 ./],
+        [%q(10.02e1), /1.002e2 ./],
+      ].each do |(l,r)|
+        it "uses token for #{l.inspect}" do
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          serialize(ttl, nil, [
+            %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
+            r,
+          ], :canonicalize => true)
+        end
+      end
     end
   end
   
@@ -266,9 +379,10 @@ describe RDF::N3::Writer do
 
   # Serialize ntstr to a string and compare against regexps
   def serialize(ntstr, base = nil, regexps = [], options = {})
-    g = parse(ntstr, :base_uri => base)
+    prefixes = options[:prefixes] || {}
+    g = parse(ntstr, :base_uri => base, :prefixes => prefixes)
     @debug = []
-    result = RDF::N3::Writer.buffer(options.merge(:debug => @debug, :base_uri => base)) do |writer|
+    result = RDF::N3::Writer.buffer(options.merge(:debug => @debug, :base_uri => base, :prefixes => prefixes)) do |writer|
       writer << g
     end
     if $verbose

@@ -1,3 +1,10 @@
+0.3.4
+-----
+* Reader accepts 1.0E1 in addition to 1.0e1 (case-insensitive match on exponent).
+* Writer was not outputting xsd prefix if it was only used in a literal datatype.
+* Use bare representations of xsd:integer, xsd:boolean, xsd:double, and xsd:decimal.
+* Implement literal canonicalization (on option) in writer.
+
 0.3.3.1
 -------
 * Fixed bug in writer when given a base URI.

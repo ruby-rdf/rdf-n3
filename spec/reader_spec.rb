@@ -446,6 +446,7 @@ describe "RDF::N3::Reader" do
         %(:a :b 1.0e1)  => %(<http://a/b#a> <http://a/b#b> "1.0e1"^^<http://www.w3.org/2001/XMLSchema#double> .),
         %(:a :b 1.0e-1)  => %(<http://a/b#a> <http://a/b#b> "1.0e-1"^^<http://www.w3.org/2001/XMLSchema#double> .),
         %(:a :b 1.0e+1)  => %(<http://a/b#a> <http://a/b#b> "1.0e+1"^^<http://www.w3.org/2001/XMLSchema#double> .),
+        %(:a :b 1.0E1)  => %(<http://a/b#a> <http://a/b#b> "1.0e1"^^<http://www.w3.org/2001/XMLSchema#double> .),
       }.each_pair do |n3, nt|
         it "should create typed literal for '#{n3}'" do
           parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
