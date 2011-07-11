@@ -46,7 +46,7 @@ def run(input, options)
     r = reader_class.new(input, :base_uri => options[:base_uri], :strict => true)
     g = RDF::Graph.new << r
     num = g.count
-    options[:output].puts g.dump(options[:output_format], :base_uri => options[:base_uri], :prefixes => r.prefixes)
+    options[:output].puts g.dump(options[:output_format], :base_uri => options[:base_uri], :prefixes => r.prefixes, :standard_prefixes => true)
   end
   puts
   secs = Time.new - start

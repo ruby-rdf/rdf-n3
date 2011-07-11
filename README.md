@@ -1,15 +1,12 @@
-RDF::N3 reader/writer
-=====================
+# RDF::N3 reader/writer
 Notation-3 and Turtle reader/writer for [RDF.rb][RDF.rb] .
 
-Description
------------
+## Description
 RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
-Features
---------
+## Features
 RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] into statements or triples. It also serializes to Turtle.
 
 Install with `gem install rdf-n3`
@@ -137,8 +134,7 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 This is free and unencumbered public domain software. For more information,
 see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
-Feedback
---------
+## Feedback
 * <gregg@kellogg-assoc.com>
 * <http://rubygems.org/gem/rdf-n3>
 * <http://github.com/gkellogg/rdf-n3>

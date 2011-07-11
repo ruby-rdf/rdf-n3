@@ -166,7 +166,7 @@ module RDF::N3
         return nil
       end
 
-      add_debug "get_qname(#{resource})"
+      add_debug "get_qname(#{resource}), std? #{RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}}"
       qname = case
       when @uri_to_qname.has_key?(uri)
         return @uri_to_qname[uri]
@@ -176,7 +176,7 @@ module RDF::N3
         prefix(prefix, u) unless u.to_s.empty? # Define for output
         add_debug "get_qname: add prefix #{prefix.inspect} => #{u}"
         uri.sub(u.to_s, "#{prefix}:")
-      when @options[:standard_prefixes] && vocab = RDF::Vocabulary.detect {|v| uri.index(v.to_uri.to_s) == 0}
+      when @options[:standard_prefixes] && vocab = RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}
         prefix = vocab.__name__.to_s.split('::').last.downcase
         @uri_to_prefix[vocab.to_uri.to_s] = prefix
         prefix(prefix, vocab.to_uri) # Define for output

@@ -666,10 +666,10 @@ module RDF::N3
 
     def namespace(prefix, uri)
       uri = uri.to_s
-      if uri == "#"
-        uri = prefix(nil)
+      if uri == '#'
+        uri = prefix(nil).to_s + '#'
       end
-      add_debug("namesspace", "'#{prefix}' <#{uri}>")
+      add_debug("namespace", "'#{prefix}' <#{uri}>")
       prefix(prefix, uri(uri))
     end
 
