@@ -19,6 +19,12 @@ module RDF::N3
     include Meta
     include Parser
     
+    ##
+    # Missing in 0.3.2
+    def base_uri
+      @options[:base_uri]
+    end
+
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
     ##
@@ -86,19 +92,6 @@ module RDF::N3
 
     def inspect
       sprintf("#<%s:%#0x(%s)>", self.class.name, __id__, base_uri.to_s)
-    end
-
-    ##
-    # XXX Remove when added to RDF::Reader
-    # Returns the base URI determined by this reader.
-    #
-    # @example
-    #   reader.prefixes[:dc]  #=> RDF::URI('http://purl.org/dc/terms/')
-    #
-    # @return [Hash{Symbol => RDF::URI}]
-    # @since  0.3.0
-    def base_uri
-      @options[:base_uri]
     end
 
     ##
