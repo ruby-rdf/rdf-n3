@@ -420,34 +420,20 @@ module RDF::N3
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
-      props = @graph.properties(l)
-      #add_debug "is_valid_list: #{props.inspect}"
-      return false unless props.has_key?(RDF.first.to_s) || l == RDF.nil
-      while l && l != RDF.nil do
-        #add_debug "is_valid_list(length): #{props.length}"
-        return false unless props.has_key?(RDF.first.to_s) && props.has_key?(RDF.rest.to_s)
-        n = props[RDF.rest.to_s]
-        #add_debug "is_valid_list(n): #{n.inspect}"
-        return false unless n.is_a?(Array) && n.length == 1
-        l = n.first
-        props = @graph.properties(l)
-      end
-      #add_debug "is_valid_list: valid"
-      true
+      #add_debug "is_valid_list: #{l.inspect}"
+      return RDF::List.new(l, @graph).valid?
     end
     
     def do_list(l)
-      add_debug "do_list: #{l.inspect}"
+      list = RDF::List.new(l, @graph)
+      add_debug "do_list: #{list.inspect}"
       position = :subject
-      while l do
-        p = @graph.properties(l)
-        item = p.fetch(RDF.first.to_s, []).first
-        if item
-          path(item, position)
-          subject_done(l)
-          position = :object
-        end
-        l = p.fetch(RDF.rest.to_s, []).first
+      list.each_statement do |st|
+        next unless st.predicate == RDF.first
+        add_debug " list this: #{st.subject} first: #{st.object}[#{position}]"
+        path(st.object, position)
+        subject_done(st.subject)
+        position = :object
       end
     end
     
@@ -513,14 +499,19 @@ module RDF::N3
     end
     
     def predicate_list(subject)
-      properties = @graph.properties(subject)
+      properties = {}
+      @graph.query(:subject => subject) do |st|
+        properties[st.predicate.to_s] ||= []
+        properties[st.predicate.to_s] << st.object
+      end
+
       prop_list = sort_properties(properties) - [RDF.first.to_s, RDF.rest.to_s]
       add_debug "predicate_list: #{prop_list.inspect}"
       return if prop_list.empty?
 
       prop_list.each_with_index do |prop, i|
         begin
-          @output.write(";\n#{indent(2)}") if i > 0
+          @output.write(";\n#{indent(4)}") if i > 0
           prop[0, 2] == "_:"
           verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
           object_list(properties[prop])

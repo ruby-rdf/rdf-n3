@@ -23,7 +23,7 @@ module RDF
     require 'rdf/n3/format'
     require 'rdf/n3/vocab'
     require 'rdf/n3/patches/array_hacks'
-    require 'rdf/n3/patches/graph_properties'
+    require 'rdf/n3/patches/list'
     autoload :Meta,    'rdf/n3/reader/meta'
     autoload :Parser,  'rdf/n3/reader/parser'
     autoload :Reader,  'rdf/n3/reader'
