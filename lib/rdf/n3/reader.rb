@@ -520,20 +520,12 @@ module RDF::N3
         end
       elsif anonnode[:pathlist]
         objects = [anonnode[:pathlist]].flatten.compact
-        last = objects.pop
-        first_bnode = bnode
-        objects.each do |object|
-          add_triple("anonnode", first_bnode, RDF.first, object)
-          rest_bnode = RDF::Node.new
-          add_triple("anonnode", first_bnode, RDF.rest, rest_bnode)
-          first_bnode = rest_bnode
+        list = RDF::List.new(bnode, nil, objects)
+        list.each_statement do |statement|
+          next if statement.predicate == RDF.type && statement.object == RDF.List
+          add_triple("anonnode(list)", statement.subject, statement.predicate, statement.object)
         end
-        if last
-          add_triple("anonnode", first_bnode, RDF.first, last)
-          add_triple("anonnode", first_bnode, RDF.rest, RDF.nil)
-        else
-          bnode = RDF.nil
-        end
+        bnode = RDF.nil if list.empty?
       end
       bnode
     end
