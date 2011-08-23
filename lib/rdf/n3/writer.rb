@@ -493,7 +493,7 @@ module RDF::N3
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
-        @output.write(",\n#{indent(2)}") if i > 0
+        @output.write(",\n#{indent(4)}") if i > 0
         path(obj, :object)
       end
     end
@@ -549,6 +549,7 @@ module RDF::N3
       add_debug "statement: #{subject.inspect}, s2?: #{s_squared?(subject)}"
       subject_done(subject)
       s_squared(subject) || s_default(subject)
+      @output.write("\n")
     end
     
     def is_done?(subject)
