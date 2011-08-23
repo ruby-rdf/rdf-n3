@@ -166,7 +166,7 @@ module RDF::N3
         return nil
       end
 
-      add_debug "get_qname(#{resource}), std? #{RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}}"
+      add_debug "get_qname(#{resource}), std?}"
       qname = case
       when @uri_to_qname.has_key?(uri)
         return @uri_to_qname[uri]
@@ -511,7 +511,7 @@ module RDF::N3
 
       prop_list.each_with_index do |prop, i|
         begin
-          @output.write(";\n#{indent(4)}") if i > 0
+          @output.write(";\n#{indent(2)}") if i > 0
           prop[0, 2] == "_:"
           verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
           object_list(properties[prop])
