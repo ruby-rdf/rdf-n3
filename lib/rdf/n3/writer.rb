@@ -1,5 +1,3 @@
-require 'rdf/n3/patches/graph_properties'
-
 module RDF::N3
   ##
   # A Turtle serialiser in Ruby
