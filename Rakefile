@@ -1,32 +1,19 @@
 require 'rubygems'
 require 'yard'
+require 'rspec/core/rake_task'
 
-begin
-  gem 'jeweler'
-  require 'jeweler'
-  Jeweler::Tasks.new do |gemspec|
-    gemspec.name = "rdf-n3"
-    gemspec.summary = "N3/Turtle reader/writer for RDF.rb."
-    gemspec.description = %q(RDF::N3 is an Notation-3 and Turtle reader/writer for the RDF.rb library suite.)
-    gemspec.email = "gregg@kellogg-assoc.com"
-    gemspec.homepage = "http://github.com/gkellogg/rdf-n3"
-    gemspec.authors = ["Gregg Kellogg"]
-    gemspec.add_dependency('rdf', '>= 0.3.3')
-    gemspec.add_development_dependency('open-uri-cached')
-    gemspec.add_development_dependency('spira', '>= 0.0.12')
-    gemspec.add_development_dependency('rspec', '>= 2.5.0')
-    gemspec.add_development_dependency('rdf-spec', '>= 0.3.3')
-    gemspec.add_development_dependency('rdf-rdfxml', '>= 0.3.3')
-    gemspec.add_development_dependency('rdf-isomorphic', '>= 0.3.4')
-    gemspec.add_development_dependency('yard')
-    gemspec.extra_rdoc_files     = %w(README.md History.md AUTHORS VERSION UNLICENSE)
+namespace :gem do
+  desc "Build the rdf-n3-#{File.read('VERSION').chomp}.gem file"
+  task :build do
+    sh "gem build rdf-n3.gemspec && mv rdf-n3-#{File.read('VERSION').chomp}.gem pkg/"
   end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+
+  desc "Release the rdf-n3-#{File.read('VERSION').chomp}.gem file"
+  task :release do
+    sh "gem push pkg/rdf-n3-#{File.read('VERSION').chomp}.gem"
+  end
 end
 
-require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)
 
 desc "Run specs through RCov"
@@ -35,11 +22,13 @@ RSpec::Core::RakeTask.new("spec:rcov") do |spec|
   spec.rcov_opts =  %q[--exclude "spec"]
 end
 
-desc "Generate HTML report specs"
-RSpec::Core::RakeTask.new("doc:spec") do |spec|
-  spec.rspec_opts = ["--format", "html", "-o", "doc/spec.html"]
-end
+namespace :doc do
+  YARD::Rake::YardocTask.new
 
-YARD::Rake::YardocTask.new
+  desc "Generate HTML report specs"
+  RSpec::Core::RakeTask.new("spec") do |spec|
+    spec.rspec_opts = ["--format", "html", "-o", "doc/spec.html"]
+  end
+end
 
 task :default => :spec

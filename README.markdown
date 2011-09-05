@@ -6,6 +6,10 @@ RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library sui
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
+## Turtle deprecated
+Support for Turtle mime-types and specific format support has been deprecated from this gem,
+as Turtle is now implemented using [RDF::Turtle][RDF::Turtle].
+
 ## Features
 RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] into statements or triples. It also serializes to Turtle.
 
@@ -94,7 +98,7 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 
 ### Patches
 * {Array}
-* {RDF::Graph}
+* {RDF::List}
 
 ## Resources
 * [RDF.rb][RDF.rb]
@@ -140,10 +144,11 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 * <http://github.com/gkellogg/rdf-n3>
 * <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
-[RDF.rb]:    http://rdf.rubyforge.org/
-[N3]:        http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
-[Turtle]:    http://www.w3.org/TeamSubmission/turtle/
-[N-Triples]: http://www.w3.org/2001/sw/RDFCore/ntriples/
-[YARD]:      http://yardoc.org/
-[YARD-GS]:   http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:       http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[RDF.rb]:     http://rdf.rubyforge.org/
+[RDF::Turtle] http://github.com/gkellogg/rdf-turtle/
+[N3]:         http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
+[Turtle]:     http://www.w3.org/TeamSubmission/turtle/
+[N-Triples]:  http://www.w3.org/2001/sw/RDFCore/ntriples/
+[YARD]:       http://yardoc.org/
+[YARD-GS]:    http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:        http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html

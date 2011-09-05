@@ -7,13 +7,9 @@ describe "RDF::N3::Reader" do
       {
         "n3" => RDF::Reader.for(:n3),
         "etc/foaf.n3" => RDF::Reader.for("etc/foaf.n3"),
-        "etc/foaf.ttl" => RDF::Reader.for("etc/foaf.ttl"),
         "foaf.n3" => RDF::Reader.for(:file_name      => "foaf.n3"),
-        "foaf.ttl" => RDF::Reader.for(:file_name      => "foaf.ttl"),
         ".n3" => RDF::Reader.for(:file_extension => "n3"),
-        ".ttl" => RDF::Reader.for(:file_extension => "ttl"),
         "text/n3" => RDF::Reader.for(:content_type   => "text/n3"),
-        "text/turtle" => RDF::Reader.for(:content_type   => "text/turtle"),
       }.each_pair do |label, format|
         it "should discover '#{label}'" do
           format.should == RDF::N3::Reader
