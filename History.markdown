@@ -1,3 +1,9 @@
+## 0.3.5
+* Use RDF::List for reading and writing lists.
+* Performance improvements.
+* Writer whitespace and property ordering improvements.
+* Remove explicit Turtle support in Reader.
+
 ## 0.3.4.1
 * In Reader, if no base\_uri is used, make sure that @prefix : <#> is generated, not @prefix : <>.
 * In Writer, fix bug when trying to use `:standard\_prefixes` option.
