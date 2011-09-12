@@ -19,12 +19,6 @@ module RDF::N3
     include Meta
     include Parser
     
-    ##
-    # Missing in 0.3.2
-    def base_uri
-      @options[:base_uri]
-    end
-
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
     ##
@@ -49,7 +43,7 @@ module RDF::N3
     # @yield  [reader] `self`
     # @yieldparam  [RDF::Reader] reader
     # @yieldreturn [void] ignored
-    # @raise [Error]:: Raises RDF::ReaderError if _validate_
+    # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
     def initialize(input = $stdin, options = {}, &block)
       super do
         input.rewind if input.respond_to?(:rewind)
@@ -76,10 +70,6 @@ module RDF::N3
         add_debug("validate", "#{validate?.inspect}")
         add_debug("canonicalize", "#{canonicalize?.inspect}")
         add_debug("intern", "#{intern?.inspect}")
-
-        # Prefixes that may be used without being defined
-        #prefix(:rdf, RDF.to_uri.to_s)
-        #prefix(:xsd, RDF::XSD.to_uri.to_s)
 
         if block_given?
           case block.arity
