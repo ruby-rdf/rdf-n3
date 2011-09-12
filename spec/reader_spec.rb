@@ -10,53 +10,53 @@ describe "RDF::N3::Reader" do
 
   it_should_behave_like RDF_Reader
 
-    context "discovery" do
-      {
-        "n3" => RDF::Reader.for(:n3),
-        "etc/foaf.n3" => RDF::Reader.for("etc/foaf.n3"),
-        "foaf.n3" => RDF::Reader.for(:file_name      => "foaf.n3"),
-        ".n3" => RDF::Reader.for(:file_extension => "n3"),
-        "text/n3" => RDF::Reader.for(:content_type   => "text/n3"),
-      }.each_pair do |label, format|
-        it "should discover '#{label}'" do
-          format.should == RDF::N3::Reader
-        end
+  context "discovery" do
+    {
+      "n3" => RDF::Reader.for(:n3),
+      "etc/foaf.n3" => RDF::Reader.for("etc/foaf.n3"),
+      "foaf.n3" => RDF::Reader.for(:file_name      => "foaf.n3"),
+      ".n3" => RDF::Reader.for(:file_extension => "n3"),
+      "text/n3" => RDF::Reader.for(:content_type   => "text/n3"),
+    }.each_pair do |label, format|
+      it "should discover '#{label}'" do
+        format.should == RDF::N3::Reader
       end
     end
+  end
 
-    context :interface do
-      before(:each) do
-        @sampledoc = <<-EOF;
-          @prefix dc: <http://purl.org/dc/elements/1.1/>.
-          @prefix po: <http://purl.org/ontology/po/>.
-          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-          _:broadcast
-           a po:Broadcast;
-           po:schedule_date """2008-06-24T12:00:00Z""";
-           po:broadcast_of _:version;
-           po:broadcast_on <http://www.bbc.co.uk/programmes/service/6music>;
-          .
-          _:version
-           a po:Version;
-          .
-          <http://www.bbc.co.uk/programmes/b0072l93>
-           dc:title """Nemone""";
-           a po:Brand;
-          .
-          <http://www.bbc.co.uk/programmes/b00c735d>
-           a po:Episode;
-           po:episode <http://www.bbc.co.uk/programmes/b0072l93>;
-           po:version _:version;
-           po:long_synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
-           dc:title """Nemone""";
-           po:synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
-          .
-          <http://www.bbc.co.uk/programmes/service/6music>
-           a po:Service;
-           dc:title """BBC 6 Music""";
-          .
+  context :interface do
+    before(:each) do
+      @sampledoc = <<-EOF;
+        @prefix dc: <http://purl.org/dc/elements/1.1/>.
+        @prefix po: <http://purl.org/ontology/po/>.
+        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+        _:broadcast
+         a po:Broadcast;
+         po:schedule_date """2008-06-24T12:00:00Z""";
+         po:broadcast_of _:version;
+         po:broadcast_on <http://www.bbc.co.uk/programmes/service/6music>;
+        .
+        _:version
+         a po:Version;
+        .
+        <http://www.bbc.co.uk/programmes/b0072l93>
+         dc:title """Nemone""";
+         a po:Brand;
+        .
+        <http://www.bbc.co.uk/programmes/b00c735d>
+         a po:Episode;
+         po:episode <http://www.bbc.co.uk/programmes/b0072l93>;
+         po:version _:version;
+         po:long_synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
+         dc:title """Nemone""";
+         po:synopsis """Actor and comedian Rhys Darby chats to Nemone.""";
+        .
+        <http://www.bbc.co.uk/programmes/service/6music>
+         a po:Service;
+         dc:title """BBC 6 Music""";
+        .
 
-          #_:abcd a po:Episode.
+        #_:abcd a po:Episode.
       EOF
     end
     

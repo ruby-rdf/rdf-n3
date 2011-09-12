@@ -8,6 +8,7 @@ describe RDF::N3::Writer do
   end
   
   it_should_behave_like RDF_Writer
+
   describe "simple tests" do
     it "should use full URIs without base" do
       input = %(<http://a/b> <http://a/c> <http://a/d> .)
