@@ -1,8 +1,15 @@
 # coding: utf-8
 $:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'rdf/spec/reader'
 
 describe "RDF::N3::Reader" do
+  before :each do
+    @reader = RDF::N3::Reader.new(StringIO.new(""))
+  end
+
+  it_should_behave_like RDF_Reader
+
     context "discovery" do
       {
         "n3" => RDF::Reader.for(:n3),

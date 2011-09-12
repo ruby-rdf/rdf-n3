@@ -13,9 +13,18 @@ describe RDF::N3::Reader do
         #next unless t.name =~ /11/
         #puts t.inspect
         specify "#{t.name}: #{t.inputDocument} against #{t.outputDocument}" do
-          begin
+          if %w(n3_10012).include?(t.name)
+            pending("Skip long input file")
+          elsif %w(n3_10010).include?(t.name)
+            pending("Not supported in Ruby 1.8")
+          elsif %w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017).include?(t.name)
+            pending("Formulae inferrence not supported")
+          elsif %w(n3_10006 n3_10009).include?(t.name)
+            pending("Verified test results are incorrect")
+          elsif %w(n3_10008 n3_10013).include?(t.name)
+            pending("Isomorphic compare issue")
+          else
             t.run_test do
-              t.name.should_not == "n3_10012"  # Too many bnodes makes graph compare unfeasable
               t.debug = []
               g = RDF::Graph.new
               RDF::N3::Reader.new(t.input,
@@ -25,20 +34,6 @@ describe RDF::N3::Reader do
                 g << statement
               end
               g
-            end
-          rescue RSpec::Expectations::ExpectationNotMetError => e
-            if %w(n3_10012).include?(t.name)
-              pending("check visually, graph compare times too long")
-            elsif %w(n3_10010).include?(t.name)
-              pending("Not supported in Ruby 1.8")
-            elsif %w(n3_10008 n3_10013).include?(t.name)
-              pending("Isomorphic compare issue")
-            elsif %w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017).include?(t.name)
-              pending("Formulae inferrence not supported")
-            elsif %w(n3_10006 n3_10009).include?(t.name)
-              pending("Verified test results are incorrect")
-            else
-              raise
             end
           end
         end

@@ -1,7 +1,13 @@
 $:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
+  before(:each) do
+    @writer = RDF::N3::Writer.new(StringIO.new)
+  end
+  
+  it_should_behave_like RDF_Writer
   describe "simple tests" do
     it "should use full URIs without base" do
       input = %(<http://a/b> <http://a/c> <http://a/d> .)
@@ -71,10 +77,12 @@ describe RDF::N3::Writer do
         :b rdfs:label "label" .
       )
       serialize(input, nil,
-        [%r(^\s+a :class;$),
-        %r(^\s+rdfs:label "label"),
-        %r(^:b dc:title \"title\"),
-        %r(^\s+:c :d)],
+        [
+          %r(^:b a :class;$),
+          %r(:class;\s+rdfs:label "label")m,
+          %r("label";\s+dc:title "title")m,
+          %r("title";\s+:c :d \.$)m
+        ],
         :prefixes => { "" => RDF::FOAF, :dc => "http://purl.org/dc/elements/1.1/", :rdfs => RDF::RDFS}
       )
     end
@@ -354,17 +362,21 @@ describe RDF::N3::Writer do
   describe "w3c turtle tests" do
     require 'turtle_test'
 
-    Fixtures::TurtleTest::Good.each do |t|
-      next unless t.comment
-      #puts t.inspect
-      #next unless t.name == "test-04"
-      next if t.name == "test-29" # FIXME
-      
-      specify "#{t.name}: #{t.comment}" do
-        @graph = parse(t.output, :base_uri => t.result, :format => :ntriples)
-        n3 = serialize(t.output, t.result, [], :format => :n3)
-        g2 = parse(n3, :base_uri => t.result)
-        g2.should be_equivalent_graph(@graph, :trace => @debug.join("\n"))
+    Fixtures::TurtleTest::Good.each do |m|
+      m.entries.each do |t|
+        specify "#{t.name}: #{t.comment}" do
+          # Skip tests for very long files, too long
+          if %w(test-14 test-15 test-16).include?(t.name)
+            pending("Skip long input file")
+          elsif %w(test-29).include?(t.name)
+            pending("Skip escaped URI")
+          else
+            @graph = parse(t.output, :base_uri => t.result, :format => :ntriples)
+            ttl = serialize(t.output, t.result, [], :format => :n3)
+            g2 = parse(ttl, :base_uri => t.result)
+            g2.should be_equivalent_graph(@graph, :trace => @debug.join("\n"))
+          end
+        end
       end
     end
   end

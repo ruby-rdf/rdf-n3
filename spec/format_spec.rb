@@ -1,7 +1,14 @@
 $:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'rdf/spec/format'
 
 describe RDF::N3::Format do
+  before :each do
+    @format_class = RDF::N3::Format
+  end
+
+  it_should_behave_like RDF_Format
+
   context "discovery" do
     {
       "n3" => RDF::Format.for(:n3),
