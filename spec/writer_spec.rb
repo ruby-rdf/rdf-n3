@@ -9,6 +9,22 @@ describe RDF::N3::Writer do
   
   it_should_behave_like RDF_Writer
 
+  describe ".for" do
+    formats = [
+      :n3,
+      'etc/doap.n3',
+      {:file_name      => 'etc/doap.n3'},
+      {:file_extension => 'n3'},
+      {:content_type   => 'text/n3'},
+      {:content_type   => 'text/rdf+n3'},
+      {:content_type   => 'application/rdf+n3'},
+    ].each do |arg|
+      it "discovers with #{arg.inspect}" do
+        RDF::Writer.for(arg).should == RDF::N3::Writer
+      end
+    end
+  end
+
   describe "simple tests" do
     it "should use full URIs without base" do
       input = %(<http://a/b> <http://a/c> <http://a/d> .)

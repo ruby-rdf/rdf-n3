@@ -10,16 +10,18 @@ describe "RDF::N3::Reader" do
 
   it_should_behave_like RDF_Reader
 
-  context "discovery" do
-    {
-      "n3" => RDF::Reader.for(:n3),
-      "etc/foaf.n3" => RDF::Reader.for("etc/foaf.n3"),
-      "foaf.n3" => RDF::Reader.for(:file_name      => "foaf.n3"),
-      ".n3" => RDF::Reader.for(:file_extension => "n3"),
-      "text/n3" => RDF::Reader.for(:content_type   => "text/n3"),
-    }.each_pair do |label, format|
-      it "should discover '#{label}'" do
-        format.should == RDF::N3::Reader
+  describe ".for" do
+    formats = [
+      :n3,
+      'etc/doap.n3',
+      {:file_name      => 'etc/doap.n3'},
+      {:file_extension => 'n3'},
+      {:content_type   => 'text/n3'},
+      {:content_type   => 'text/rdf+n3'},
+      {:content_type   => 'application/rdf+n3'},
+    ].each do |arg|
+      it "discovers with #{arg.inspect}" do
+        RDF::Reader.for(arg).should == RDF::N3::Reader
       end
     end
   end
