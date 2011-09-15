@@ -23,11 +23,11 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.8.1'
   gem.requirements          = []
 
-  gem.add_dependency     'rdf',                     '>= 0.3.3'
+  gem.add_dependency     'rdf',                     '>= 0.3.4'
   gem.add_development_dependency 'open-uri-cached'
   gem.add_development_dependency 'spira',           '>= 0.0.12'
   gem.add_development_dependency 'rspec',           '>= 2.5.0'
-  gem.add_development_dependency 'rdf-spec',        '>= 0.3.2'
+  gem.add_development_dependency 'rdf-spec',        '>= 0.3.4'
   gem.add_development_dependency 'rdf-rdfxml',      '>= 0.3.3'
   gem.add_development_dependency 'rdf-turtle',      '>= 0.0.4'
   gem.add_development_dependency 'rdf-isomorphic',  '>= 0.3.4'

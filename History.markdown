@@ -1,3 +1,7 @@
+## 0.3.6
+* Update for RDF.rb 0.3.4
+* Added format detection.
+
 ## 0.3.5
 * Use RDF::List for reading and writing lists.
 * Performance improvements.

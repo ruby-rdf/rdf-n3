@@ -44,7 +44,7 @@ module RDF::N3
           (?:\s*(?:(?:<[^>]*>) | (?:\w*:\w+) | (?:"[^"]*"))){3}
         )
       )mx) && !(
-        sample.match(%r(<(?:\/|html|rdf))i) ||                             # HTML, RDF/XML
+        sample.match(%r(<(?:\/|html|rdf))i) ||                          # HTML, RDF/XML
         sample.match(%r(^(?:\s*<[^>]*>){4}.*\.\s*$)) ||                 # N-Quads
         sample.match(%r("@(context|subject|iri)"))                      # JSON-LD
       )
