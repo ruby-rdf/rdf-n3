@@ -139,7 +139,7 @@ module RDF::N3
 
       self.reset
 
-      add_debug "\nserialize: graph: #{@graph.size}"
+      add_debug {"\nserialize: graph: #{@graph.size}"}
 
       preprocess
       start_document
@@ -164,7 +164,7 @@ module RDF::N3
         return nil
       end
 
-      add_debug "get_qname(#{resource}), std?}"
+      add_debug {"get_qname(#{resource}), std?}"}
       qname = case
       when @uri_to_qname.has_key?(uri)
         return @uri_to_qname[uri]
@@ -172,13 +172,13 @@ module RDF::N3
         # Use a defined prefix
         prefix = @uri_to_prefix[u]
         prefix(prefix, u) unless u.to_s.empty? # Define for output
-        add_debug "get_qname: add prefix #{prefix.inspect} => #{u}"
+        add_debug {"get_qname: add prefix #{prefix.inspect} => #{u}"}
         uri.sub(u.to_s, "#{prefix}:")
       when @options[:standard_prefixes] && vocab = RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}
         prefix = vocab.__name__.to_s.split('::').last.downcase
         @uri_to_prefix[vocab.to_uri.to_s] = prefix
         prefix(prefix, vocab.to_uri) # Define for output
-        add_debug "get_qname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"
+        add_debug {"get_qname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"}
         uri.sub(vocab.to_uri.to_s, "#{prefix}:")
       else
         nil
@@ -213,7 +213,7 @@ module RDF::N3
         prop_list << prop.to_s
       end
       
-      add_debug "sort_properties: #{prop_list.join(', ')}"
+      add_debug {"sort_properties: #{prop_list.join(', ')}"}
       prop_list
     end
 
@@ -251,7 +251,7 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, options = {})
       md = relativize(uri)
-      add_debug("relativize(#{uri.inspect}) => #{md.inspect}") if md != uri.to_s
+      add_debug {"relativize(#{uri.inspect}) => #{md.inspect}"} if md != uri.to_s
       md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri}>")
     end
     
@@ -272,7 +272,7 @@ module RDF::N3
       
       @output.write("#{indent}@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
       
-      add_debug("start_document: #{prefixes.inspect}")
+      add_debug {"start_document: #{prefixes.inspect}"}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
         @output.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
@@ -313,7 +313,7 @@ module RDF::N3
       # Add distinguished classes
       top_classes.each do |class_uri|
         graph.query(:predicate => RDF.type, :object => class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
-          add_debug "order_subjects: #{subject.inspect}"
+          add_debug {"order_subjects: #{subject.inspect}"}
           subjects << subject
           seen[subject] = true
         end
@@ -349,7 +349,7 @@ module RDF::N3
     # prefixes.
     # @param [Statement] statement
     def preprocess_statement(statement)
-      #add_debug "preprocess: #{statement.inspect}"
+      #add_debug {"preprocess: #{statement.inspect}"}
       references = ref_count(statement.object) + 1
       @references[statement.object] = references
       @subjects[statement.subject] = true
@@ -417,17 +417,17 @@ module RDF::N3
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
-      #add_debug "is_valid_list: #{l.inspect}"
+      #add_debug {"is_valid_list: #{l.inspect}"}
       return RDF::List.new(l, @graph).valid?
     end
     
     def do_list(l)
       list = RDF::List.new(l, @graph)
-      add_debug "do_list: #{list.inspect}"
+      add_debug {"do_list: #{list.inspect}"}
       position = :subject
       list.each_statement do |st|
         next unless st.predicate == RDF.first
-        add_debug " list this: #{st.subject} first: #{st.object}[#{position}]"
+        add_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
         path(st.object, position)
         subject_done(st.subject)
         position = :object
@@ -436,7 +436,7 @@ module RDF::N3
     
     def p_list(node, position)
       return false if !is_valid_list(node)
-      #add_debug "p_list: #{node.inspect}, #{position}"
+      #add_debug {"p_list: #{node.inspect}, #{position}"}
 
       @output.write(position == :subject ? "(" : " (")
       @depth += 2
@@ -454,7 +454,7 @@ module RDF::N3
     def p_squared(node, position)
       return false unless p_squared?(node, position)
 
-      #add_debug "p_squared: #{node.inspect}, #{position}"
+      #add_debug {"p_squared: #{node.inspect}, #{position}"}
       subject_done(node)
       @output.write(position == :subject ? '[' : ' [')
       @depth += 2
@@ -466,18 +466,24 @@ module RDF::N3
     end
     
     def p_default(node, position)
-      #add_debug "p_default: #{node.inspect}, #{position}"
+      #add_debug {"p_default: #{node.inspect}, #{position}"}
       l = (position == :subject ? "" : " ") + format_value(node)
       @output.write(l)
     end
     
     def path(node, position)
-      add_debug "path: #{node.inspect}, pos: #{position}, []: #{is_valid_list(node)}, p2?: #{p_squared?(node, position)}, rc: #{ref_count(node)}"
+      add_debug do
+        "path: #{node.inspect}, " +
+        "pos: #{position}, " +
+        "[]: #{is_valid_list(node)}, " +
+        "p2?: #{p_squared?(node, position)}, " +
+        "rc: #{ref_count(node)}"
+      end
       raise RDF::WriterError, "Cannot serialize node '#{node}'" unless p_list(node, position) || p_squared(node, position) || p_default(node, position)
     end
     
     def verb(node)
-      add_debug "verb: #{node.inspect}"
+      add_debug {"verb: #{node.inspect}"}
       if node == RDF.type
         @output.write(" a")
       else
@@ -486,7 +492,7 @@ module RDF::N3
     end
     
     def object_list(objects)
-      add_debug "object_list: #{objects.inspect}"
+      add_debug {"object_list: #{objects.inspect}"}
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
@@ -503,7 +509,7 @@ module RDF::N3
       end
 
       prop_list = sort_properties(properties) - [RDF.first.to_s, RDF.rest.to_s]
-      add_debug "predicate_list: #{prop_list.inspect}"
+      add_debug {"predicate_list: #{prop_list.inspect}"}
       return if prop_list.empty?
 
       prop_list.each_with_index do |prop, i|
@@ -513,7 +519,7 @@ module RDF::N3
           verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
           object_list(properties[prop])
         rescue Addressable::URI::InvalidURIError => e
-          add_debug "Predicate #{prop.inspect} is an invalid URI: #{e.message}"
+          add_debug {"Predicate #{prop.inspect} is an invalid URI: #{e.message}"}
         end
       end
     end
@@ -525,7 +531,7 @@ module RDF::N3
     def s_squared(subject)
       return false unless s_squared?(subject)
       
-      add_debug "s_squared: #{subject.inspect}"
+      add_debug {"s_squared: #{subject.inspect}"}
       @output.write("\n#{indent} [")
       @depth += 1
       predicate_list(subject)
@@ -543,7 +549,7 @@ module RDF::N3
     end
     
     def statement(subject)
-      add_debug "statement: #{subject.inspect}, s2?: #{s_squared?(subject)}"
+      add_debug {"statement: #{subject.inspect}, s2?: #{s_squared?(subject)}"}
       subject_done(subject)
       s_squared(subject) || s_default(subject)
       @output.write("\n")
