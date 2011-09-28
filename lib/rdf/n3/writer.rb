@@ -55,6 +55,8 @@ module RDF::N3
 
     # @return [Graph] Graph of statements serialized
     attr_accessor :graph
+    # @return [URI] Base URI used for relativizing URIs
+    attr_accessor :base_uri
     
     ##
     # Initializes the Turtle writer instance.
@@ -132,6 +134,7 @@ module RDF::N3
     # @see    #write_triple
     def write_epilogue
       @max_depth = @options[:max_depth] || 3
+      @base_uri = RDF::URI(@options[:base_uri])
       @debug = @options[:debug]
 
       self.reset
@@ -305,6 +308,7 @@ module RDF::N3
         subjects << base_uri
         seen[base_uri] = true
       end
+      add_debug {"subjects1: #{subjects.inspect}"}
       
       # Add distinguished classes
       top_classes.each do |class_uri|
@@ -314,6 +318,7 @@ module RDF::N3
           seen[subject] = true
         end
       end
+      add_debug {"subjects2: #{subjects.inspect}"}
       
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
       recursable = @subjects.keys.
@@ -321,7 +326,10 @@ module RDF::N3
         map {|r| [r.is_a?(RDF::Node) ? 1 : 0, ref_count(r), r]}.
         sort
       
+      add_debug {"subjects3: #{subjects.inspect}"}
       subjects += recursable.map{|r| r.last}
+      add_debug {"subjects4: #{subjects.inspect}"}
+      subjects
     end
     
     # Perform any preprocessing of statements required
@@ -399,7 +407,10 @@ module RDF::N3
     # Add debug event to debug array, if specified
     #
     # @param [String] message::
-    def add_debug(message)
+    # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
+    def add_debug(message = "")
+      return unless ::RDF::N3.debug? || @debug
+      message = message + yield if block_given?
       STDERR.puts message if ::RDF::N3::debug?
       @debug << message if @debug.is_a?(Array)
     end
