@@ -17,9 +17,7 @@ module RDF::N3
   #
   # @see http://www.w3.org/TR/rdf-testcases/#ntriples
   class Format < RDF::Format
-    content_type     'text/n3',             :extension => :n3
-    content_type     'text/rdf+n3',         :extension => :n3
-    content_type     'application/rdf+n3',  :extension => :n3
+    content_type     'text/n3',             :extension => :n3, :aliases => %w(text/rdf+n3 application/rdf+n3)
     content_encoding 'utf-8'
 
     reader { RDF::N3::Reader }
@@ -60,6 +58,9 @@ module RDF::N3
   #     RDF::Format.for(:ttl).reader  #=> RDF::N3::Reader
   #     RDF::Format.for(:ttl).writer  #=> RDF::N3::Writer
   class Notation3 < RDF::Format
+    content_type     'text/n3',             :extension => :n3
+    content_encoding 'utf-8'
+
     reader { RDF::N3::Reader }
     writer { RDF::N3::Writer }
   end

@@ -25,9 +25,6 @@ describe RDF::N3::Format do
     end
 
     {
-      :ntriples       => "<a> <b> <c> .",
-      :literal        => '<a> <b> "literal" .',
-      :multi_line     => '<a>\n  <b>\n  "literal"\n .',
       :turtle         => "@prefix foo: <bar> .\n foo:a foo:b <c> .",
       :n3             => "@prefix foo: <bar> .\nfoo:bar = {<a> <b> <c>} .",
       :default_prefix => ':a :b :c .',
