@@ -48,7 +48,7 @@ module RDF::N3
   #     end
   #   end
   #
-  # @author [Gregg Kellogg](http://kellogg-assoc.com/)
+  # @author [Gregg Kellogg](http://greggkellogg.net/)
   class Writer < RDF::Writer
     format RDF::N3::Format
     QNAME = Meta::REGEXPS[:"http://www.w3.org/2000/10/swap/grammar/n3#qname"]

@@ -6,9 +6,9 @@ Gem::Specification.new do |gem|
   gem.date                  = File.mtime('VERSION').strftime('%Y-%m-%d')
 
   gem.name                  = %q{rdf-n3}
-  gem.homepage              = %q{http://github.com/gkellogg/rdf-n3}
+  gem.homepage              = %q{http://github.com/ruby-rdf/rdf-n3}
   gem.license               = 'Public Domain' if gem.respond_to?(:license=)
-  gem.summary               = %q{N3/Turtle reader/writer for RDF.rb.}
+  gem.summary               = %q{Notation3 reader/writer for RDF.rb.}
   gem.description           = %q{RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite.}
   gem.rubyforge_project     = 'rdf-n3'
 

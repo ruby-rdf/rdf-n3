@@ -9,17 +9,18 @@
 
 <> a doap:Project ;
   doap:name          "RDF::N3" ;
-  doap:homepage      <http://github.com/gkellogg/rdf-n3> ;
+  doap:homepage      <http://github.com/ruby-rdf/rdf-n3> ;
   doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
   doap:shortdesc     "N3 reader/writer for Ruby."@en ;
   doap:description   "RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite."@en ;
   doap:created       "2010-06-03"^^xsd:date;
   doap:programming-language "Ruby" ;
+  doap:implements    <http://www.w3.org/DesignIssues/Notation3.html> ;
   doap:category      <http://dbpedia.org/resource/Resource_Description_Framework>,
                      <http://dbpedia.org/resource/Ruby_(programming_language)> ;
   doap:download-page <http://rubygems.org/gems/rdf-n3> ;
   doap:mailing-list  <http://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
-  doap:bug-database  <http://github.com/gkellogg/rdf-n3/issues> ;
+  doap:bug-database  <http://github.com/ruby-rdf/rdf-n3/issues> ;
   doap:blog          <http://greggkellogg.net/> ;
   doap:developer     <http://greggkellogg.net/foaf#me> ;
   doap:maintainer    <http://greggkellogg.net/foaf#me> ;

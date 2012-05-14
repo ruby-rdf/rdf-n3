@@ -12,7 +12,7 @@ module RDF::N3
   # * Formulae as RDF::Query representations
   # * Formula expansion similar to SPARQL Construct
   #
-  # @author [Gregg Kellogg](http://kellogg-assoc.com/)
+  # @author [Gregg Kellogg](http://greggkellogg.net/)
   class Reader < RDF::Reader
     format Format
 

@@ -1,5 +1,5 @@
 # RDF::N3 reader/writer
-Notation-3 and Turtle reader/writer for [RDF.rb][RDF.rb] .
+Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
 ## Description
 RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite.
@@ -102,8 +102,8 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 
 ## Resources
 * [RDF.rb][RDF.rb]
-* [Distiller](http://distiller.kellogg-assoc)
-* [Documentation](http://rdf.rubyforge.org/n3)
+* [Distiller](http://rdf.greggkellogg.net/distiller)
+* [Documentation](http://rubydoc.info/github/ruby-rdf/rdf-n3/master/frames)
 * [History](file:file.History.html)
 * [Notation-3][N3]
 * [N3 Primer](http://www.w3.org/2000/10/swap/Primer.html)
@@ -114,7 +114,7 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 * [N-Triples][N-Triples]
 
 ## Author
-* [Gregg Kellogg](http://github.com/gkellogg) - <http://kellogg-assoc.com/>
+* [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
 
 ## Contributors
 * [Nicholas Humfrey](http://github.com/njh)
@@ -139,13 +139,13 @@ This is free and unencumbered public domain software. For more information,
 see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
 ## Feedback
-* <gregg@kellogg-assoc.com>
+* <gregg@greggkellogg.net>
 * <http://rubygems.org/gem/rdf-n3>
-* <http://github.com/gkellogg/rdf-n3>
+* <http://github.com/ruby-rdf/rdf-n3>
 * <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
 [RDF.rb]:     http://rdf.rubyforge.org/
-[RDF::Turtle] http://github.com/gkellogg/rdf-turtle/
+[RDF::Turtle] http://github.com/ruby-rdf/rdf-turtle/
 [N3]:         http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
 [Turtle]:     http://www.w3.org/TeamSubmission/turtle/
 [N-Triples]:  http://www.w3.org/2001/sw/RDFCore/ntriples/

@@ -18,7 +18,7 @@ module RDF
   # @see http://rdf.rubyforge.org/
   # @see http://www.w3.org/TR/REC-rdf-syntax/
   #
-  # @author [Gregg Kellogg](http://kellogg-assoc.com/)
+  # @author [Gregg Kellogg](http://greggkellogg.net/)
   module N3
     require 'rdf/n3/format'
     require 'rdf/n3/vocab'
