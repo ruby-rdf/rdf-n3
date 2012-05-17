@@ -246,7 +246,7 @@ module RDF::N3
     ##
     # Returns the Turtle/N3 representation of a URI reference.
     #
-    # @param  [RDF::URI] literal
+    # @param  [RDF::URI] uri
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_uri(uri, options = {})
@@ -406,7 +406,7 @@ module RDF::N3
     
     # Add debug event to debug array, if specified
     #
-    # @param [String] message::
+    # @param [String] message
     # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
     def add_debug(message = "")
       return unless ::RDF::N3.debug? || @debug

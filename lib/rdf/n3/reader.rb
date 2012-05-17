@@ -613,8 +613,8 @@ module RDF::N3
 
     # Add debug event to debug array, if specified
     #
-    # @param [XML Node, any] node:: XML Node or string for showing context
-    # @param [String] message::
+    # @param [XML Node, any] node XML Node or string for showing context
+    # @param [String] message
     # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
     def add_debug(node, message = "")
       return unless ::RDF::N3.debug? || @options[:debug]
@@ -625,12 +625,12 @@ module RDF::N3
 
     # add a statement, object can be literal or URI or bnode
     #
-    # @param [Nokogiri::XML::Node, any] node:: XML Node or string for showing context
-    # @param [URI, Node] subject:: the subject of the statement
-    # @param [URI] predicate:: the predicate of the statement
-    # @param [URI, Node, Literal] object:: the object of the statement
-    # @return [Statement]:: Added statement
-    # @raise [RDF::ReaderError]:: Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
+    # @param [Nokogiri::XML::Node, any] node XML Node or string for showing context
+    # @param [URI, Node] subject the subject of the statement
+    # @param [URI] predicate the predicate of the statement
+    # @param [URI, Node, Literal] object the object of the statement
+    # @return [Statement] Added statement
+    # @raise [RDF::ReaderError] Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
     def add_triple(node, subject, predicate, object)
       context_opts = {:context => @formulae.last.context} if @formulae.last
       
