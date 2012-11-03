@@ -84,7 +84,7 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 * [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.4)
 
 ## Documentation
-Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
+Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-rdf/rdf-n3/frames)
 
 ### Principle Classes
 * {RDF::N3}
@@ -117,7 +117,7 @@ Full documentation available on [RubyForge](http://rdf.rubyforge.org/n3)
 * [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
 
 ## Contributors
-* [Nicholas Humfrey](http://github.com/njh)
+* [Nicholas Humfrey](http://github.com/njh) - <http://njh.me/>
 
 ## Contributing
 

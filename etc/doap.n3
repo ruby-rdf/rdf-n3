@@ -23,6 +23,7 @@
   doap:bug-database  <http://github.com/ruby-rdf/rdf-n3/issues> ;
   doap:blog          <http://greggkellogg.net/> ;
   doap:developer     <http://greggkellogg.net/foaf#me> ;
+  doap:helper        <http://njh.me/> ;
   doap:maintainer    <http://greggkellogg.net/foaf#me> ;
   doap:documenter    <http://greggkellogg.net/foaf#me> ;
   foaf:maker         <http://greggkellogg.net/foaf#me> ;
