@@ -7,7 +7,7 @@ describe RDF::N3::Writer do
     @writer = RDF::N3::Writer.new(StringIO.new)
   end
   
-  it_should_behave_like RDF_Writer
+  include RDF_Writer
 
   describe ".for" do
     formats = [

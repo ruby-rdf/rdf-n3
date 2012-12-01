@@ -17,18 +17,20 @@ describe RDF::N3::Reader do
           	elsif !defined?(::Encoding) && %w(test-18).include?(t.name)
               pending("Not supported in Ruby 1.8")
             else
-              t.run_test do
-                #t.debug = []
-                g = RDF::Graph.new
-                RDF::N3::Reader.new(t.input,
-                    :base_uri => t.base_uri,
-                    :strict => true,
-                    :canonicalize => true,
-                    :validate => true,
-                    :debug => t.debug).each do |statement|
-                  g << statement
-                end
-                g
+              t.debug = [t.inspect, "source:", t.input.read]
+              reader = RDF::N3::Reader.new(t.input,
+                  :base_uri => t.base_uri,
+                  :strict => true,
+                  :canonicalize => (%w(test-28).include?(t.name)),
+                  :validate => (not %w(test-29).include?(t.name)),
+                  :debug => t.debug)
+                  
+              graph = RDF::Graph.new << reader
+              if t.result
+                output_graph = RDF::Graph.load(t.result, :base_uri => t.base_uri)
+                graph.should be_equivalent_graph(output_graph, self)
+              else
+                graph.should_not be_empty
               end
             end
           end
@@ -41,20 +43,16 @@ describe RDF::N3::Reader do
         m.entries.each do |t|
           specify "#{t.name}: #{t.comment}" do
             begin
-              t.run_test do
-                lambda do
-                  #t.debug = []
-                   g = RDF::Graph.new
-                   RDF::N3::Reader.new(t.input,
-                       :base_uri => t.base_uri,
-                       :validate => true,
-                       :debug => t.debug).each do |statement|
-                     g << statement
-                   end
-                end.should raise_error(RDF::ReaderError)
-              end
+              lambda {
+                t.debug = [t.inspect, "source:", t.input.read]
+                reader = RDF::N3::Reader.new(t.input,
+                    :base_uri => t.base_uri,
+                    :validate => true,
+                    :debug => t.debug)
+                RDF::Graph.new << reader
+              }.should raise_error(RDF::ReaderError)
             rescue RSpec::Expectations::ExpectationNotMetError => e
-              pending() {  raise }
+              pending("N3 is not turtle") {  raise }
             end
           end
         end

@@ -13,8 +13,6 @@ require 'rdf/isomorphic'
 require 'yaml'    # XXX should be in open-uri/cached
 require 'open-uri/cached'
 
-include Matchers
-
 # Create and maintain a cache of downloaded URIs
 URI_CACHE = File.expand_path(File.join(File.dirname(__FILE__), "uri-cache"))
 Dir.mkdir(URI_CACHE) unless File.directory?(URI_CACHE)
@@ -24,22 +22,6 @@ module RDF
   module Isomorphic
     alias_method :==, :isomorphic_with?
   end
-  class Graph
-    def to_ntriples
-      RDF::Writer.for(:ntriples).buffer do |writer|
-        self.each_statement do |statement|
-          writer << statement
-        end
-      end
-    end
-    def dump
-      b = []
-      self.each_statement do |statement|
-        b << statement.to_triple.inspect
-      end
-      b.join("\n")
-    end
-  end
 end
 
 ::RSpec.configure do |c|
@@ -48,7 +30,6 @@ end
   c.exclusion_filter = {
     :ruby => lambda { |version| !(RUBY_VERSION.to_s =~ /^#{version.to_s}/) },
   }
-  c.include(Matchers)
   c.include(RDF::Spec::Matchers)
 end
 
@@ -56,7 +37,7 @@ end
 def normalize_bnodes(graph, anon = "a")
   anon_ctx = {}
   # Find and replace all BNodes within graph string
-  g_str = graph.to_ntriples
+  g_str = graph.dump(:ntriples)
   anon_entries = g_str.scan(/_:g\d+/).sort.uniq
   anon_entries.each do |a|
     anon_ctx[a] = "_:#{anon}"
@@ -77,10 +58,9 @@ def detect_format(stream)
     string = stream.to_s
   end
   case string
-  when /<\w+:RDF/ then :rdfxml
-  when /<RDF/     then :rdfxml
-  when /<html/i   then :rdfa
-  when /@prefix/i then :n3
-  else                 :n3
+  when /<(\w+:)?RDF/ then RDF::RDFXML::Reader
+  when /<html/i   then RDF::RDFa::Reader
+  when /@prefix/i then RDF::N3::Reader
+  else                 RDF::NTriples::Reader
   end
 end
