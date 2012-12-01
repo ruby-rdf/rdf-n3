@@ -84,7 +84,7 @@
 * Compatible with RDF.rb 0.2.1
 
 ## 0.0.3
-* Replace require against rdf/rdfxml/patches/* with rdf/n3/patches/*
+* Replace require against rdf/rdfxml/patches/\* with rdf/n3/patches/\*
 
 ## 0.0.2
 * N3 parsing and Turtle serialization substantially complete.

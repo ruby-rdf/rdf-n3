@@ -43,7 +43,7 @@ module RDF::N3
     # @yield  [reader] `self`
     # @yieldparam  [RDF::Reader] reader
     # @yieldreturn [void] ignored
-    # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
+    # @raise [Error] Raises RDF::ReaderError if validating and an error is found
     def initialize(input = $stdin, options = {}, &block)
       super do
         input.rewind if input.respond_to?(:rewind)

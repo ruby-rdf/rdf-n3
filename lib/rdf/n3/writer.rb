@@ -78,7 +78,7 @@ module RDF::N3
     # @option options [Boolean]  :standard_prefixes   (false)
     #   Add standard prefixes to @prefixes, if necessary.
     # @option options [String]   :default_namespace (nil)
-    #   URI to use as default namespace, same as prefixes[nil]
+    #   URI to use as default namespace, same as `prefixes\[nil\]`
     # @yield  [writer] `self`
     # @yieldparam  [RDF::Writer] writer
     # @yieldreturn [void]
@@ -291,7 +291,7 @@ module RDF::N3
     def top_classes; [RDF::RDFS.Class]; end
 
     # Defines order of predicates to to emit at begninning of a resource description. Defaults to
-    # [rdf:type, rdfs:label, dc:title]
+    # `\[rdf:type, rdfs:label, dc:title\]`
     # @return [Array<URI>]
     def predicate_order; [RDF.type, RDF::RDFS.label, RDF::DC.title]; end
     
