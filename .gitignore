@@ -3,3 +3,4 @@
 /pkg
 /.yardoc
 /spec.html
+Gemfile.lock
