@@ -117,7 +117,7 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
 
 ## Contributors
-* [Nicholas Humfrey](http://github.com/njh)
+* [Nicholas Humfrey](http://github.com/njh) - <http://njh.me/>
 
 ## Contributing
 
