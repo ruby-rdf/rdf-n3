@@ -81,7 +81,7 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 * Create equivalent to `--think` to iterate on solutions.
 
 ## Dependencies
-* [RDF.rb](http://rubygems.org/gems/rdf) (>= 0.3.4)
+* [RDF.rb](http://rubygems.org/gems/rdf) (>= 1.0)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-rdf/rdf-n3/frames)
