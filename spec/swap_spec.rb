@@ -19,7 +19,7 @@ describe RDF::N3::Reader do
             pending("Not supported in Ruby 1.8")
           elsif %w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017).include?(t.name)
             pending("Formulae inferrence not supported")
-          elsif %w(n3_10006 n3_10009).include?(t.name)
+          elsif %w(n3_10003 n3_10006 n3_10009).include?(t.name)
             pending("Verified test results are incorrect")
           elsif %w(n3_10008 n3_10013).include?(t.name)
             pending("Isomorphic compare issue")
