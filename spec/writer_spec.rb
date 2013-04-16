@@ -374,30 +374,7 @@ describe RDF::N3::Writer do
       end
     end
   end
-  
-  # W3C Turtle Test suite from http://www.w3.org/2000/10/swap/test/regression.n3
-  describe "w3c turtle tests" do
-    require 'turtle_test'
 
-    Fixtures::TurtleTest::Good.each do |m|
-      m.entries.each do |t|
-        specify "#{t.name}: #{t.comment}" do
-          # Skip tests for very long files, too long
-          if %w(test-14 test-15 test-16).include?(t.name)
-            pending("Skip long input file")
-          elsif %w(test-29).include?(t.name)
-            pending("Skip escaped URI")
-          else
-            @graph = parse(t.output, :base_uri => t.result, :format => :ntriples)
-            ttl = serialize(t.output, t.result, [], :format => :n3)
-            g2 = parse(ttl, :base_uri => t.result)
-            g2.should be_equivalent_graph(@graph, :trace => @debug.join("\n"))
-          end
-        end
-      end
-    end
-  end
-  
   def parse(input, options = {})
     graph = RDF::Graph.new
     RDF::N3::Reader.new(input, options).each do |statement|
