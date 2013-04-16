@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.date                  = File.mtime('VERSION').strftime('%Y-%m-%d')
 
   gem.name                  = %q{rdf-n3}
-  gem.homepage              = %q{http://github.com/ruby-rdf/rdf-n3}
+  gem.homepage              = %q{http://ruby-rdf.github.com/rdf-n3}
   gem.license               = 'Public Domain' if gem.respond_to?(:license=)
   gem.summary               = %q{Notation3 reader/writer for RDF.rb.}
   gem.description           = %q{RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite.}
@@ -25,7 +25,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency     'rdf',                     '>= 1.0'
   gem.add_development_dependency 'open-uri-cached', '>= 0.0.5'
-  gem.add_development_dependency 'spira',           '>= 0.0.12'
+  gem.add_development_dependency 'spira',           '~> 0.0.12'
   gem.add_development_dependency 'rspec',           '>= 2.8.0'
   gem.add_development_dependency 'rdf-spec',        '>= 1.0'
   gem.add_development_dependency 'rdf-rdfxml'
