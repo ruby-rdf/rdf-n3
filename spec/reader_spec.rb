@@ -657,7 +657,7 @@ describe "RDF::N3::Reader" do
       it "should raise error if unknown keyword set" do
         n3 = %(@keywords foo.)
         lambda do
-          parse(n3, :base_uri => "http://a/b")
+          parse(n3, :base_uri => "http://a/b", :validate => true)
         end.should raise_error(RDF::ReaderError, /Undefined keywords used: foo/)
       end
     end
@@ -1229,8 +1229,13 @@ EOF
   
   def parse(input, options = {})
     @debug = []
+    options = {
+      :debug => @debug,
+      :validate => false,
+      :canonicalize => false,
+    }.merge(options)
     graph = options[:graph] || RDF::Graph.new
-    RDF::N3::Reader.new(input, {:debug => @debug, :validate => true, :canonicalize => false}.merge(options)).each do |statement|
+    RDF::N3::Reader.new(input, options).each do |statement|
       graph << statement
     end
     graph
