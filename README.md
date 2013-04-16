@@ -144,11 +144,11 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 * <http://github.com/ruby-rdf/rdf-n3>
 * <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
-[RDF.rb]:     http://rdf.rubyforge.org/
-[RDF::Turtle] http://github.com/ruby-rdf/rdf-turtle/
-[N3]:         http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
-[Turtle]:     http://www.w3.org/TeamSubmission/turtle/
-[N-Triples]:  http://www.w3.org/2001/sw/RDFCore/ntriples/
-[YARD]:       http://yardoc.org/
-[YARD-GS]:    http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:        http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[RDF.rb]:       http://ruby-rdf.github.com/rdf
+[RDF::Turtle]:  http://ruby-rdf.github.com/rdf-turtle/
+[N3]:           http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
+[Turtle]:       http://www.w3.org/TR/turtle/
+[N-Triples]:    http://www.w3.org/TR/n-triples/
+[YARD]:         http://yardoc.org/
+[YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
