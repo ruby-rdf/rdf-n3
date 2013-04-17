@@ -7,5 +7,4 @@ gem "rdf-spec",       :git => "git://github.com/ruby-rdf/rdf-spec.git"
 
 group :debug do
   gem "wirble"
-  gem "debugger", :platform => :ruby_19
 end

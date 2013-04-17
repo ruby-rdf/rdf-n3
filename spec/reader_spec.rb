@@ -304,7 +304,7 @@ describe "RDF::N3::Reader" do
         %(:bob :resumé "Bob's non-normalized resumé".) => '<http://a/b#bob> <http://a/b#resumé> "Bob\'s non-normalized resumé" .',
         %(:alice :resumé "Alice's normalized resumé".) => '<http://a/b#alice> <http://a/b#resumé> "Alice\'s normalized resumé" .',
         }.each_pair do |n3, nt|
-          it "for '#{n3}'" do
+          it "for '#{n3}'", :pending => ("Rubinius string array access problem" if defined?(RUBY_ENGINE) && RUBY_ENGINE == "rbx") do
             begin
               parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
             rescue
@@ -321,7 +321,7 @@ describe "RDF::N3::Reader" do
         %(<#Dürst>       a  "URI straight in UTF8".) => %(<http://a/b#D\\u00FCrst> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "URI straight in UTF8" .),
         #%(:a :related :ひらがな .) => %(<http://a/b#a> <http://a/b#related> <http://a/b#\\u3072\\u3089\\u304C\\u306A> .),
       }.each_pair do |n3, nt|
-        it "for '#{n3}'" do
+        it "for '#{n3}'", :pending => ("Rubinius string array access problem" if defined?(RUBY_ENGINE) && RUBY_ENGINE == "rbx") do
           begin
             parse(n3, :base_uri => "http://a/b").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
           rescue

@@ -4,3 +4,4 @@
 /.yardoc
 /spec.html
 Gemfile.lock
+/.rbx/

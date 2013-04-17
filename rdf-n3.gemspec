@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.email                 = 'public-rdf-ruby@w3.org'
 
   gem.platform              = Gem::Platform::RUBY
-  gem.files                 = %w(README.markdown History.markdown AUTHORS VERSION UNLICENSE) + Dir.glob('lib/**/*.rb')
+  gem.files                 = %w(README.md History.markdown AUTHORS VERSION UNLICENSE) + Dir.glob('lib/**/*.rb')
   gem.require_paths         = %w(lib)
   gem.has_rdoc              = false
 
