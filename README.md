@@ -1,6 +1,9 @@
 # RDF::N3 reader/writer
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
+[![Gem Version](https://badge.fury.io/rb/rdf-n3.png)][gem]
+[![Build Status](https://travis-ci.org/ruby-rdf/rdf-n3.png?branch=master)](http://travis-ci.org/ruby-rdf/rdf-n3)
+
 ## Description
 RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite.
 
