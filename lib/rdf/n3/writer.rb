@@ -15,7 +15,6 @@ module RDF::N3
   #   RDF::Writer.for(:file_extension => "n3")
   #   RDF::Writer.for(:file_extension => "ttl")
   #   RDF::Writer.for(:content_type   => "text/n3")
-  #   RDF::Writer.for(:content_type   => "text/turtle")
   #
   # @example Serializing RDF graph into an Turtle file
   #   RDF::N3::Writer.open("etc/test.n3") do |writer|

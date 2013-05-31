@@ -15,7 +15,7 @@ describe RDF::N3::Reader do
         specify "#{t.name}: #{t.inputDocument} against #{t.outputDocument}" do
           if %w(n3_10012).include?(t.name)
             pending("Skip long input file")
-          elsif %w(n3_10010).include?(t.name)
+          elsif %w(n3_10010).include?(t.name) && RUBY_VERSION < "1.9"
             pending("Not supported in Ruby 1.8")
           elsif %w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017).include?(t.name)
             pending("Formulae inferrence not supported")

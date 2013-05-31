@@ -498,26 +498,26 @@ module RDF::N3
 
     def process_anonnode(anonnode)
       add_debug("process_anonnode") {anonnode.inspect}
-      bnode = RDF::Node.new
       
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
+        bnode = RDF::Node.new
         properties.each do |p|
           predicate = p[:verb]
           add_debug("process_anonnode(verb)") {predicate.inspect}
           objects = [p[:object]].flatten.compact
           objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
         end
+        bnode
       elsif anonnode[:pathlist]
         objects = [anonnode[:pathlist]].flatten.compact
-        list = RDF::List.new(bnode, nil, objects)
+        list = RDF::List[*objects]
         list.each_statement do |statement|
           next if statement.predicate == RDF.type && statement.object == RDF.List
           add_triple("anonnode(list)", statement.subject, statement.predicate, statement.object)
         end
-        bnode = RDF.nil if list.empty?
+        list.subject
       end
-      bnode
     end
 
     # Process a path, such as:
