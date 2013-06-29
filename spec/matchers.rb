@@ -7,7 +7,7 @@ module Matchers
       case @info.compare
       when :array
         array = case graph
-        when RDF::Graph
+        when RDF::Enumerable
           raise ":compare => :array used with Graph"
         when Array
           graph.sort
@@ -25,12 +25,12 @@ module Matchers
         array
       else
         case graph
-        when RDF::Graph then graph
+        when RDF::Enumerable then graph
         when IO, StringIO
-          RDF::Graph.new.load(graph, :base_uri => @info.about)
+          RDF::Repository.new.load(graph, :base_uri => @info.about)
         else
           # Figure out which parser to use
-          g = RDF::Graph.new
+          g = RDF::Repository.new
           reader_class = RDF::Reader.for(detect_format(graph))
           reader_class.new(graph, :base_uri => @info.about).each {|s| g << s}
           g
@@ -42,7 +42,7 @@ module Matchers
       @info = if info.respond_to?(:about)
         info
       elsif info.is_a?(Hash)
-        identifier = info[:identifier] || expected.is_a?(RDF::Graph) ? expected.context : info[:about]
+        identifier = info[:identifier] || expected.is_a?(RDF::Enumerable) ? expected.context : info[:about]
         trace = info[:trace]
         trace = trace.join("\n") if trace.is_a?(Array)
         Info.new(identifier, info[:information] || "", trace, info[:compare])
@@ -63,7 +63,7 @@ module Matchers
 
     def failure_message_for_should
       info = @info.respond_to?(:information) ? @info.information : @info.inspect
-      if @expected.is_a?(RDF::Graph) && @actual.size != @expected.size
+      if @expected.is_a?(RDF::Enumerable) && @actual.size != @expected.size
         "Graph entry count differs:\nexpected: #{@expected.size}\nactual:   #{@actual.size}"
       elsif @expected.is_a?(Array) && @actual.size != @expected.length
         "Graph entry count differs:\nexpected: #{@expected.length}\nactual:   #{@actual.size}"

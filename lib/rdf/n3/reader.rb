@@ -114,17 +114,17 @@ module RDF::N3
     # Start of production
     def onStart(prod)
       handler = "#{prod}Start".to_sym
-      add_debug("#{handler}(#{respond_to?(handler)})", prod)
+      add_debug("#{handler}(#{respond_to?(handler, true)})", prod)
       @productions << prod
-      send(handler, prod) if respond_to?(handler)
+      send(handler, prod) if respond_to?(handler, true)
     end
 
     # End of production
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      add_debug("#{handler}(#{respond_to?(handler)})") {"#{prod}: #{@prod_data.last.inspect}"}
-      send(handler) if respond_to?(handler)
+      add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}: #{@prod_data.last.inspect}"}
+      send(handler) if respond_to?(handler, true)
     end
 
     # Process of a token
@@ -132,8 +132,8 @@ module RDF::N3
       unless @productions.empty?
         parentProd = @productions.last
         handler = "#{parentProd}Token".to_sym
-        add_debug("#{handler}(#{respond_to?(handler)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
-        send(handler, prod, tok) if respond_to?(handler)
+        add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
+        send(handler, prod, tok) if respond_to?(handler, true)
       else
         error("Token has no parent production")
       end

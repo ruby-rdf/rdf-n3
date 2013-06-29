@@ -26,7 +26,7 @@ describe RDF::N3::Reader do
           else
             t.run_test do
               t.debug = []
-              g = RDF::Graph.new
+              g = RDF::Repository.new
               RDF::N3::Reader.new(t.input,
                   :base_uri => t.inputDocument,
                   :strict => true,
@@ -50,7 +50,7 @@ describe RDF::N3::Reader do
             t.run_test do
               lambda do
                 t.debug = []
-                g = RDF::Graph.new
+                g = RDF::Repository.new
                 RDF::N3::Reader.new(t.input,
                     :base_uri => t.inputDocument,
                     :strict => true,
