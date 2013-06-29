@@ -39,7 +39,7 @@ module Matchers
     end
     
     def initialize(expected, info)
-      @info = if info.respond_to?(:about)
+      @info = if info.respond_to?(:id)
         info
       elsif info.is_a?(Hash)
         identifier = info[:identifier] || expected.is_a?(RDF::Enumerable) ? expected.context : info[:about]
@@ -62,7 +62,7 @@ module Matchers
     end
 
     def failure_message_for_should
-      info = @info.respond_to?(:information) ? @info.information : @info.inspect
+      info = @info.inspect
       if @expected.is_a?(RDF::Enumerable) && @actual.size != @expected.size
         "Graph entry count differs:\nexpected: #{@expected.size}\nactual:   #{@actual.size}"
       elsif @expected.is_a?(Array) && @actual.size != @expected.length
@@ -126,5 +126,18 @@ module Matchers
 
   def match_re(expected, info = nil)
     MatchRE.new(expected, info)
+  end
+end
+
+RSpec::Matchers.define :produce do |expected, info|
+  match do |actual|
+    actual.should == expected
+  end
+  
+  failure_message_for_should do |actual|
+    "Expected: #{[Array, Hash].include?(expected.class) ? expected.to_json(JSON_STATE) : expected.inspect}\n" +
+    "Actual  : #{[Array, Hash].include?(actual.class) ? actual.to_json(JSON_STATE) : actual.inspect}\n" +
+    #(expected.is_a?(Hash) && actual.is_a?(Hash) ? "Diff: #{expected.diff(actual).to_json(JSON_STATE)}\n" : "") +
+    "Processing results:\n#{info.join("\n")}"
   end
 end
