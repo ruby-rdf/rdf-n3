@@ -59,8 +59,9 @@ module RDF::N3
 
         @branches = BRANCHES # Get from meta class
         @regexps = REGEXPS # Get from meta class
-        
-        @formulae = []      # Nodes used as Formluae context identifiers
+
+        @formulae = []      # Nodes used as Formluae graph names
+        @formulae_nodes = {}
         @variables = {}    # variable definitions along with defining formula
 
         if options[:base_uri]
@@ -114,17 +115,17 @@ module RDF::N3
     # Start of production
     def onStart(prod)
       handler = "#{prod}Start".to_sym
-      add_debug("#{handler}(#{respond_to?(handler)})", prod)
+      add_debug("#{handler}(#{respond_to?(handler, true)})", prod)
       @productions << prod
-      send(handler, prod) if respond_to?(handler)
+      send(handler, prod) if respond_to?(handler, true)
     end
 
     # End of production
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      add_debug("#{handler}(#{respond_to?(handler)})") {"#{prod}: #{@prod_data.last.inspect}"}
-      send(handler) if respond_to?(handler)
+      add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}: #{@prod_data.last.inspect}"}
+      send(handler) if respond_to?(handler, true)
     end
 
     # Process of a token
@@ -132,8 +133,8 @@ module RDF::N3
       unless @productions.empty?
         parentProd = @productions.last
         handler = "#{parentProd}Token".to_sym
-        add_debug("#{handler}(#{respond_to?(handler)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
-        send(handler, prod, tok) if respond_to?(handler)
+        add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
+        send(handler, prod, tok) if respond_to?(handler, true)
       else
         error("Token has no parent production")
       end
@@ -312,11 +313,12 @@ module RDF::N3
         symbol = process_anonnode(@prod_data.pop)
         add_prod_data(:symbol, symbol)
       when "{"
-        # A new formula, push on a graph as a formula context
-        context = RDF::Graph.new(RDF::Node.new)
-        @formulae << context
+        # A new formula, push on a node as a named graph
+        node = RDF::Node.new
+        @formulae << node
+        @formulae_nodes[node] = true
       when "}"
-        # Pop off the formula, and remove any variables defined in this context
+        # Pop off the formula, and remove any variables defined in this graph
         formula = @formulae.pop
         @variables.delete_if {|k, v| v[:formula] == formula}
         add_prod_data(:symbol, formula)
@@ -482,7 +484,7 @@ module RDF::N3
       verb = @prod_data.pop
       if verb[:expression]
         error("Literal may not be used as a predicate") if verb[:expression].is_a?(RDF::Literal)
-        error("Formula may not be used as a peredicate") if verb[:expression].is_a?(RDF::Graph)
+        error("Formula may not be used as a peredicate") if @formulae_nodes.has_key?(verb[:expression])
         add_prod_data(:verb, verb[:expression])
         add_prod_data(:invert, true) if verb[:invert]
       else
@@ -613,7 +615,7 @@ module RDF::N3
 
     # Add debug event to debug array, if specified
     #
-    # @param [XML Node, any] node XML Node or string for showing context
+    # @param [any] node string for showing context
     # @param [String] message
     # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
     def add_debug(node, message = "")
@@ -625,19 +627,16 @@ module RDF::N3
 
     # add a statement, object can be literal or URI or bnode
     #
-    # @param [Nokogiri::XML::Node, any] node XML Node or string for showing context
+    # @param [any] node string for showing context
     # @param [URI, Node] subject the subject of the statement
     # @param [URI] predicate the predicate of the statement
     # @param [URI, Node, Literal] object the object of the statement
     # @return [Statement] Added statement
     # @raise [RDF::ReaderError] Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
     def add_triple(node, subject, predicate, object)
-      context_opts = {:context => @formulae.last.context} if @formulae.last
+      context_opts = @formulae.last ? {:context => @formulae.last} : {}
       
-      # Replace graph with it's context
-      subject = subject.context if subject.graph?
-      object = object.context if object.graph?
-      statement = RDF::Statement.new(subject, predicate, object, context_opts || {})
+      statement = RDF::Statement.new(subject, predicate, object, context_opts)
       add_debug(node) {statement.to_s}
       @callback.call(statement)
     end
