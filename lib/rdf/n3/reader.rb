@@ -215,7 +215,7 @@ module RDF::N3
     # when the formula is completed against all in-scope variables
     def existentialFinish
       pd = @prod_data.pop
-      forSome = [pd[:symbol]].flatten.compact
+      forSome = Array(pd[:symbol])
       forSome.each do |term|
         @variables[term.to_s] = {:formula => @formulae.last, :var => RDF::Node.new(term.to_s.split(/[\/#]/).last)}
       end
@@ -392,13 +392,13 @@ module RDF::N3
       statement = @prod_data.pop
       
       subject = statement[:subject]
-      properties = [statement[:propertylist]].flatten.compact
+      properties = Array(statement[:propertylist])
       properties.each do |p|
         predicate = p[:verb]
         next unless predicate
         add_debug("simpleStatementFinish(pred)") {predicate.to_s}
         error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
-        objects =[ p[:object]].flatten.compact
+        objects = Array(p[:object])
         objects.each do |object|
           if p[:invert]
             add_triple("simpleStatementFinish", object, predicate, subject)
@@ -448,7 +448,7 @@ module RDF::N3
     # when the formula is completed against all in-scope variables
     def universalFinish
       pd = @prod_data.pop
-      forAll = [pd[:symbol]].flatten.compact
+      forAll = Array(pd[:symbol])
       forAll.each do |term|
         @variables[term.to_s] = { :formula => @formulae.last, :var => univar(term) }
       end
@@ -507,12 +507,12 @@ module RDF::N3
         properties.each do |p|
           predicate = p[:verb]
           add_debug("process_anonnode(verb)") {predicate.inspect}
-          objects = [p[:object]].flatten.compact
+          objects = Array(p[:object])
           objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
         end
         bnode
       elsif anonnode[:pathlist]
-        objects = [anonnode[:pathlist]].flatten.compact
+        objects = Array(anonnode[:pathlist])
         list = RDF::List[*objects]
         list.each_statement do |statement|
           next if statement.predicate == RDF.type && statement.object == RDF.List
@@ -593,9 +593,9 @@ module RDF::N3
       when nil
         @prod_data.last[sym] = value
       when Array
-        @prod_data.last[sym] << value
+        @prod_data.last[sym] += Array(value)
       else
-        @prod_data.last[sym] = [@prod_data.last[sym], value]
+        @prod_data.last[sym] = Array(@prod_data.last[sym]) +  Array(value)
       end
     end
 

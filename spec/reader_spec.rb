@@ -63,7 +63,7 @@ describe "RDF::N3::Reader" do
     end
     
     it "should yield reader" do
-      inner = mock("inner")
+      inner = double("inner")
       inner.should_receive(:called).with(RDF::N3::Reader)
       RDF::N3::Reader.new(@sampledoc) do |reader|
         inner.called(reader.class)
@@ -75,7 +75,7 @@ describe "RDF::N3::Reader" do
     end
     
     it "should yield statements" do
-      inner = mock("inner")
+      inner = double("inner")
       inner.should_receive(:called).with(RDF::Statement).exactly(15)
       RDF::N3::Reader.new(@sampledoc).each_statement do |statement|
         inner.called(statement.class)
@@ -83,7 +83,7 @@ describe "RDF::N3::Reader" do
     end
     
     it "should yield triples" do
-      inner = mock("inner")
+      inner = double("inner")
       inner.should_receive(:called).exactly(15)
       RDF::N3::Reader.new(@sampledoc).each_triple do |subject, predicate, object|
         inner.called(subject.class, predicate.class, object.class)
@@ -623,9 +623,9 @@ describe "RDF::N3::Reader" do
         %(prefix :<>.),
       ].each do |n3|
         it "parses as local name if keywords set to empty for '#{n3}'" do
-          lambda do
+          expect do
             parse("@keywords . #{n3}", :base_uri => "http://a/b")
-          end.should_not raise_error(RDF::ReaderError)
+          end.not_to raise_error
         end
       end
       {
