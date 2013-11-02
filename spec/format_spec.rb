@@ -29,8 +29,8 @@ describe RDF::N3::Format do
       :n3             => "@prefix foo: <bar> .\nfoo:bar = {<a> <b> <c>} .",
       :default_prefix => ':a :b :c .',
     }.each do |sym, str|
-      it "detects #{sym}" do
-        @format_class.for {str}.should == @format_class
+      it "does not detect #{sym}" do
+        expect(@format_class.for {str}).not_to eq @format_class
       end
     end
 
@@ -53,8 +53,8 @@ describe RDF::N3::Format do
       :n3             => "@prefix foo: <bar> .\nfoo:bar = {<a> <b> <c>} .",
       :default_prefix => ':a :b :c .',
     }.each do |sym, str|
-      it "detects #{sym}" do
-        @format_class.detect(str).should be_true
+      it "does not detect #{sym}" do
+        expect(@format_class.detect(str)).not_to be_true
       end
     end
 
