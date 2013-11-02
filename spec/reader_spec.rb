@@ -1228,7 +1228,7 @@ EOF
   end
   
   def parse(input, options = {})
-    @debug = []
+    @debug = ([] unless RUBY_ENGINE == "rbx")
     options = {
       :debug => @debug,
       :validate => false,

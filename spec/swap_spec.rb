@@ -33,7 +33,7 @@ describe RDF::N3::Reader do
                 :base_uri => t.base,
                 :canonicalize => false,
                 :validate => true,
-                :debug => t.debug)
+                :debug => (t.debug unless RUBY_ENGINE == "rbx"))
 
             graph = RDF::Repository.new
 
