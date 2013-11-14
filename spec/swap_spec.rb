@@ -23,7 +23,7 @@ describe RDF::N3::Reader do
             pending("Verified test results are incorrect")
           when *%w(n3_10008 n3_10013)
             pending("Isomorphic compare issue")
-          when *%w(keywords2 n3parser.tests contexts strquot
+          when *%w(keywords1 keywords2 n3parser.tests contexts strquot
                    numbers qvars1 qvars2 lists too-nested equals1)
             pending("Deprecated")
           else
