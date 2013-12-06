@@ -22,31 +22,6 @@ module RDF::N3
 
     reader { RDF::N3::Reader }
     writer { RDF::N3::Writer }
-
-    ##
-    # Sample detection to see if it matches N3 (or N-Triples or Turtle)
-    #
-    # Use a text sample to detect the format of an input file. Sub-classes implement
-    # a matcher sufficient to detect probably format matches, including disambiguating
-    # between other similar formats.
-    #
-    # @param [String] sample Beginning several bytes (~ 1K) of input.
-    # @return [Boolean]
-    def self.detect(sample)
-      !!sample.match(%r(
-        (?:@(base|prefix|keywords)) |                                   # N3 keywords
-        "{3} |                                                          # Multi-line quotes
-        "[^"]*"^^ | "[^"]*"@ |                                          # Typed/Language literals
-        (?:
-          (?:\s*(?:(?:<[^>]*>) | (?:\w*:\w+) | (?:"[^"]*"))\s*[,;]) ||
-          (?:\s*(?:(?:<[^>]*>) | (?:\w*:\w+) | (?:"[^"]*"))){3}
-        )
-      )mx) && !(
-        sample.match(%r(<(?:\/|html|rdf))i) ||                          # HTML, RDF/XML
-        sample.match(%r(^(?:\s*<[^>]*>){4}.*\.\s*$)) ||                 # N-Quads
-        sample.match(%r("@(context|subject|iri)"))                      # JSON-LD
-      )
-    end
   end
   
   # Alias for N3 format

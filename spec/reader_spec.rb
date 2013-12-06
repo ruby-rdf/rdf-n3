@@ -716,14 +716,14 @@ describe "RDF::N3::Reader" do
         n3 = %(@prefix a: <http://foo/a#> . [] a:p a:v .)
         nt = %(_:bnode0 <http://foo/a#p> <http://foo/a#v> .)
         g = parse(n3, :base_uri => "http://a/b")
-        normalize_bnodes(g, "bnode0").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array)
+        g.should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
       
       it "should create BNode for [] as predicate" do
         n3 = %(@prefix a: <http://foo/a#> . a:s [] a:o .)
         nt = %(<http://foo/a#s> _:bnode0 <http://foo/a#o> .)
         g = parse(n3, :base_uri => "http://a/b")
-        normalize_bnodes(g, "bnode0").should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug, :compare => :array, :anon => "bnode")
+        g.should be_equivalent_graph(nt, :about => "http://a/b", :trace => @debug)
       end
       
       it "should create BNode for [] as object" do
@@ -1228,7 +1228,7 @@ EOF
   end
   
   def parse(input, options = {})
-    @debug = []
+    @debug = ([] unless RUBY_ENGINE == "rbx")
     options = {
       :debug => @debug,
       :validate => false,

@@ -165,7 +165,7 @@ module RDF::N3
     def readline
       @line = @input.readline
       @lineno += 1
-      @line.force_encoding(Encoding::UTF_8) if @line.respond_to?(:force_encoding) # for Ruby 1.9+
+      @line.encode!(Encoding::UTF_8) if @line.respond_to?(:encode!) # for Ruby 1.9+
       puts "readline[#{@lineno}]: #{@line.dump}" if $verbose
       @pos = 0
       @line

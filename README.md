@@ -84,7 +84,7 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 * Create equivalent to `--think` to iterate on solutions.
 
 ## Dependencies
-* [RDF.rb](http://rubygems.org/gems/rdf) (>= 1.0)
+* [RDF.rb](http://rubygems.org/gems/rdf) (>= 1.1)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-rdf/rdf-n3/frames)
@@ -123,6 +123,7 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * [Nicholas Humfrey](http://github.com/njh) - <http://njh.me/>
 
 ## Contributing
+This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange development and release activity. All submissions _must_ be on a feature branch based on the _develop_ branch to ease staging and integration.
 
 * Do your best to adhere to the existing coding conventions and idioms.
 * Don't use hard tabs, and don't leave trailing whitespace on any line.
