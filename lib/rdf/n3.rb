@@ -3,7 +3,7 @@ require 'rdf'
 
 module RDF
   ##
-  # **`RDF::N3`** is an Notation-3 plugin for RDF.rb.
+  # **`RDF::N3`** is an Notation-3 extension for RDF.rb.
   #
   # @example Requiring the `RDF::N3` module
   #   require 'rdf/n3'
