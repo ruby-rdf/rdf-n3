@@ -4,8 +4,14 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'rdf/spec/reader'
 
 describe "RDF::N3::Reader" do
-  before :each do
-    @reader = RDF::N3::Reader.new(StringIO.new(""))
+  let!(:doap) {File.expand_path("../../etc/doap.n3", __FILE__)}
+  let!(:doap_nt) {File.expand_path("../../etc/doap.nt", __FILE__)}
+  let!(:doap_count) {File.open(doap_nt).each_line.to_a.length}
+
+  before(:each) do
+    @reader_input = File.read(doap)
+    @reader = RDF::N3::Reader.new(@reader_input)
+    @reader_count = doap_count
   end
 
   include RDF_Reader
