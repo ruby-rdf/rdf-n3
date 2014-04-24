@@ -92,9 +92,12 @@ module RDF::N3
     # @yieldparam [RDF::Statement] statement
     # @return [void]
     def each_statement(&block)
-      @callback = block
+      if block_given?
+        @callback = block
 
-      parse(START.to_sym)
+        parse(START.to_sym)
+      end
+      enum_for(:each_triple)
     end
     
     ##
@@ -106,9 +109,12 @@ module RDF::N3
     # @yieldparam [RDF::Value]    object
     # @return [void]
     def each_triple(&block)
-      each_statement do |statement|
-        block.call(*statement.to_triple)
+      if block_given?
+        each_statement do |statement|
+          block.call(*statement.to_triple)
+        end
       end
+      enum_for(:each_triple)
     end
     
     protected
