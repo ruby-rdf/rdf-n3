@@ -78,6 +78,8 @@ module RDF::N3
     #   Add standard prefixes to @prefixes, if necessary.
     # @option options [String]   :default_namespace (nil)
     #   URI to use as default namespace, same as prefixes[nil]
+    # @option options [Boolean]  :unique_bnodes   (false)
+    #   Use unique node identifiers, defaults to using the identifier which the node was originall initialized with (if any).
     # @yield  [writer] `self`
     # @yieldparam  [RDF::Writer] writer
     # @yieldreturn [void]
@@ -156,7 +158,7 @@ module RDF::N3
     def get_qname(resource)
       case resource
       when RDF::Node
-        return resource.to_s
+        return options[:unique_bnodes] ? resource.to_unique_base : resource.to_base
       when RDF::URI
         uri = resource.to_s
       else
@@ -261,7 +263,7 @@ module RDF::N3
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_node(node, options = {})
-      "_:%s" % node.id
+      options[:unique_bnodes] ? node.to_unique_base : node.to_base
     end
     
     protected
@@ -322,7 +324,7 @@ module RDF::N3
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
       recursable = @subjects.keys.
         select {|s| !seen.include?(s)}.
-        map {|r| [r.is_a?(RDF::Node) ? 1 : 0, ref_count(r), r]}.
+        map {|r| [r.node? ? 1 : 0, ref_count(r), r]}.
         sort
       
       add_debug {"subjects3: #{subjects.inspect}"}
@@ -445,7 +447,7 @@ module RDF::N3
     end
     
     def p_squared?(node, position)
-      node.is_a?(RDF::Node) &&
+      node.node? &&
         !@serialized.has_key?(node) &&
         ref_count(node) <= 1
     end
@@ -466,7 +468,7 @@ module RDF::N3
     
     def p_default(node, position)
       #add_debug {"p_default: #{node.inspect}, #{position}"}
-      l = (position == :subject ? "" : " ") + format_value(node)
+      l = (position == :subject ? "" : " ") + format_value(node, options)
       @output.write(l)
     end
     
@@ -514,8 +516,7 @@ module RDF::N3
       prop_list.each_with_index do |prop, i|
         begin
           @output.write(";\n#{indent(2)}") if i > 0
-          prop[0, 2] == "_:"
-          verb(prop[0, 2] == "_:" ? RDF::Node.new(prop.split(':').last) : RDF::URI.intern(prop))
+          verb(prop[0, 2] == "_:" ? RDF::Node.intern(prop.split(':').last) : RDF::URI.intern(prop))
           object_list(properties[prop])
         rescue Addressable::URI::InvalidURIError => e
           add_debug {"Predicate #{prop.inspect} is an invalid URI: #{e.message}"}
@@ -524,7 +525,7 @@ module RDF::N3
     end
     
     def s_squared?(subject)
-      ref_count(subject) == 0 && subject.is_a?(RDF::Node) && !is_valid_list(subject)
+      ref_count(subject) == 0 && subject.node? && !is_valid_list(subject)
     end
     
     def s_squared(subject)
