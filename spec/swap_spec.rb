@@ -11,21 +11,18 @@ describe RDF::N3::Reader do
         #next unless t.subject.to_s =~ /rdfms-rdf-names-use/
         #next unless t.name =~ /11/
         #puts t.inspect
+        next if %w(keywords1 keywords2 n3parser.tests contexts strquot
+                   numbers qvars1 qvars2 lists too-nested equals1).include?(t.name)
         specify "#{t.name}: #{t.description}" do
           case t.name
           when 'n3_10012'
             pending("Skip long input file")
-          when 'n3_10010'
-            pending("Not supported in Ruby 1.8") if RUBY_VERSION < "1.9"
           when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
             pending("Formulae inferrence not supported")
           when *%w(n3_10003 n3_10006 n3_10009)
             pending("Verified test results are incorrect")
           when *%w(n3_10008 n3_10013)
             pending("Isomorphic compare issue")
-          when *%w(keywords1 keywords2 n3parser.tests contexts strquot
-                   numbers qvars1 qvars2 lists too-nested equals1)
-            pending("Deprecated")
           else
             t.debug = [t.inspect, "source:", t.input.read]
 
@@ -41,7 +38,7 @@ describe RDF::N3::Reader do
               begin
                 graph << reader
               rescue Exception => e
-                e.message.should produce("Not exception #{e.inspect}", t.debug)
+                expect(e.message).to produce("Not exception #{e.inspect}", t.debug)
               end
 
               if t.evaluate?
@@ -49,12 +46,12 @@ describe RDF::N3::Reader do
                   format = detect_format(t.outputDocument)
                   RDF::Repository.load(t.outputDocument, :format => format, :base_uri => t.inputDocument)
                 rescue Exception => e
-                  e.message.should produce("Not exception #{e.inspect}", t.debug)
+                  expect(e.message).to produce("Not exception #{e.inspect}", t.debug)
                 end
 
-                graph.should be_equivalent_graph(output_graph, t)
+                expect(graph).to be_equivalent_graph(output_graph, t)
               else
-                graph.should be_a(RDF::Enumerable)
+                expect(graph).to be_enumerable
               end
             else
               expect {
