@@ -419,7 +419,7 @@ module RDF::N3
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
       #add_debug {"is_valid_list: #{l.inspect}"}
-      return RDF::List.new(l, @graph).valid?
+      return (l.node? && RDF::List.new(l, @graph).valid?) || l == RDF.nil
     end
     
     def do_list(l)

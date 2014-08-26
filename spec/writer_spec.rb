@@ -20,7 +20,7 @@ describe RDF::N3::Writer do
       {:content_type   => 'application/rdf+n3'},
     ].each do |arg|
       it "discovers with #{arg.inspect}" do
-        RDF::Writer.for(arg).should == RDF::N3::Writer
+        expect(RDF::Writer.for(arg)).to eq RDF::N3::Writer
       end
     end
   end
@@ -414,7 +414,7 @@ describe RDF::N3::Writer do
     end
     
     regexps.each do |re|
-      result.should match_re(re, about: base, trace: @debug, inputDocument: ntstr)
+      expect(result).to match re
     end
     
     result

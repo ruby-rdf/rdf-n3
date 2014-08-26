@@ -20,7 +20,7 @@ describe RDF::N3::Format do
       {:content_type   => 'application/rdf+n3'},
     ].each do |arg|
       it "discovers with #{arg.inspect}" do
-        RDF::Format.for(arg).should == @format_class
+        expect(RDF::Format.for(arg)).to eq @format_class
       end
     end
 
@@ -34,14 +34,14 @@ describe RDF::N3::Format do
       end
     end
 
-    it "should discover 'notation3'" do
-      RDF::Format.for(:notation3).reader.should == RDF::N3::Reader
-      RDF::Format.for(:notation3).writer.should == RDF::N3::Writer
+    it "discovers 'notation3'" do
+      expect(RDF::Format.for(:notation3).reader).to eq RDF::N3::Reader
+      expect(RDF::Format.for(:notation3).writer).to eq RDF::N3::Writer
     end
   end
 
   describe "#to_sym" do
-    specify {@format_class.to_sym.should == :n3}
+    specify {expect(@format_class.to_sym).to eq :n3}
   end
 
   describe ".detect" do
@@ -54,7 +54,7 @@ describe RDF::N3::Format do
       :default_prefix => ':a :b :c .',
     }.each do |sym, str|
       it "does not detect #{sym}" do
-        expect(@format_class.detect(str)).not_to be_true
+        expect(@format_class.detect(str)).to be_falsey
       end
     end
 
@@ -66,7 +66,7 @@ describe RDF::N3::Format do
       :microdata => '<div itemref="bar"></div>',
     }.each do |sym, str|
       it "does not detect #{sym}" do
-        @format_class.detect(str).should be_false
+        expect(@format_class.detect(str)).to be_falsey
       end
     end
   end
