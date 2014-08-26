@@ -23,7 +23,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.9.2'
   gem.requirements          = []
 
-  gem.add_dependency             'rdf',             '~> 1.1', '>= 1.1.4'
+  gem.add_dependency             'rdf',             '~> 1.1', '>= 1.1.5'
   gem.add_development_dependency 'open-uri-cached', '~> 0.0', '>= 0.0.5'
   gem.add_development_dependency 'json-ld',         '~> 1.1'
   gem.add_development_dependency 'rspec',           '~> 3.0'
