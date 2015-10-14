@@ -37,7 +37,7 @@ class Array
     end
 
 #    options.assert_valid_keys(:words_connector, :two_words_connector, :last_word_connector, :locale)
-    options = {:words_connector => default_words_connector, :two_words_connector => default_two_words_connector, :last_word_connector => default_last_word_connector}.merge(options)
+    options = {words_connector: default_words_connector, two_words_connector: default_two_words_connector, last_word_connector: default_last_word_connector}.merge(options)
 
     case length
       when 0

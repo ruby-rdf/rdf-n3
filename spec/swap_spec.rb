@@ -27,10 +27,10 @@ describe RDF::N3::Reader do
             t.debug = [t.inspect, "source:", t.input.read]
 
             reader = RDF::N3::Reader.new(t.input,
-                :base_uri => t.base,
-                :canonicalize => false,
-                :validate => true,
-                :debug => (t.debug unless RUBY_ENGINE == "rbx"))
+                base_uri: t.base,
+                canonicalize: false,
+                validate: true,
+                debug: (t.debug unless RUBY_ENGINE == "rbx"))
 
             graph = RDF::Repository.new
 
@@ -44,7 +44,7 @@ describe RDF::N3::Reader do
               if t.evaluate?
                 output_graph = begin
                   format = detect_format(t.outputDocument)
-                  RDF::Repository.load(t.outputDocument, :format => format, :base_uri => t.inputDocument)
+                  RDF::Repository.load(t.outputDocument, format: format, base_uri: t.inputDocument)
                 rescue Exception => e
                   expect(e.message).to produce("Not exception #{e.inspect}", t.debug)
                 end

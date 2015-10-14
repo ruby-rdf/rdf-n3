@@ -18,4 +18,4 @@ data = %q(
 reader = RDF::RDFXML::Reader.new(data)
 graph = RDF::Graph.new << reader
 
-puts graph.dump(:n3, :prefixes => reader.prefixes)
+puts graph.dump(:n3, prefixes: reader.prefixes)

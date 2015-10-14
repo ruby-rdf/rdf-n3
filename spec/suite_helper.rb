@@ -15,7 +15,7 @@ module Fixtures
       def self.open(file)
         #puts "open: #{file}"
         prefixes = {}
-        g = RDF::Repository.load(file, :format => :n3)
+        g = RDF::Repository.load(file, format: :n3)
         JSON::LD::API.fromRDF(g) do |expanded|
           JSON::LD::API.compact(expanded, CONTEXT) do |doc|
             doc['@graph'].each {|r| yield Entry.new(r) if r['@type']}

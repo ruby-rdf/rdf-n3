@@ -38,7 +38,7 @@ data = <<-EOF;
   #_:abcd a po:Episode.
 EOF
 
-RDF::N3::Reader.new(data, :base_uri => 'http://www.bbc.co.uk/programmes/on-now.n3') do |reader|
+RDF::N3::Reader.new(data, base_uri: 'http://www.bbc.co.uk/programmes/on-now.n3') do |reader|
   reader.each_statement do |statement|
     statement.inspect!
   end

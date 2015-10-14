@@ -13,7 +13,7 @@ module RDF::N3
     end
     
     def parse(prod)
-      todo_stack = [{:prod => prod, :terms => nil}]
+      todo_stack = [{prod: prod, terms: nil}]
       while !todo_stack.empty?
         pushed = false
         if todo_stack.last[:terms].nil?
@@ -81,7 +81,7 @@ module RDF::N3
             end
           else
             puts "parse term(push): #{term}" if $verbose
-            todo_stack << {:prod => term, :terms => nil}
+            todo_stack << {prod: term, terms: nil}
             pushed = true
             break
           end

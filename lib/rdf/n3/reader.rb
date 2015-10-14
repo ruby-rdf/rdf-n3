@@ -147,7 +147,7 @@ module RDF::N3
     end
     
     def booleanToken(prod, tok)
-      lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
+      lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
       add_prod_data(:literal, lit)
     end
     
@@ -223,7 +223,7 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = Array(pd[:symbol])
       forSome.each do |term|
-        @variables[term.to_s] = {:formula => @formulae.last, :var => RDF::Node.new(term.to_s.split(/[\/#]/).last)}
+        @variables[term.to_s] = {formula: @formulae.last, var: RDF::Node.new(term.to_s.split(/[\/#]/).last)}
       end
     end
     
@@ -269,7 +269,7 @@ module RDF::N3
       language = language.downcase if language && canonicalize?
       datatype = lit[:symbol]
       
-      lit = RDF::Literal.new(content, :language => language, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)
+      lit = RDF::Literal.new(content, language: language, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
       add_prod_data(:literal, lit)
     end
     
@@ -300,16 +300,16 @@ module RDF::N3
         else RDF::XSD.integer
         end
         
-        lit = RDF::Literal.new(nl, :datatype => datatype, :validate => validate?, :canonicalize => canonicalize?)
+        lit = RDF::Literal.new(nl, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
         add_prod_data(:literal, lit)
       when "quickvariable"
         # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
         # universally quantified not in the formula but in its parent formula
         uri = process_qname(tok.sub('?', ':'))
-        @variables[uri.to_s] = { :formula => @formulae[-2], :var => univar(uri) }
+        @variables[uri.to_s] = { formula: @formulae[-2], var: univar(uri) }
         add_prod_data(:symbol, uri)
       when "boolean"
-        lit = RDF::Literal.new(tok.delete("@"), :datatype => RDF::XSD.boolean, :validate => validate?, :canonicalize => canonicalize?)
+        lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
         add_prod_data(:literal, lit)
       when "[", "("
         # Push on state for content of blank node
@@ -347,7 +347,7 @@ module RDF::N3
     end
     
     def pathlistStart(prod)
-      @prod_data << {:pathlist => []}
+      @prod_data << {pathlist: []}
     end
     
     def pathlistFinish
@@ -359,7 +359,7 @@ module RDF::N3
     end
     
     def pathtailStart(prod)
-      @prod_data << {:pathtail => []}
+      @prod_data << {pathtail: []}
     end
     
     def pathtailToken(prod, tok)
@@ -456,7 +456,7 @@ module RDF::N3
       pd = @prod_data.pop
       forAll = Array(pd[:symbol])
       forAll.each do |term|
-        @variables[term.to_s] = { :formula => @formulae.last, :var => univar(term) }
+        @variables[term.to_s] = { formula: @formulae.last, var: univar(term) }
       end
     end
 
@@ -573,7 +573,7 @@ module RDF::N3
         # Access Working Group. Note that no existing documents will have used a naked true or false word, without a
         # @keyword statement which would make it clear that they were not to be treated as keywords. Furthermore any
         # old parser encountering true or false naked or in a @keywords
-        return RDF::Literal.new(tok, :datatype => RDF::XSD.boolean)
+        return RDF::Literal.new(tok, datatype: RDF::XSD.boolean)
       else
         error("Set user @keywords to use barenames.")
       end
@@ -621,7 +621,7 @@ module RDF::N3
 
     # Add debug event to debug array, if specified
     #
-    # @param [any] node string for showing context
+    # @param [any] node string for showing graph_name
     # @param [String] message
     # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
     def add_debug(node, message = "")
@@ -633,16 +633,16 @@ module RDF::N3
 
     # add a statement, object can be literal or URI or bnode
     #
-    # @param [any] node string for showing context
+    # @param [any] node string for showing graph_name
     # @param [URI, Node] subject the subject of the statement
     # @param [URI] predicate the predicate of the statement
     # @param [URI, Node, Literal] object the object of the statement
     # @return [Statement] Added statement
     # @raise [RDF::ReaderError] Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
     def add_triple(node, subject, predicate, object)
-      context_opts = @formulae.last ? {:context => @formulae.last} : {}
+      graph_name_opts = @formulae.last ? {graph_name: @formulae.last} : {}
       
-      statement = RDF::Statement.new(subject, predicate, object, context_opts)
+      statement = RDF::Statement.new(subject, predicate, object, graph_name_opts)
       add_debug(node) {statement.to_s}
       @callback.call(statement)
     end
