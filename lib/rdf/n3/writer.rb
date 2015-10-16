@@ -468,7 +468,7 @@ module RDF::N3
     
     def p_default(node, position)
       #add_debug {"p_default: #{node.inspect}, #{position}"}
-      l = (position == :subject ? "" : " ") + format_value(node, options)
+      l = (position == :subject ? "" : " ") + format_term(node, options)
       @output.write(l)
     end
     
