@@ -76,18 +76,18 @@ class PredictiveParser
 
     branchDict = {}
 
-    rhs = graph.first_object(:subject => lhs, :predicate => BNF.matches)
+    rhs = graph.first_object(subject: lhs, predicate: BNF.matches)
     if rhs
       chatty("\nToken #{lhs} matches regexp #{rhs}")
       tokenRegexps[lhs] = rhs.value
 
-      cc = graph.query(:subject => lhs, :predicate => BNF.canStartWith)
+      cc = graph.query(subject: lhs, predicate: BNF.canStartWith)
       progress(recordError("No record of what token #{lhs} can start with")) if cc.empty?
       cc.each {|statement| chatty("  Can start with: #{statement.object}")}
       return
     end
   
-    rhs = graph.first_object(:subject => lhs, :predicate => BNF.mustBeOneSequence)
+    rhs = graph.first_object(subject: lhs, predicate: BNF.mustBeOneSequence)
     unless rhs
         progress(recordError("No definition of #{lhs}"))
   #     raise RuntimeError("No definition of %s  in\n %s" %(`lhs`, `g`))
@@ -96,13 +96,13 @@ class PredictiveParser
 
     options = rhs
     progress("\nProduction #{lhs} :: #{options}")
-    graph.query(:subject => lhs, :predicate => BNF.canPrecede) do |statement|
+    graph.query(subject: lhs, predicate: BNF.canPrecede) do |statement|
       chatty("  Can precede '#{statement.object}'")
     end
 
-    graph.query(:subject => lhs, :predicate => BNF.branch) do |statement|
+    graph.query(subject: lhs, predicate: BNF.branch) do |statement|
       branch = statement.object
-      sequence = graph.first_object(:subject => statement.object, :predicate => BNF.sequence)
+      sequence = graph.first_object(subject: statement.object, predicate: BNF.sequence)
       option = RDF::List.new(sequence, graph).to_a
       progress("  option: #{option}")
     
@@ -110,12 +110,12 @@ class PredictiveParser
         agenda << part unless already.include?(part) || agenda.include?(part)
       end
     
-      conditions = graph.query(:subject => branch, :predicate => BNF.condition).map(&:object)
+      conditions = graph.query(subject: branch, predicate: BNF.condition).map(&:object)
       if conditions.empty?
         progress(recordError("NO SELECTOR for #{lhs} option #{option}"))
         if option.empty?
           # Void case - the tricky one
-          graph.pattern(:subject => lhs, :predicate => BNF.canPrecede) do |st|
+          graph.pattern(subject: lhs, predicate: BNF.canPrecede) do |st|
             progress("      Can precede #{st.object}")
           end
         end

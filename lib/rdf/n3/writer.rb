@@ -10,11 +10,11 @@ module RDF::N3
   #   RDF::Writer.for(:n3)         #=> RDF::N3::Writer
   #   RDF::Writer.for("etc/test.n3")
   #   RDF::Writer.for("etc/test.ttl")
-  #   RDF::Writer.for(:file_name      => "etc/test.n3")
-  #   RDF::Writer.for(:file_name      => "etc/test.ttl")
-  #   RDF::Writer.for(:file_extension => "n3")
-  #   RDF::Writer.for(:file_extension => "ttl")
-  #   RDF::Writer.for(:content_type   => "text/n3")
+  #   RDF::Writer.for(file_name:      "etc/test.n3")
+  #   RDF::Writer.for(file_name:      "etc/test.ttl")
+  #   RDF::Writer.for(file_extension: "n3")
+  #   RDF::Writer.for(file_extension: "ttl")
+  #   RDF::Writer.for(content_type:   "text/n3")
   #
   # @example Serializing RDF graph into an Turtle file
   #   RDF::N3::Writer.open("etc/test.n3") do |writer|
@@ -38,9 +38,9 @@ module RDF::N3
   # The writer will add prefix definitions, and use them for creating @prefix definitions, and minting QNames
   #
   # @example Creating @base and @prefix definitions in output
-  #   RDF::N3::Writer.buffer(:base_uri => "http://example.com/", :prefixes => {
+  #   RDF::N3::Writer.buffer(base_uri: "http://example.com/", prefixes: {
   #       nil => "http://example.com/ns#",
-  #       :foaf => "http://xmlns.com/foaf/0.1/"}
+  #       foaf: "http://xmlns.com/foaf/0.1/"}
   #   ) do |writer|
   #     graph.each_statement do |statement|
   #       writer << statement
@@ -294,7 +294,7 @@ module RDF::N3
     # Defines order of predicates to to emit at begninning of a resource description. Defaults to
     # [rdf:type, rdfs:label, dc:title]
     # @return [Array<URI>]
-    def predicate_order; [RDF.type, RDF::RDFS.label, RDF::DC.title]; end
+    def predicate_order; [RDF.type, RDF::RDFS.label, RDF::URI("http://purl.org/dc/terms/title")]; end
     
     # Order subjects for output. Override this to output subjects in another order.
     #
@@ -313,7 +313,7 @@ module RDF::N3
       
       # Add distinguished classes
       top_classes.each do |class_uri|
-        graph.query(:predicate => RDF.type, :object => class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
+        graph.query(predicate: RDF.type, object: class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
           add_debug {"order_subjects: #{subject.inspect}"}
           subjects << subject
           seen[subject] = true
@@ -468,7 +468,7 @@ module RDF::N3
     
     def p_default(node, position)
       #add_debug {"p_default: #{node.inspect}, #{position}"}
-      l = (position == :subject ? "" : " ") + format_value(node, options)
+      l = (position == :subject ? "" : " ") + format_term(node, options)
       @output.write(l)
     end
     
@@ -504,7 +504,7 @@ module RDF::N3
     
     def predicate_list(subject)
       properties = {}
-      @graph.query(:subject => subject) do |st|
+      @graph.query(subject: subject) do |st|
         properties[st.predicate.to_s] ||= []
         properties[st.predicate.to_s] << st.object
       end

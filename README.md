@@ -41,7 +41,7 @@ Write a graph to a file:
     end
 
 ### Formulae
-N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the context for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
+N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the graph_name for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
     { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
   
@@ -51,9 +51,9 @@ results in
     s = RDF::Node.new
     o = RDF::Node.new
     RDF::Statement(f, rdf:type n3:falsehood)
-    RDF::Statement(s, x:firstname, "Ora", :context => f)
-    RDF::Statement(s, dc:wrote, o, :context => f)
-    RDF::Statement(o, dc:title, "Moby Dick", :context => f)
+    RDF::Statement(s, x:firstname, "Ora", graph_name: f)
+    RDF::Statement(s, dc:wrote, o, graph_name: f)
+    RDF::Statement(o, dc:title, "Moby Dick", graph_name: f)
 
 ### Variables
 N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
@@ -100,8 +100,8 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * {RDF::REI}
 
 ### Patches
-* {Array}
-* {RDF::List}
+* `Array`
+* `RDF::List`
 
 ## Resources
 * [RDF.rb][RDF.rb]
