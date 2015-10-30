@@ -100,8 +100,8 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * {RDF::REI}
 
 ### Patches
-* {Array}
-* {RDF::List}
+* `Array`
+* `RDF::List`
 
 ## Resources
 * [RDF.rb][RDF.rb]
