@@ -10,6 +10,7 @@ describe RDF::N3::Format do
   describe ".for" do
     formats = [
       :n3,
+      :notation3,
       'etc/doap.n3',
       {file_name:      'etc/doap.n3'},
       {file_extension: 'n3'},
@@ -28,7 +29,7 @@ describe RDF::N3::Format do
       default_prefix: ':a :b :c .',
     }.each do |sym, str|
       it "does not detect #{sym}" do
-        expect(described_class.for {str}).not_to eq described_class
+        expect(described_class.detect(str)).not_to eq described_class
       end
     end
 
@@ -50,13 +51,6 @@ describe RDF::N3::Format do
       turtle:         "@prefix foo: <bar> .\n foo:a foo:b <c> .",
       n3:             "@prefix foo: <bar> .\nfoo:bar = {<a> <b> <c>} .",
       default_prefix: ':a :b :c .',
-    }.each do |sym, str|
-      it "does not detect #{sym}" do
-        expect(described_class.detect(str)).to be_falsey
-      end
-    end
-
-    {
       nquads: "<a> <b> <c> <d> . ",
       rdfxml: '<rdf:RDF about="foo"></rdf:RDF>',
       jsonld: '{"@context" => "foo"}',
