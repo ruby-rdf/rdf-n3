@@ -3,11 +3,9 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
-  before(:each) do
-    @writer = RDF::N3::Writer.new(StringIO.new)
+  it_behaves_like 'an RDF::Writer' do
+    let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
-  
-  include RDF_Writer
 
   describe ".for" do
     [
