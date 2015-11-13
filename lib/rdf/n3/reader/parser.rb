@@ -9,7 +9,7 @@ module RDF::N3
     NOT_NAME_CHARS = NOT_QNAME_CHARS + ":"
     
     def error(str)
-      raise RDF::ReaderError, "\n#{@line}\n#{'-' * @pos}^\nError on line #{@lineno} at offset #{@pos}: #{str}"
+      log_error(str, lineno: @lineno, exception: RDF::ReaderError)
     end
     
     def parse(prod)
@@ -19,7 +19,7 @@ module RDF::N3
         if todo_stack.last[:terms].nil?
           todo_stack.last[:terms] = []
           tok = self.token
-          #puts "parse tok: '#{tok}', prod #{todo_stack.last[:prod]}"
+          #log_debug("parse tok: '#{tok}'") {"prod #{todo_stack.last[:prod]}"}
           
           # Got an opened production
           onStart(abbr(todo_stack.last[:prod]))
@@ -34,15 +34,15 @@ module RDF::N3
             expected = prod_branch.values.uniq.map {|u| u.map {|v| abbr(v).inspect}.join(",")}
             error("Found '#{tok}' when parsing a #{abbr(cur_prod)}. expected #{expected.join(' | ')}")
           end
-          #puts "sequence: #{sequence.inspect}"
+          #log_debug("sequence") {sequence.inspect}
           todo_stack.last[:terms] += sequence
         end
         
-        #puts "parse: #{todo_stack.last.inspect}"
+        #log_debug("parse") {todo_stack.last.inspect}
         while !todo_stack.last[:terms].to_a.empty?
           term = todo_stack.last[:terms].shift
           if term.is_a?(String)
-            puts "parse term(string): #{term}" if $verbose
+            log_debug("parse term(string)") {term.to_s}
             word = buffer[0, term.length]
             if word == term
               onToken(term, word)
@@ -59,28 +59,28 @@ module RDF::N3
               string = '"""'
               consume(3)
               next_line = buffer
-              #puts "ml-str(start): #{next_line.dump}" if $verbose
+              #log_debug("ml-str(start)") {next_line.dump}
               until md = R_MLSTRING.match(next_line)
                 begin
                   string += next_line
                   next_line = readline
-                rescue EOFError => e
+                rescue EOFError
                   error("EOF reached searching for end of multi-line comment")
                 end
               end
               string += md[0].to_s
               consume(md[0].to_s.length)
               onToken('string', string)
-              #puts "ml-str now #{buffer.dump}"
+              #log_debug("ml-str now") {buffer.dump}
             else
               md = regexp.match(buffer)
               error("Token(#{abbr(term)}) '#{buffer[0, 10]}...' should match #{regexp}") unless md
-              puts "parse term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'" if $verbose
+              log_debug("parse") {"term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'"}
               onToken(abbr(term), md.to_s)
               consume(md[0].length)
             end
           else
-            puts "parse term(push): #{term}" if $verbose
+            log_debug("parse term(push)") {term}
             todo_stack << {prod: term, terms: nil}
             pushed = true
             break
@@ -104,7 +104,7 @@ module RDF::N3
       unless @memo.has_key?(@pos)
         tok = self.get_token
         @memo[@pos] = tok
-        puts "token: '#{tok}'('#{buffer[0, 10]}...')" if buffer && $verbose
+        log_debug("token") {"'#{tok}'('#{buffer[0, 10]}...')"} if buffer
       end
       @memo[@pos]
     end
@@ -158,7 +158,7 @@ module RDF::N3
       while buffer && md = R_WHITESPACE.match(buffer)
         return unless md[0].length > 0
         consume(md[0].length)
-        #puts "ws: '#{md[0]}', pos=#{@pos}"
+        #log_debug("ws") {"'#{md[0]}', pos=#{@pos}"}
       end
     end
     
@@ -166,10 +166,10 @@ module RDF::N3
       @line = @input.readline
       @lineno += 1
       @line.force_encoding(Encoding::UTF_8)
-      puts "readline[#{@lineno}]: #{@line.dump}" if $verbose
+      log_debug("readline[#{@lineno}]") {@line.dump}
       @pos = 0
       @line
-    rescue EOFError => e
+    rescue EOFError
       @line, @pos = nil, 0
     end
     
@@ -183,7 +183,7 @@ module RDF::N3
       @memo = {}
       @pos += n
       readline while @line && @line.length <= @pos
-      #puts "consume[#{n}]: '#{buffer}'" if $verbose
+      #log_debug("consume[#{n}]") {buffer}
     end
     
     def abbr(prodURI)

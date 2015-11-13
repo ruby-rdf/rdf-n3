@@ -22,7 +22,7 @@ module Fixtures
           end
         end
       end
-      attr_accessor :debug
+      attr_accessor :logger
 
       def base
         inputDocument
@@ -55,10 +55,6 @@ module Fixtures
 
       def syntax?
         !outputDocument
-      end
-
-      def trace
-        debug.join("\n") if debug
       end
 
       def inspect

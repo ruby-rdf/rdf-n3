@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
+  let(:logger) {RDF::Spec.logger}
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -402,8 +403,7 @@ describe RDF::N3::Writer do
   def serialize(ntstr, base = nil, regexps = [], options = {})
     prefixes = options[:prefixes] || {}
     g = parse(ntstr, base_uri: base, prefixes: prefixes)
-    @debug = []
-    result = RDF::N3::Writer.buffer(options.merge(debug: @debug, base_uri: base, prefixes: prefixes)) do |writer|
+    result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base, prefixes: prefixes)) do |writer|
       writer << g
     end
     if $verbose
