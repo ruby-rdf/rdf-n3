@@ -1,3 +1,4 @@
+# coding: utf-8
 module RDF::N3
   ##
   # A Turtle serialiser in Ruby

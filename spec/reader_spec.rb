@@ -155,13 +155,13 @@ describe "RDF::N3::Reader" do
       end
       
       {
-        'Dürst' => ':a :b "Dürst" .',
-        "é" => ':a :b  "é" .',
-        "€" => ':a :b  "€" .',
+        'Dürst' => '<a> <b> "Dürst" .',
+        "é" => '<a> <b>  "é" .',
+        "€" => '<a> <b>  "€" .',
         "resumé" => ':a :resume  "resumé" .',
       }.each_pair do |contents, triple|
         specify "test #{triple}" do
-          graph = parse(triple, base_uri: "http://a/b")
+          graph = parse(triple, base_uri: "http://a/b", logger: false)
           statement = graph.statements.first
           expect(graph.size).to eq 1
           expect(statement.object.value).to eq contents
@@ -305,7 +305,7 @@ describe "RDF::N3::Reader" do
         %(:alice :resumé "Alice's normalized resumé".) => '<http://a/b#alice> <http://a/b#resumé> "Alice\'s normalized resumé" .',
         }.each_pair do |n3, nt|
           it "for '#{n3}'" do
-            expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
+            expect(parse(n3, base_uri: "http://a/b", logger: false)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
           end
         end
 
@@ -314,7 +314,7 @@ describe "RDF::N3::Reader" do
         #%(:a :related :ひらがな .) => %(<http://a/b#a> <http://a/b#related> <http://a/b#\\u3072\\u3089\\u304C\\u306A> .),
       }.each_pair do |n3, nt|
         it "for '#{n3}'" do
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
+          expect(parse(n3, base_uri: "http://a/b", logger: false)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
         end
       end
     end

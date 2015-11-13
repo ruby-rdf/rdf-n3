@@ -1,3 +1,4 @@
+# coding: utf-8
 # Simple parser to go through productions without attempting evaluation
 module RDF::N3
   module Parser

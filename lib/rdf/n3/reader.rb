@@ -1,3 +1,4 @@
+# coding: utf-8
 module RDF::N3
   ##
   # A Notation-3/Turtle parser in Ruby
