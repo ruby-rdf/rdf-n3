@@ -102,23 +102,6 @@ module RDF::N3
     end
 
     ##
-    # Write whole graph
-    #
-    # @param  [Graph] graph
-    # @return [void]
-    def write_graph(graph)
-      @graph = graph
-    end
-
-    ##
-    # Addes a statement to be serialized
-    # @param  [RDF::Statement] statement
-    # @return [void]
-    def write_statement(statement)
-      @graph.insert(statement)
-    end
-
-    ##
     # Addes a triple to be serialized
     # @param  [RDF::Resource] subject
     # @param  [RDF::URI]      predicate
@@ -127,7 +110,7 @@ module RDF::N3
     # @raise  [NotImplementedError] unless implemented in subclass
     # @abstract
     def write_triple(subject, predicate, object)
-      @graph.insert(Statement.new(subject, predicate, object))
+      @graph.insert(RDF::Statement(subject, predicate, object))
     end
 
     ##
@@ -151,6 +134,8 @@ module RDF::N3
           statement(subject)
         end
       end
+
+      super
     end
     
     # Return a QName for the URI, or nil. Adds namespace of QName to defined prefixes

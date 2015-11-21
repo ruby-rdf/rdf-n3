@@ -5,6 +5,9 @@ require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
+
+  after(:each) {|example| puts logger.to_s if example.exception}
+
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -309,7 +312,7 @@ describe RDF::N3::Writer do
         [%q(false), /false ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -328,7 +331,7 @@ describe RDF::N3::Writer do
         [%q(10), /10 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -344,7 +347,7 @@ describe RDF::N3::Writer do
         [%q("10"^^xsd:int), /"10"\^\^xsd:int ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -363,7 +366,7 @@ describe RDF::N3::Writer do
         [%q(10.02), /10.02 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -382,7 +385,7 @@ describe RDF::N3::Writer do
         [%q(10.02e1), /1.002e2 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
