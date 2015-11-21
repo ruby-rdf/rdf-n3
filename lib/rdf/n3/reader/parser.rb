@@ -76,7 +76,7 @@ module RDF::N3
             else
               md = regexp.match(buffer)
               error("Token(#{abbr(term)}) '#{buffer[0, 10]}...' should match #{regexp}") unless md
-              log_debug("parse") {"term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect}'"}
+              log_debug("parse") {"term(#{abbr(term)}:regexp): #{term}, #{regexp}.match('#{buffer[0, 10]}...') => '#{md.inspect.force_encoding(Encoding::UTF_8)}'"}
               onToken(abbr(term), md.to_s)
               consume(md[0].length)
             end
