@@ -103,7 +103,7 @@ class PredictiveParser
     graph.query(subject: lhs, predicate: BNF.branch) do |statement|
       branch = statement.object
       sequence = graph.first_object(subject: statement.object, predicate: BNF.sequence)
-      option = RDF::List.new(sequence, graph).to_a
+      option = RDF::List.new(subject: sequence, graph: graph).to_a
       progress("  option: #{option}")
     
       option.each do |part|

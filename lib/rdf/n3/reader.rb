@@ -634,7 +634,7 @@ module RDF::N3
     def add_triple(node, subject, predicate, object)
       graph_name_opts = @formulae.last ? {graph_name: @formulae.last} : {}
       
-      statement = RDF::Statement.new(subject, predicate, object, graph_name_opts)
+      statement = RDF::Statement(subject, predicate, object, graph_name_opts)
       log_debug(node) {statement.to_s}
       @callback.call(statement)
     end

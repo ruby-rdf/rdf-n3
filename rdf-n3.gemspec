@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.require_paths         = %w(lib)
   gem.has_rdoc              = false
 
-  gem.required_ruby_version = '>= 1.9.3'
+  gem.required_ruby_version = '>= 2.0.0'
   gem.requirements          = []
 
   gem.add_dependency             'rdf',             '~> 1.99'

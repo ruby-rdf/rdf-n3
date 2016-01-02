@@ -1029,7 +1029,7 @@ describe "RDF::N3::Reader" do
         expect(g.subjects.to_a.length).to eq 8
         n = g.first_object(subject: RDF::URI.new("http://foo/a#a"), predicate: RDF::URI.new("http://foo/a#p"))
         expect(n).to be_node
-        seq = RDF::List.new(n, g)
+        seq = RDF::List.new(subject: n, graph: g)
         expect(seq.to_a.length).to eq 4
         expect(seq.first).to be_node
         expect(seq.second).to eq RDF::URI.new("http://resource1")

@@ -15,7 +15,7 @@ end
 
 group :debug do
   gem "wirble"
-  gem "debugger", platforms: [:mri_19, :mri_20]
+  gem "byebug", platform: :mri
 end
 
 platforms :rbx do
