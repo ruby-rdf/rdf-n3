@@ -58,7 +58,25 @@ module RDF::N3
     attr_accessor :graph
     # @return [URI] Base URI used for relativizing URIs
     attr_accessor :base_uri
-    
+
+    ##
+    # Options suitable for automatic Reader provisioning.
+    # @return [Array<RDF::CLI::Option>]
+    def self.options
+      super + [
+        RDF::CLI::Option.new(
+          symbol: :max_depth,
+          datatype: Integer,
+          on: ["--max-depth"],
+          description: "Maximum depth for recursively defining resources, defaults to 3.") {|arg| arg.to_i},
+        RDF::CLI::Option.new(
+          symbol: :default_namespace,
+          datatype: RDF::URI,
+          on: ["--default-namespace URI", :REQUIRED],
+          description: "URI to use as default namespace, same as prefixes.") {|arg| RDF::URI(arg)},
+      ]
+    end
+
     ##
     # Initializes the Turtle writer instance.
     #
