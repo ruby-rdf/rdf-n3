@@ -60,8 +60,8 @@ module RDF::N3
     attr_accessor :base_uri
 
     ##
-    # Options suitable for automatic Reader provisioning.
-    # @return [Array<RDF::CLI::Option>]
+    # N3 Writer options
+    # @see http://www.rubydoc.info/github/ruby-rdf/rdf/RDF/Writer#options-class_method
     def self.options
       super + [
         RDF::CLI::Option.new(
