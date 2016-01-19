@@ -111,8 +111,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d, :e .)
       serialize(input, nil,
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :d,$),
-        %r(^\s+:e \.$)],
+        %r(^:b :c :[de],\s+:[de] \.$)m],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
@@ -121,8 +120,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d; :e :f .)
       serialize(input, nil,
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :d;$),
-        %r(^\s+:e :f \.$)],
+        %r(^:b :[ce] :[df];\s+:[ce] :[df] \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
@@ -232,7 +230,7 @@ describe RDF::N3::Writer do
     it "should generate list anon" do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :twoAnons = ([a :mother] [a :father]) .)
       serialize(input, nil,
-        [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :mother\] \[\s*a :father\]\) \.$)],
+        [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :(mother|father)\] \[\s*a :(mother|father)\]\) \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
