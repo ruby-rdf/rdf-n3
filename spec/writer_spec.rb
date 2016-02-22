@@ -1,8 +1,13 @@
+# coding: utf-8
 $:.unshift "."
 require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
+  let(:logger) {RDF::Spec.logger}
+
+  after(:each) {|example| puts logger.to_s if example.exception}
+
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -106,8 +111,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d, :e .)
       serialize(input, nil,
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :d,$),
-        %r(^\s+:e \.$)],
+        %r(^:b :c :[de],\s+:[de] \.$)m],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
@@ -116,8 +120,7 @@ describe RDF::N3::Writer do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d; :e :f .)
       serialize(input, nil,
         [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :d;$),
-        %r(^\s+:e :f \.$)],
+        %r(^:b :[ce] :[df];\s+:[ce] :[df] \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
@@ -227,7 +230,7 @@ describe RDF::N3::Writer do
     it "should generate list anon" do
       input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :twoAnons = ([a :mother] [a :father]) .)
       serialize(input, nil,
-        [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :mother\] \[\s*a :father\]\) \.$)],
+        [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :(mother|father)\] \[\s*a :(mother|father)\]\) \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       )
     end
@@ -307,7 +310,7 @@ describe RDF::N3::Writer do
         [%q(false), /false ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -326,7 +329,7 @@ describe RDF::N3::Writer do
         [%q(10), /10 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -342,7 +345,7 @@ describe RDF::N3::Writer do
         [%q("10"^^xsd:int), /"10"\^\^xsd:int ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -361,7 +364,7 @@ describe RDF::N3::Writer do
         [%q(10.02), /10.02 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -380,7 +383,7 @@ describe RDF::N3::Writer do
         [%q(10.02e1), /1.002e2 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
+          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
           serialize(ttl, nil, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
@@ -402,8 +405,7 @@ describe RDF::N3::Writer do
   def serialize(ntstr, base = nil, regexps = [], options = {})
     prefixes = options[:prefixes] || {}
     g = parse(ntstr, base_uri: base, prefixes: prefixes)
-    @debug = []
-    result = RDF::N3::Writer.buffer(options.merge(debug: @debug, base_uri: base, prefixes: prefixes)) do |writer|
+    result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base, prefixes: prefixes)) do |writer|
       writer << g
     end
     if $verbose

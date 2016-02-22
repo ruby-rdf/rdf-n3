@@ -1,3 +1,4 @@
+# coding: utf-8
 module RDF::N3
   ##
   # A Notation-3/Turtle parser in Ruby
@@ -16,6 +17,7 @@ module RDF::N3
   class Reader < RDF::Reader
     format Format
 
+    include RDF::Util::Logger
     include Meta
     include Parser
     
@@ -26,8 +28,6 @@ module RDF::N3
     #
     # @param  [IO, File, String] input
     #   the input stream to read
-    # @option options [Array] :debug
-    #   Array to place debug messages
     # @option options [#to_s]    :base_uri     (nil)
     #   the base URI to use when resolving relative URIs (not supported by
     #   all readers)
@@ -65,12 +65,12 @@ module RDF::N3
         @variables = {}    # variable definitions along with defining formula
 
         if options[:base_uri]
-          add_debug("@uri") { base_uri.inspect}
+          log_debug("@uri") { base_uri.inspect}
           namespace(nil, uri("#{base_uri}#"))
         end
-        add_debug("validate") {validate?.inspect}
-        add_debug("canonicalize") {canonicalize?.inspect}
-        add_debug("intern") {intern?.inspect}
+        log_debug("validate") {validate?.inspect}
+        log_debug("canonicalize") {canonicalize?.inspect}
+        log_debug("intern") {intern?.inspect}
 
         if block_given?
           case block.arity
@@ -96,6 +96,10 @@ module RDF::N3
         @callback = block
 
         parse(START.to_sym)
+
+        if validate? && log_statistics[:error]
+          raise RDF::ReaderError, "Errors found during processing"
+        end
       end
       enum_for(:each_triple)
     end
@@ -121,7 +125,7 @@ module RDF::N3
     # Start of production
     def onStart(prod)
       handler = "#{prod}Start".to_sym
-      add_debug("#{handler}(#{respond_to?(handler, true)})", prod)
+      log_debug("#{handler}(#{respond_to?(handler, true)})", prod)
       @productions << prod
       send(handler, prod) if respond_to?(handler, true)
     end
@@ -130,7 +134,7 @@ module RDF::N3
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}: #{@prod_data.last.inspect}"}
+      log_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}: #{@prod_data.last.inspect}"}
       send(handler) if respond_to?(handler, true)
     end
 
@@ -139,7 +143,7 @@ module RDF::N3
       unless @productions.empty?
         parentProd = @productions.last
         handler = "#{parentProd}Token".to_sym
-        add_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
+        log_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
         send(handler, prod, tok) if respond_to?(handler, true)
       else
         error("Token has no parent production")
@@ -186,9 +190,9 @@ module RDF::N3
         # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
         
         namespace(nil, uri.match(/[\/\#]$/) ? base_uri : process_uri("#{uri}#"))
-        add_debug("declarationFinish[@base]") {"@base=#{base_uri}"}
+        log_debug("declarationFinish[@base]") {"@base=#{base_uri}"}
       when "@keywords"
-        add_debug("declarationFinish[@keywords]") {@keywords.inspect}
+        log_debug("declarationFinish[@keywords]") {@keywords.inspect}
         # Keywords are handled in tokenizer and maintained in @keywords array
         if (@keywords & N3_KEYWORDS) != @keywords
           error("Undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}") if validate?
@@ -238,7 +242,7 @@ module RDF::N3
       # If we're in teh middle of a pathtail, append
       if @prod_data.last[:pathtail] && expression[:pathitem] && expression[:pathtail]
         path_list = [expression[:pathitem]] + expression[:pathtail]
-        add_debug("expressionFinish(pathtail)") {"set pathtail to #{path_list.inspect}"}
+        log_debug("expressionFinish(pathtail)") {"set pathtail to #{path_list.inspect}"}
         @prod_data.last[:pathtail] = path_list
 
         dir_list = [expression[:direction]] if expression[:direction]
@@ -402,7 +406,7 @@ module RDF::N3
       properties.each do |p|
         predicate = p[:verb]
         next unless predicate
-        add_debug("simpleStatementFinish(pred)") {predicate.to_s}
+        log_debug("simpleStatementFinish(pred)") {predicate.to_s}
         error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
         objects = Array(p[:object])
         objects.each do |object|
@@ -505,14 +509,14 @@ module RDF::N3
     ###################
 
     def process_anonnode(anonnode)
-      add_debug("process_anonnode") {anonnode.inspect}
+      log_debug("process_anonnode") {anonnode.inspect}
       
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
         bnode = RDF::Node.new
         properties.each do |p|
           predicate = p[:verb]
-          add_debug("process_anonnode(verb)") {predicate.inspect}
+          log_debug("process_anonnode(verb)") {predicate.inspect}
           objects = Array(p[:object])
           objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
         end
@@ -535,7 +539,7 @@ module RDF::N3
     #
     # Create triple and return property used for next iteration
     def process_path(expression)
-      add_debug("process_path") {expression.inspect}
+      log_debug("process_path") {expression.inspect}
 
       pathitem = expression[:pathitem]
       pathtail = expression[:pathtail]
@@ -579,17 +583,17 @@ module RDF::N3
       end
 
       uri = if prefix(prefix)
-        add_debug('process_qname(ns)') {"#{prefix(prefix)}, #{name}"}
+        log_debug('process_qname(ns)') {"#{prefix(prefix)}, #{name}"}
         ns(prefix, name)
       elsif prefix == '_'
-        add_debug('process_qname(bnode)', name)
+        log_debug('process_qname(bnode)', name)
         bnode(name)
       else
-        add_debug('process_qname(default_ns)', name)
+        log_debug('process_qname(default_ns)', name)
         namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
         ns(nil, name)
       end
-      add_debug('process_qname') {uri.inspect}
+      log_debug('process_qname') {uri.inspect}
       uri
     end
     
@@ -619,18 +623,6 @@ module RDF::N3
       RDF::Query::Variable.new(label.to_s)
     end
 
-    # Add debug event to debug array, if specified
-    #
-    # @param [any] node string for showing graph_name
-    # @param [String] message
-    # @yieldreturn [String] appended to message, to allow for lazy-evaulation of message
-    def add_debug(node, message = "")
-      return unless ::RDF::N3.debug? || @options[:debug]
-      message = message + yield if block_given?
-      puts "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if ::RDF::N3::debug?
-      @options[:debug] << "[#{@lineno},#{@pos}]#{' ' * @productions.length}#{node}: #{message}" if @options[:debug].is_a?(Array)
-    end
-
     # add a statement, object can be literal or URI or bnode
     #
     # @param [any] node string for showing graph_name
@@ -642,8 +634,8 @@ module RDF::N3
     def add_triple(node, subject, predicate, object)
       graph_name_opts = @formulae.last ? {graph_name: @formulae.last} : {}
       
-      statement = RDF::Statement.new(subject, predicate, object, graph_name_opts)
-      add_debug(node) {statement.to_s}
+      statement = RDF::Statement(subject, predicate, object, graph_name_opts)
+      log_debug(node) {statement.to_s}
       @callback.call(statement)
     end
 
@@ -652,7 +644,7 @@ module RDF::N3
       if uri == '#'
         uri = prefix(nil).to_s + '#'
       end
-      add_debug("namespace") {"'#{prefix}' <#{uri}>"}
+      log_debug("namespace") {"'#{prefix}' <#{uri}>"}
       prefix(prefix, uri(uri))
     end
 
@@ -682,7 +674,7 @@ module RDF::N3
     def ns(prefix, suffix)
       base = prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
-      add_debug("ns") {"base: '#{base}', suffix: '#{suffix}'"}
+      log_debug("ns") {"base: '#{base}', suffix: '#{suffix}'"}
       uri(base + suffix.to_s)
     end
   end

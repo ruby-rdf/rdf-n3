@@ -28,8 +28,5 @@ module RDF
     autoload :Reader,  'rdf/n3/reader'
     autoload :VERSION, 'rdf/n3/version'
     autoload :Writer,  'rdf/n3/writer'
-    
-    def self.debug?; @debug; end
-    def self.debug=(value); @debug = value; end
   end
 end

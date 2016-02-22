@@ -24,13 +24,15 @@ describe RDF::N3::Reader do
           when *%w(n3_10008 n3_10013)
             pending("Isomorphic compare issue")
           else
-            t.debug = [t.inspect, "source:", t.input.read]
+            t.logger = RDF::Spec.logger
+            t.logger.info t.inspect
+            t.logger.info "source:\n#{t.input}"
 
             reader = RDF::N3::Reader.new(t.input,
                 base_uri: t.base,
                 canonicalize: false,
                 validate: true,
-                debug: (t.debug unless RUBY_ENGINE == "rbx"))
+                logger: t.logger)
 
             graph = RDF::Repository.new
 
@@ -38,7 +40,7 @@ describe RDF::N3::Reader do
               begin
                 graph << reader
               rescue Exception => e
-                expect(e.message).to produce("Not exception #{e.inspect}", t.debug)
+                expect(e.message).to produce("Not exception #{e.inspect}", t.logger)
               end
 
               if t.evaluate?
@@ -46,7 +48,7 @@ describe RDF::N3::Reader do
                   format = detect_format(t.outputDocument)
                   RDF::Repository.load(t.outputDocument, format: format, base_uri: t.inputDocument)
                 rescue Exception => e
-                  expect(e.message).to produce("Not exception #{e.inspect}", t.debug)
+                  expect(e.message).to produce("Not exception #{e.inspect}", t.logger)
                 end
 
                 expect(graph).to be_equivalent_graph(output_graph, t)
@@ -56,7 +58,7 @@ describe RDF::N3::Reader do
             else
               expect {
                 graph << reader
-                graph.dump(:ntriples).should produce("not this", t.debug)
+                graph.dump(:ntriples).should produce("not this", t.logger)
               }.to raise_error(RDF::ReaderError)
             end
           end

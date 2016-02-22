@@ -1,34 +1,32 @@
 require 'rdf/isomorphic'
 
-def normalize(graph)
-  case graph
-  when RDF::Enumerable then graph
-  when IO, StringIO
-    RDF::Repository.new.load(graph, base_uri: @info.about)
-  else
-    # Figure out which parser to use
-    g = RDF::Repository.new
-    reader_class = RDF::Reader.for(detect_format(graph))
-    reader_class.new(graph, base_uri: @info.about).each {|s| g << s}
-    g
-  end
-end
-
-Info = Struct.new(:about, :information, :trace, :inputDocument, :outputDocument, :format)
+# Don't use be_equivalent_graph from rdf/spec because of odd N3 semantics
+Info = Struct.new(:about, :logger, :inputDocument, :outputDocument, :format)
 
 RSpec::Matchers.define :be_equivalent_graph do |expected, info|
   match do |actual|
+    def normalize(graph)
+      case graph
+      when RDF::Enumerable then graph
+      when IO, StringIO
+        RDF::Repository.new.load(graph, base_uri: @info.about)
+      else
+        # Figure out which parser to use
+        g = RDF::Repository.new
+        reader_class = RDF::Reader.for(detect_format(graph))
+        reader_class.new(graph, base_uri: @info.about).each {|s| g << s}
+        g
+      end
+    end
+
     @info = if info.respond_to?(:about)
       info
+    elsif info.is_a?(Logger)
+      Info.new("", info)
     elsif info.is_a?(Hash)
-      identifier = expected.is_a?(RDF::Graph) ? expected.graph_name : info[:about]
-      trace = info[:trace]
-      trace = trace.join("\n") if trace.is_a?(Array)
-      i = Info.new(identifier, "0000", trace)
-      i.format = info[:format]
-      i
+      Info.new(info[:about], info[:logger])
     else
-      Info.new(expected.is_a?(RDF::Graph) ? expected.graph_name : info, "0000", info.to_s)
+      Info.new(expected.is_a?(RDF::Graph) ? expected.graph_name : info, info.to_s)
     end
     @info.format ||= :n3
     @expected = normalize(expected)
@@ -37,6 +35,10 @@ RSpec::Matchers.define :be_equivalent_graph do |expected, info|
   end
   
   failure_message do |actual|
+    trace = case @info.logger
+    when Logger then @info.logger.to_s
+    when Array then @info.logger.join("\n")
+    end
     info = @info.respond_to?(:about) ? @info.about : @info.inspect
     if @expected.is_a?(RDF::Enumerable) && @actual.size != @expected.size
       "Graph entry count differs:\nexpected: #{@expected.size}\nactual:   #{@actual.size}"
@@ -50,61 +52,6 @@ RSpec::Matchers.define :be_equivalent_graph do |expected, info|
     (@info.outputDocument ? "Output file: #{@info.outputDocument}\n" : "") +
     "Expected:\n#{@expected.dump(@info.format, standard_prefixes: true)}" +
     "Results:\n#{@actual.dump(@info.format, standard_prefixes: true)}" +
-    (@info.trace ? "\nDebug:\n#{@info.trace}" : "")
+    (trace ? "\nDebug:\n#{trace}" : "")
   end  
-end
-
-module Matchers
-  class MatchRE
-    Info = Struct.new(:about, :information, :trace, :inputDocument, :outputDocument)
-    def initialize(expected, info)
-      @info = if info.respond_to?(:about)
-        info
-      elsif info.is_a?(Hash)
-        identifier = info[:identifier] || info[:about]
-        trace = info[:trace]
-        trace = trace.join("\n") if trace.is_a?(Array)
-        Info.new(identifier, info[:information] || "", trace, info[:inputDocument], info[:outputDocument])
-      else
-        Info.new(info, info.to_s)
-      end
-      @expected = expected
-    end
-
-    def matches?(actual)
-      @actual = actual
-      @actual.to_s.match(@expected)
-    end
-
-    def failure_message_for_should
-      info = @info.respond_to?(:information) ? @info.information : @info.inspect
-      "Match failed"
-      "\n#{info + "\n" unless info.empty?}" +
-      (@info.inputDocument ? "Input file: #{@info.inputDocument}\n" : "") +
-      (@info.outputDocument ? "Output file: #{@info.outputDocument}\n" : "") +
-      "Expression: #{@expected}\n" +
-      "Unsorted Results:\n#{@actual}" +
-      (@info.trace ? "\nDebug:\n#{@info.trace}" : "")
-    end
-    def negative_failure_message
-      "Match succeeded\n"
-    end
-  end
-
-  def match_re(expected, info = nil)
-    MatchRE.new(expected, info)
-  end
-end
-
-RSpec::Matchers.define :produce do |expected, info|
-  match do |actual|
-    actual == expected
-  end
-  
-  failure_message do |actual|
-    "Expected: #{[Array, Hash].include?(expected.class) ? expected.to_json(JSON_STATE) : expected.inspect}\n" +
-    "Actual  : #{[Array, Hash].include?(actual.class) ? actual.to_json(JSON_STATE) : actual.inspect}\n" +
-    #(expected.is_a?(Hash) && actual.is_a?(Hash) ? "Diff: #{expected.diff(actual).to_json(JSON_STATE)}\n" : "") +
-    "Processing results:\n#{info.join("\n")}"
-  end
 end
