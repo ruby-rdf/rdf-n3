@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
 
   gem.name                  = %q{rdf-n3}
   gem.homepage              = %q{http://ruby-rdf.github.com/rdf-n3}
-  gem.license               = 'Public Domain' if gem.respond_to?(:license=)
+  gem.license               = 'Unlicense'
   gem.summary               = %q{Notation3 reader/writer for RDF.rb.}
   gem.description           = %q{RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite.}
   gem.rubyforge_project     = 'rdf-n3'
@@ -25,9 +25,9 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency             'rdf',             '>= 2.0.0.beta', '< 3'
   gem.add_development_dependency 'open-uri-cached', '~> 0.0', '>= 0.0.5'
-  gem.add_development_dependency 'json-ld',         '>= 1.99', '< 3'
-  gem.add_development_dependency 'rspec',           '~> 3.2'
-  gem.add_development_dependency 'rspec-its',       '~> 1.0'
+  gem.add_development_dependency 'json-ld',         '>= 2.0.0.beta', '< 3'
+  gem.add_development_dependency 'rspec',           '~> 3.4'
+  gem.add_development_dependency 'rspec-its',       '~> 1.2'
   gem.add_development_dependency 'rdf-spec',        '>= 2.0.0.beta', '< 3'
   gem.add_development_dependency 'rdf-isomorphic',  '>= 2.0.0.beta', '< 3'
   gem.add_development_dependency 'yard' ,           '~> 0.8'
