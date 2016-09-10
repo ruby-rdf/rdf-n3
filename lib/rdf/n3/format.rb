@@ -17,7 +17,7 @@ module RDF::N3
   #
   # @see http://www.w3.org/TR/rdf-testcases/#ntriples
   class Format < RDF::Format
-    content_type     'text/n3',             extension: :n3, aliases: %w(text/rdf+n3 application/rdf+n3)
+    content_type     'text/n3',             extension: :n3, aliases: %w(text/rdf+n3;q=0.2 application/rdf+n3;q=0.2)
     content_encoding 'utf-8'
 
     reader { RDF::N3::Reader }
