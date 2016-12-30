@@ -657,11 +657,11 @@ module RDF::N3
     
     # Create URIs
     def uri(value, append = nil)
-      value = RDF::URI.new(value)
+      value = RDF::URI(value)
       value = value.join(append) if append
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
-      value = RDF::URI.intern(value) if intern?
+      value = RDF::URI.intern(value, {}) if intern?
       
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
       # the current formula
