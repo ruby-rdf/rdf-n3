@@ -10,7 +10,6 @@ Gem::Specification.new do |gem|
   gem.license               = 'Unlicense'
   gem.summary               = %q{Notation3 reader/writer for RDF.rb.}
   gem.description           = %q{RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite.}
-  gem.rubyforge_project     = 'rdf-n3'
 
   gem.authors               = %w(Gregg Kellogg)
   gem.email                 = 'public-rdf-ruby@w3.org'
