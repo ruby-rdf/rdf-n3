@@ -281,12 +281,12 @@ describe RDF::N3::Writer do
       end
 
       it "encodes embedded \\" do
-        n3 = %(:a :b """string with \\ escaped quote marks""" .)
+        n3 = %(:a :b """string with \\\\ escaped quote marks""" .)
         serialize(n3, nil, [/string with \\\\ escaped quote mark/])
       end
 
       it "encodes embedded \\ multi-line" do
-        n3 = %(:a :b """string with \\ escaped quote marks
+        n3 = %(:a :b """string with \\\\ escaped quote marks
   """ .)
         serialize(n3, nil, [/string with \\\\ escaped quote mark/])
       end
