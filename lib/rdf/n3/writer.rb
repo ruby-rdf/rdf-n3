@@ -1,5 +1,3 @@
-require 'tsort'
-
 # coding: utf-8
 module RDF::N3
   ##
@@ -328,9 +326,15 @@ module RDF::N3
         end
       end
       log_debug {"subjects2: #{subjects.inspect}"}
-      
+
+      # Mark as seen lists that are part of another list
+      @lists.values.map(&:statements).
+        flatten.each do |st|
+          seen[st.object] if @lists.has_key?(st.object)
+        end
+
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
-      recursable = (@subjects.keys - @lists.keys + @lists.tsort.reverse).
+      recursable = @subjects.keys.
         select {|s| !seen.include?(s)}.
         map {|r| [r.node? ? 1 : 0, ref_count(r), r]}.
         sort
@@ -398,7 +402,7 @@ module RDF::N3
     # Reset internal helper instance variables
     def reset
       @depth = 0
-      @lists = ListMap.new
+      @lists = {}
 
       @references = {}
       @serialized = {}
@@ -568,21 +572,6 @@ module RDF::N3
     # Mark a subject as done.
     def subject_done(subject)
       @serialized[subject] = true
-    end
-
-    # Keep lists so they can be topologically sorted using `tsort`
-    class ListMap < Hash
-      include TSort
-      alias tsort_each_node each_key
-      def tsort_each_child(node, &block)
-        list = fetch(node)
-
-        # All list entries that are lists
-        list.each {|item| block.call(item) if has_key?(item)}
-
-        # All list subjects except ourselves
-        list.each_subject {|item| block.call(item) unless item == node}
-      end
     end
   end
 end
