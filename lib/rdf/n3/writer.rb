@@ -273,8 +273,6 @@ module RDF::N3
     protected
     # Output @base and @prefix definitions
     def start_document
-      @started = true
-      
       @output.write("#{indent}@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
       
       log_debug {"start_document: #{prefixes.inspect}"}
@@ -317,14 +315,24 @@ module RDF::N3
       
       # Add distinguished classes
       top_classes.each do |class_uri|
-        graph.query(predicate: RDF.type, object: class_uri).map {|st| st.subject}.sort.uniq.each do |subject|
-          log_debug {"order_subjects: #{subject.inspect}"}
+        graph.query(predicate:  RDF.type, object:  class_uri).
+          map {|st| st.subject}.
+          sort.
+          uniq.
+          each do |subject|
+          log_debug("order_subjects") {subject.to_ntriples}
           subjects << subject
           seen[subject] = true
         end
       end
       log_debug {"subjects2: #{subjects.inspect}"}
-      
+
+      # Mark as seen lists that are part of another list
+      @lists.values.map(&:statements).
+        flatten.each do |st|
+          seen[st.object] if @lists.has_key?(st.object)
+        end
+
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
       recursable = @subjects.keys.
         select {|s| !seen.include?(s)}.
@@ -358,7 +366,17 @@ module RDF::N3
       references = ref_count(statement.object) + 1
       @references[statement.object] = references
       @subjects[statement.subject] = true
-      
+
+      # Collect lists
+      if statement.predicate == RDF.first
+        @lists[statement.subject] = RDF::List.new(subject: statement.subject, graph: graph)
+      end
+
+      if statement.object == RDF.nil || statement.subject == RDF.nil
+        # Add an entry for the list tail
+        @lists[RDF.nil] ||= RDF::List[]
+      end
+
       # Pre-fetch qnames, to fill prefixes
       get_qname(statement.subject)
       get_qname(statement.predicate)
@@ -385,12 +403,10 @@ module RDF::N3
     def reset
       @depth = 0
       @lists = {}
-      @namespaces = {}
+
       @references = {}
       @serialized = {}
       @subjects = {}
-      @shortNames = {}
-      @started = false
     end
 
     ##
@@ -412,11 +428,11 @@ module RDF::N3
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list(l)
       #log_debug {"is_valid_list: #{l.inspect}"}
-      return (l.node? && RDF::List.new(subject: l, graph: @graph).valid?) || l == RDF.nil
+      return @lists[l] && @lists[l].valid?
     end
     
     def do_list(l)
-      list = RDF::List.new(subject: l, graph: @graph)
+      list = @lists[l]
       log_debug {"do_list: #{list.inspect}"}
       position = :subject
       list.each_statement do |st|
@@ -502,7 +518,8 @@ module RDF::N3
         properties[st.predicate.to_s] << st.object
       end
 
-      prop_list = sort_properties(properties) - [RDF.first.to_s, RDF.rest.to_s]
+      prop_list = sort_properties(properties)
+      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if subject.node?
       log_debug {"predicate_list: #{prop_list.inspect}"}
       return if prop_list.empty?
 

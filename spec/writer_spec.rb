@@ -6,8 +6,6 @@ require 'rdf/spec/writer'
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
 
-  after(:each) {|example| puts logger.to_s if example.exception}
-
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -265,6 +263,27 @@ describe RDF::N3::Writer do
       )
       #$verbose = false
     end
+
+    it "should generate list with first subject a URI" do
+      input = %(
+      <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+      <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006741228480 .
+      _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+      _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006737917560 .
+      _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+      _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+      )
+      #$verbose = true
+      serialize(input, nil,
+        [
+          %r(@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \.),
+          %r(<http://example.com> rdf:first 1;),
+          %r(rdf:rest \(2 3\) \.),
+        ],
+        standard_prefixes: true
+      )
+      #$verbose = false
+    end
   end
 
   describe "literals" do
@@ -415,7 +434,7 @@ describe RDF::N3::Writer do
   # Serialize ntstr to a string and compare against regexps
   def serialize(ntstr, base = nil, regexps = [], options = {})
     prefixes = options[:prefixes] || {}
-    g = parse(ntstr, base_uri: base, prefixes: prefixes)
+    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base, prefixes: prefixes, validate: false, logger: [])
     result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base, prefixes: prefixes)) do |writer|
       writer << g
     end
@@ -424,8 +443,10 @@ describe RDF::N3::Writer do
       #puts CGI.escapeHTML(result)
     end
     
+    logger.info "result: #{result}"
     regexps.each do |re|
-      expect(result).to match re
+      logger.info "match: #{re.inspect}"
+      expect(result).to match_re(re, about: base, logger: logger, input: ntstr), logger.to_s
     end
     
     result
