@@ -11,7 +11,7 @@ group :development do
   gem "json-ld",        github: "ruby-rdf/json-ld", branch: "develop"
 
   # Until version >= 3.4.2 with support for Ruby 2.6
-  gem "webmock",        git: "git@github.com:bblimke/webmock.git"
+  gem "webmock",        github: "bblimke/webmock"
 end
 
 group :debug do
