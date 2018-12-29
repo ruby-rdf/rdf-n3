@@ -1,6 +1,5 @@
 # coding: utf-8
-$:.unshift "."
-require File.join(File.dirname(__FILE__), 'spec_helper')
+require_relative 'spec_helper'
 require 'rdf/spec/writer'
 
 describe RDF::N3::Writer do
