@@ -6,29 +6,23 @@ describe RDF::N3::Reader do
   describe "w3c swap tests" do
     require_relative 'suite_helper'
 
-    %w(n3parser.tests n3/n3-full.tests n3/n3-rdf.tests).each do |man|
+    %w(n3parser.tests).each do |man|
+      # Note, n3/n3-full.tests and n3/n3-rdf.tests is essentially the same as n3parser.tests
       describe man do
         Fixtures::SuiteTest::Entry.open(Fixtures::SuiteTest::BASE + man) do |t|
-          #next unless t.subject.to_s =~ /rdfms-rdf-names-use/
-          #next unless t.name =~ /11/
-          #puts t.inspect
-          next if %w(keywords1 keywords2 n3parser.tests strquot
-                     numbers qvars1 qvars2 lists too-nested equals1).include?(t.name)
           specify "#{t.name}: #{t.description}" do
             case t.name
-            when *%w(n3_10006 n3_100009)
-              pending("needs checking")
-            when *%w(n3_10004 n3_10007 n3_10014)
+            when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
               pending("Formulae inferrence not supported")
-            when *%w(n3_10009 n3_10015 n3_10017)
+            when *%w(n3_10006 n3_10009)
               pending("Verified test results are incorrect")
             when *%w(n3_10013)
-              pending("Isomorphic compare issue")
+              pending("numeric representation")
             end
 
             t.logger = RDF::Spec.logger
             t.logger.info t.inspect
-            t.logger.info "source:\n#{t.input}"
+            t.logger.info "source:\n#{t.input.read}"
 
             reader = RDF::N3::Reader.new(t.input,
                 base_uri: t.base,

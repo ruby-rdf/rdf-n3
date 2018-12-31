@@ -1,6 +1,7 @@
 # coding: utf-8
 require_relative 'spec_helper'
 require 'rdf/spec/reader'
+require 'rdf/trig'
 
 describe "RDF::N3::Reader" do
   let!(:doap) {File.expand_path("../../etc/doap.n3", __FILE__)}
@@ -868,17 +869,22 @@ describe "RDF::N3::Reader" do
     describe "formulae" do
       before(:each) { @repo = RDF::Repository.new }
 
-      it "creates an RDF::Graph instance for formula" do
+      it "creates an RDF::Node instance for formula" do
         n3 = %(:a :b {})
-        parse(n3, graph: @repo, base_uri: "http://a/b")
-        statement = @repo.statements.first
-        expect(statement.object).to be_node
+        nq = %(:a :b _:c .)
+        result = parse(n3, graph: @repo, base_uri: "http://a/b")
+        expected = parse(nq, graph: @repo, base_uri: "http://a/b")
+        expect(result).to be_equivalent_graph(expected, logger: logger)
       end
 
-      it "adds statements with graph_name"
+      it "adds statements with graph_name" do
+        n3 = %(:a :b {[:c :d]})
+        trig = %(<#a> <#b> _:c . _:c {[<#c> <#d>] .})
+        result = parse(n3, graph: @repo, base_uri: "http://a/b")
+        expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
+        expect(result).to be_equivalent_graph(expected, logger: logger)
+      end
 
-      it "creates variables with ?"
-      
       context "contexts" do
         before(:each) do
           n3 = %(

@@ -19,7 +19,6 @@ RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] int
 Install with `gem install rdf-n3`
 
 ## Limitations
-* Full support of Unicode input requires Ruby version 2.0 or greater.
 * Support for Variables in Formulae dependent on underlying repository. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
 * No support for N3 Reification. If there were, it would be through a :reify option to the reader.
 

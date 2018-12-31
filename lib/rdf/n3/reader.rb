@@ -23,6 +23,19 @@ module RDF::N3
     
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
+    # The Blank nodes allocated for formula
+    # @return [Array<RDF::Node>]
+    attr_reader :formulae
+
+    # The Variables allocated, along with their in-scope formula
+    VarInfo = Struct.new(:var, :formula)
+
+    # The allocated variables, including their formulae
+    #
+    # Variables are indexed by variable name
+    # @return [Hash{String => {Hash{Symbol => RDF::Term}}}]
+    attr_reader :variables
+
     ##
     # Initializes the N3 reader instance.
     #
@@ -61,7 +74,7 @@ module RDF::N3
         @branches = BRANCHES # Get from meta class
         @regexps = REGEXPS # Get from meta class
 
-        @formulae = []      # Nodes used as Formluae graph names
+        @formulae = []      # Nodes used as Formulae graph names
         @formulae_nodes = {}
         @variables = {}    # variable definitions along with defining formula
 
@@ -87,12 +100,11 @@ module RDF::N3
     end
 
     ##
-    # Iterates the given block for each RDF statement in the input.
-    #
-    # @yield  [statement]
-    # @yieldparam [RDF::Statement] statement
+    # Iterates over both statements and patterns.
+    # @yield [pattern]
+    # @yieldparam [RDF::Pattern] pattern
     # @return [void]
-    def each_statement(&block)
+    def each_pattern(&block)
       if block_given?
         @callback = block
 
@@ -102,7 +114,44 @@ module RDF::N3
           raise RDF::ReaderError, "Errors found during processing"
         end
       end
-      enum_for(:each_triple)
+      enum_for(:each_pattern)
+    end
+
+    ##
+    # Iterates the given block for each RDF statement in the input.
+    #
+    # @yield  [statement]
+    # @yieldparam [RDF::Statement] statement
+    # @return [void]
+    def each_statement
+      if block_given?
+        each_pattern do |pattern|
+          # Turn patterns into statements through simple BNode replacement
+          if pattern.is_a?(RDF::Query::Pattern) || pattern.variable?
+            yield RDF::Statement.new(
+              *pattern.to_triple.map do |r|
+                # If bound, replace variable with it's value, otherwise
+                # create a URI.
+                if r.variable?
+                  if r.bound?
+                    r.value
+                  elsif r.distinguished?
+                    process_uri(r.name.to_s)
+                  else
+                    bnode(r.name)
+                  end
+                else
+                  r
+                end
+              end,
+              graph_name: pattern.graph_name
+            )
+          else
+            yield pattern
+          end
+        end
+      end
+      enum_for(:each_statement)
     end
     
     ##
@@ -113,10 +162,10 @@ module RDF::N3
     # @yieldparam [RDF::URI]      predicate
     # @yieldparam [RDF::Value]    object
     # @return [void]
-    def each_triple(&block)
+    def each_triple
       if block_given?
         each_statement do |statement|
-          block.call(*statement.to_triple)
+          yield(*statement.to_triple)
         end
       end
       enum_for(:each_triple)
@@ -228,7 +277,8 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = Array(pd[:symbol])
       forSome.each do |term|
-        @variables[term.to_s] = {formula: @formulae.last, var: RDF::Node.new(term.to_s.split(/[\/#]/).last)}
+        # Blank nodes are scoped to the document
+        @variables[term.to_s] = VarInfo.new(univar(term, distinguished: false))
       end
     end
     
@@ -311,7 +361,7 @@ module RDF::N3
         # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
         # universally quantified not in the formula but in its parent formula
         uri = process_qname(tok.sub('?', ':'))
-        @variables[uri.to_s] = { formula: @formulae[-2], var: univar(uri) }
+        @variables[uri.to_s] = VarInfo.new(univar(uri), @formulae[-2])
         add_prod_data(:symbol, uri)
       when "boolean"
         lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
@@ -329,9 +379,8 @@ module RDF::N3
         @formulae << node
         @formulae_nodes[node] = true
       when "}"
-        # Pop off the formula, and remove any variables defined in this graph
+        # Pop off the formula
         formula = @formulae.pop
-        @variables.delete_if {|k, v| v[:formula] == formula}
         add_prod_data(:symbol, formula)
       else
         error("pathitemToken(#{prod}, #{tok}): FIXME")
@@ -412,9 +461,9 @@ module RDF::N3
         objects = Array(p[:object])
         objects.each do |object|
           if p[:invert]
-            add_triple("simpleStatementFinish", object, predicate, subject)
+            add_statement("simpleStatementFinish", object, predicate, subject)
           else
-            add_triple("simpleStatementFinish", subject, predicate, object)
+            add_statement("simpleStatementFinish", subject, predicate, object)
           end
         end
       end
@@ -461,7 +510,7 @@ module RDF::N3
       pd = @prod_data.pop
       forAll = Array(pd[:symbol])
       forAll.each do |term|
-        @variables[term.to_s] = { formula: @formulae.last, var: univar(term) }
+        @variables[term.to_s] = VarInfo.new(univar(term), @formulae.last)
       end
     end
 
@@ -519,7 +568,7 @@ module RDF::N3
           predicate = p[:verb]
           log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
           objects = Array(p[:object])
-          objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
+          objects.each { |object| add_statement("anonnode", bnode, predicate, object) }
         end
         bnode
       elsif anonnode[:pathlist]
@@ -527,7 +576,7 @@ module RDF::N3
         list = RDF::List[*objects]
         list.each_statement do |statement|
           next if statement.predicate == RDF.type && statement.object == RDF.List
-          add_triple("anonnode(list)", statement.subject, statement.predicate, statement.object)
+          add_statement("anonnode(list)", statement.subject, statement.predicate, statement.object)
         end
         list.subject
       end
@@ -551,9 +600,9 @@ module RDF::N3
         direction = direction_list.shift
         bnode = RDF::Node.new
         if direction == :reverse
-          add_triple("process_path(reverse)", bnode, pred, pathitem)
+          add_statement("process_path(reverse)", bnode, pred, pathitem)
         else
-          add_triple("process_path(forward)", pathitem, pred, bnode)
+          add_statement("process_path(forward)", pathitem, pred, bnode)
         end
         pathitem = bnode
       end
@@ -587,8 +636,13 @@ module RDF::N3
         log_debug('process_qname(ns)', depth: depth) {"#{prefix(prefix)}, #{name}"}
         ns(prefix, name)
       elsif prefix == '_'
-        log_debug('process_qname(bnode)', name)
-        bnode(name)
+        log_debug('process_qname(bnode)', name, depth: depth)
+        # If we're in a formula, create a non-distigushed variable instead
+        if @formulae.last
+          univar(name, distinguished: false)
+        else
+          bnode(name)
+        end
       else
         log_debug('process_qname(default_ns)', name, depth: depth)
         namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
@@ -616,26 +670,31 @@ module RDF::N3
       @bnode_cache[value.to_s] ||= RDF::Node.new(value)
     end
 
-    def univar(label)
+    def univar(label, distinguished: true)
       unless label
         @unnamed_label ||= "var0"
         label = @unnamed_label = @unnamed_label.succ
       end
-      RDF::Query::Variable.new(label.to_s)
+      v = RDF::Query::Variable.new(label.to_s)
+      v.distinguished = distinguished
+      v
     end
 
-    # add a statement, object can be literal or URI or bnode
+    # add a pattern or statement
     #
     # @param [any] node string for showing graph_name
-    # @param [URI, Node] subject the subject of the statement
-    # @param [URI] predicate the predicate of the statement
-    # @param [URI, Node, Literal] object the object of the statement
+    # @param [RDF::Term] subject the subject of the statement
+    # @param [RDF::URI] predicate the predicate of the statement
+    # @param [RDF::Term] object the object of the statement
     # @return [Statement] Added statement
     # @raise [RDF::ReaderError] Checks parameter types and raises if they are incorrect if parsing mode is _validate_.
-    def add_triple(node, subject, predicate, object)
-      graph_name_opts = @formulae.last ? {graph_name: @formulae.last} : {}
-      
-      statement = RDF::Statement(subject, predicate, object, graph_name_opts)
+    def add_statement(node, subject, predicate, object)
+      statement = if @formulae.last
+        # It's a pattern in a formula
+        RDF::Query::Pattern.new(subject, predicate, object, graph_name: @formulae.last)
+      else
+        RDF::Statement(subject, predicate, object)
+      end
       log_debug(node, depth: depth) {statement.to_s}
       @callback.call(statement)
     end
@@ -667,7 +726,7 @@ module RDF::N3
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
       # the current formula
       var = @variables[value.to_s]
-      value = var[:var] if var
+      value = var.var if var
 
       value
     end
