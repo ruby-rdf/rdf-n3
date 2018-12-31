@@ -46,6 +46,7 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
     def initialize(input = $stdin, options = {}, &block)
       super do
+        @options = {log_depth: 0}.merge(@options)
         input.rewind if input.respond_to?(:rewind)
         @input = input.respond_to?(:read) ? input : StringIO.new(input.to_s)
         @lineno = 0
@@ -125,7 +126,7 @@ module RDF::N3
     # Start of production
     def onStart(prod)
       handler = "#{prod}Start".to_sym
-      log_debug("#{handler}(#{respond_to?(handler, true)})", prod)
+      log_debug("#{handler}(#{respond_to?(handler, true)})", prod, depth: depth)
       @productions << prod
       send(handler, prod) if respond_to?(handler, true)
     end
@@ -134,7 +135,7 @@ module RDF::N3
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      log_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}: #{@prod_data.last.inspect}"}
+      log_debug("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}: #{@prod_data.last.inspect}"}
       send(handler) if respond_to?(handler, true)
     end
 
@@ -143,7 +144,7 @@ module RDF::N3
       unless @productions.empty?
         parentProd = @productions.last
         handler = "#{parentProd}Token".to_sym
-        log_debug("#{handler}(#{respond_to?(handler, true)})") {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
+        log_debug("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
         send(handler, prod, tok) if respond_to?(handler, true)
       else
         error("Token has no parent production")
@@ -190,9 +191,9 @@ module RDF::N3
         # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
         
         namespace(nil, uri.match(/[\/\#]$/) ? base_uri : process_uri("#{uri}#"))
-        log_debug("declarationFinish[@base]") {"@base=#{base_uri}"}
+        log_debug("declarationFinish[@base]", depth: depth) {"@base=#{base_uri}"}
       when "@keywords"
-        log_debug("declarationFinish[@keywords]") {@keywords.inspect}
+        log_debug("declarationFinish[@keywords]", depth: depth) {@keywords.inspect}
         # Keywords are handled in tokenizer and maintained in @keywords array
         if (@keywords & N3_KEYWORDS) != @keywords
           error("Undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}") if validate?
@@ -242,7 +243,7 @@ module RDF::N3
       # If we're in teh middle of a pathtail, append
       if @prod_data.last[:pathtail] && expression[:pathitem] && expression[:pathtail]
         path_list = [expression[:pathitem]] + expression[:pathtail]
-        log_debug("expressionFinish(pathtail)") {"set pathtail to #{path_list.inspect}"}
+        log_debug("expressionFinish(pathtail)", depth: depth) {"set pathtail to #{path_list.inspect}"}
         @prod_data.last[:pathtail] = path_list
 
         dir_list = [expression[:direction]] if expression[:direction]
@@ -406,7 +407,7 @@ module RDF::N3
       properties.each do |p|
         predicate = p[:verb]
         next unless predicate
-        log_debug("simpleStatementFinish(pred)") {predicate.to_s}
+        log_debug("simpleStatementFinish(pred)", depth: depth) {predicate.to_s}
         error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
         objects = Array(p[:object])
         objects.each do |object|
@@ -509,14 +510,14 @@ module RDF::N3
     ###################
 
     def process_anonnode(anonnode)
-      log_debug("process_anonnode") {anonnode.inspect}
+      log_debug("process_anonnode", depth: depth) {anonnode.inspect}
       
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
         bnode = RDF::Node.new
         properties.each do |p|
           predicate = p[:verb]
-          log_debug("process_anonnode(verb)") {predicate.inspect}
+          log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
           objects = Array(p[:object])
           objects.each { |object| add_triple("anonnode", bnode, predicate, object) }
         end
@@ -539,7 +540,7 @@ module RDF::N3
     #
     # Create triple and return property used for next iteration
     def process_path(expression)
-      log_debug("process_path") {expression.inspect}
+      log_debug("process_path", depth: depth) {expression.inspect}
 
       pathitem = expression[:pathitem]
       pathtail = expression[:pathtail]
@@ -583,17 +584,17 @@ module RDF::N3
       end
 
       uri = if prefix(prefix)
-        log_debug('process_qname(ns)') {"#{prefix(prefix)}, #{name}"}
+        log_debug('process_qname(ns)', depth: depth) {"#{prefix(prefix)}, #{name}"}
         ns(prefix, name)
       elsif prefix == '_'
         log_debug('process_qname(bnode)', name)
         bnode(name)
       else
-        log_debug('process_qname(default_ns)', name)
+        log_debug('process_qname(default_ns)', name, depth: depth)
         namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
         ns(nil, name)
       end
-      log_debug('process_qname') {uri.inspect}
+      log_debug('process_qname', depth: depth) {uri.inspect}
       uri
     end
     
@@ -635,7 +636,7 @@ module RDF::N3
       graph_name_opts = @formulae.last ? {graph_name: @formulae.last} : {}
       
       statement = RDF::Statement(subject, predicate, object, graph_name_opts)
-      log_debug(node) {statement.to_s}
+      log_debug(node, depth: depth) {statement.to_s}
       @callback.call(statement)
     end
 
@@ -644,7 +645,7 @@ module RDF::N3
       if uri == '#'
         uri = prefix(nil).to_s + '#'
       end
-      log_debug("namespace") {"'#{prefix}' <#{uri}>"}
+      log_debug("namespace", depth: depth) {"'#{prefix}' <#{uri}>"}
       prefix(prefix, uri(uri))
     end
 
@@ -674,7 +675,7 @@ module RDF::N3
     def ns(prefix, suffix)
       base = prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
-      log_debug("ns") {"base: '#{base}', suffix: '#{suffix}'"}
+      log_debug("ns", depth: depth) {"base: '#{base}', suffix: '#{suffix}'"}
       uri(base + suffix.to_s)
     end
   end
