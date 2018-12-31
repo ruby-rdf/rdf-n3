@@ -1,5 +1,6 @@
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '..')))
 require 'rdf'
+require 'rdf/n3/extensions'
 
 module RDF
   ##
