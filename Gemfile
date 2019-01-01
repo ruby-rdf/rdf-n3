@@ -10,9 +10,6 @@ group :development do
   gem "rdf-trig",       github: "ruby-rdf/rdf-trig", branch: "develop"
   gem "rdf-xsd",        github: "ruby-rdf/rdf-xsd", branch: "develop"
   gem "json-ld",        github: "ruby-rdf/json-ld", branch: "develop"
-
-  # Until version >= 3.4.2 with support for Ruby 2.6
-  gem "webmock",        github: "bblimke/webmock"
 end
 
 group :debug do
