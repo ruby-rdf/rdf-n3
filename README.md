@@ -42,17 +42,20 @@ Write a graph to a file:
 ### Formulae
 N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the graph_name for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
-    { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a n3:falsehood .
-  
-results in
+    @prefix x: <http://example.org/x-ns/#> .
+    @prefix log: <http://www.w3.org/2000/10/swap/log#> .
+    @prefix dc: <http://purl.org/dc/elements/1.1/#> .
 
-    f = RDF::Node.new
-    s = RDF::Node.new
-    o = RDF::Node.new
-    RDF::Statement(f, rdf:type n3:falsehood)
-    RDF::Statement(s, x:firstname, "Ora", graph_name: f)
-    RDF::Statement(s, dc:wrote, o, graph_name: f)
-    RDF::Statement(o, dc:title, "Moby Dick", graph_name: f)
+    { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a log:falsehood .
+  
+when turned into an RDF Repository results in the following quads
+
+    _:form <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/log#falsehood> .
+    _:moby <http://purl.org/dc/elements/1.1/#title> "Moby Dick" _:form .
+    _:ora <http://purl.org/dc/elements/1.1/#wrote> _:moby _:form .
+    _:ora <http://example.org/x-ns/#firstname> "Ora" _:form .
+
+Reasoning requires the use of the Notation3 Algebra, rather than an `RDF::Repository`. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. So, for example, the following 
 
 ### Variables
 N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:

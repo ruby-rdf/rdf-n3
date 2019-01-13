@@ -20,21 +20,12 @@ module RDF::N3
     include RDF::Util::Logger
     include Meta
     include Parser
-    
+
     N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
 
     # The Blank nodes allocated for formula
     # @return [Array<RDF::Node>]
     attr_reader :formulae
-
-    # The Variables allocated, along with their in-scope formula
-    VarInfo = Struct.new(:var, :formula)
-
-    # The allocated variables, including their formulae
-    #
-    # Variables are indexed by variable name
-    # @return [Hash{String => {Hash{Symbol => RDF::Term}}}]
-    attr_reader :variables
 
     ##
     # Initializes the N3 reader instance.
@@ -59,15 +50,14 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
     def initialize(input = $stdin, options = {}, &block)
       super do
-        @options = {log_depth: 0}.merge(@options)
         input.rewind if input.respond_to?(:rewind)
         @input = input.respond_to?(:read) ? input : StringIO.new(input.to_s)
         @lineno = 0
         readline  # Prime the pump
-        
+
         @memo = {}
         @keyword_mode = false
-        @keywords = %w(a is of this has)
+        @keywords = %w(a is of this has).map(&:freeze).freeze
         @productions = []
         @prod_data = []
 
@@ -76,15 +66,26 @@ module RDF::N3
 
         @formulae = []      # Nodes used as Formulae graph names
         @formulae_nodes = {}
-        @variables = {}    # variable definitions along with defining formula
+        @variables = {}  # allocated variables by formula
 
         if options[:base_uri]
-          log_debug("@uri") { base_uri.inspect}
+          log_info("@uri") { base_uri.inspect}
           namespace(nil, uri("#{base_uri}#"))
         end
-        log_debug("validate") {validate?.inspect}
-        log_debug("canonicalize") {canonicalize?.inspect}
-        log_debug("intern") {intern?.inspect}
+
+        # Prepopulate operator namespaces unless validating
+        unless validate?
+          namespace(:crypto, RDF::N3::Crypto)
+          namespace(:list, RDF::N3::List)
+          namespace(:log, RDF::N3::Log)
+          namespace(:math, RDF::N3::Math)
+          namespace(:rei, RDF::N3::Rei)
+          #namespace(:string, RDF::N3::String)
+          namespace(:time, RDF::N3::Time)
+        end
+        log_info("validate") {validate?.inspect}
+        log_info("canonicalize") {canonicalize?.inspect}
+        log_info("intern") {intern?.inspect}
 
         if block_given?
           case block.arity
@@ -136,7 +137,7 @@ module RDF::N3
                   if r.bound?
                     r.value
                   elsif r.distinguished?
-                    process_uri(r.name.to_s)
+                    RDF::URI(r.name.to_s)
                   else
                     bnode(r.name)
                   end
@@ -153,7 +154,7 @@ module RDF::N3
       end
       enum_for(:each_statement)
     end
-    
+
     ##
     # Iterates the given block for each RDF triple in the input.
     #
@@ -170,21 +171,75 @@ module RDF::N3
       end
       enum_for(:each_triple)
     end
-    
+
+    ##
+    # Returns the top-level formula for this file
+    #
+    # @return [RDF::N3::Algebra::Formula]
+    def formula
+      # SPARQL used for SSE and algebra functionality
+      require 'sparql' unless defined?(:SPARQL)
+
+      @formula ||= begin
+        formulae = {}
+
+        # Add patterns to appropiate formula based on graph_name,
+        # and replace subject and object bnodes which identify
+        # named graphs with those formula
+        each_pattern do |pattern|
+          # A graph name indicates a formula. If not already allocated, create a new formula and use that for inserting statements or other operators
+          form = formulae[pattern.graph_name] ||= begin
+            Algebra::Formula.new(graph_name: pattern.graph_name, **@options)
+          end
+
+          # Formulae may be the subject or object of a known operator
+          if klass = Algebra.for(pattern.predicate)
+            fs = formulae.fetch(pattern.subject, pattern.subject)
+            fo = formulae.fetch(pattern.object, pattern.object)
+            form.operands << klass.new(fs, fo, **@options)
+          else
+            # Add formulae as direct operators
+            if formulae.has_key?(pattern.subject)
+              form.operands << formulae[pattern.subject]
+            end
+            if formulae.has_key?(pattern.object)
+              form.operands << formulae[pattern.object]
+            end
+            pattern.graph_name = nil
+            form.operands << pattern
+          end
+        end
+      end
+
+      # Formula is that without a graph name
+      formulae[nil]
+    end
+
+    ##
+    # Returns the SPARQL S-Expression (SSE) representation of the parsed dataset.
+    # Formulae are represented as subjects and objects in the containing graph, along with their universals and existentials
+    #
+    # @return [Array] `self`
+    # @see    http://openjena.org/wiki/SSE
+    def to_sxp_bin
+      formula.to_sxp_bin
+    end
+
     protected
     # Start of production
     def onStart(prod)
       handler = "#{prod}Start".to_sym
-      log_debug("#{handler}(#{respond_to?(handler, true)})", prod, depth: depth)
+      log_info("#{handler}(#{respond_to?(handler, true)})", prod, depth: depth)
       @productions << prod
       send(handler, prod) if respond_to?(handler, true)
+
     end
 
     # End of production
     def onFinish
       prod = @productions.pop()
       handler = "#{prod}Finish".to_sym
-      log_debug("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}: #{@prod_data.last.inspect}"}
+      log_info("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}: #{@prod_data.last.inspect}"}
       send(handler) if respond_to?(handler, true)
     end
 
@@ -193,22 +248,22 @@ module RDF::N3
       unless @productions.empty?
         parentProd = @productions.last
         handler = "#{parentProd}Token".to_sym
-        log_debug("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
+        log_info("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
         send(handler, prod, tok) if respond_to?(handler, true)
       else
         error("Token has no parent production")
       end
     end
-    
+
     def booleanToken(prod, tok)
       lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
       add_prod_data(:literal, lit)
     end
-    
+
     def declarationStart(prod)
       @prod_data << {}
     end
-    
+
     def declarationToken(prod, tok)
       case prod
       when "@prefix", "@base", "@keywords"
@@ -232,13 +287,13 @@ module RDF::N3
         # Base, set or update document URI
         uri = decl[:explicituri]
         options[:base_uri] = process_uri(uri)
-        
+
         # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
         # The parser behaves as though there were a
         #   @prefix : <#>.
         # just before the file.
         # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
-        
+
         namespace(nil, uri.match(/[\/\#]$/) ? base_uri : process_uri("#{uri}#"))
         log_debug("declarationFinish[@base]", depth: depth) {"@base=#{base_uri}"}
       when "@keywords"
@@ -252,17 +307,17 @@ module RDF::N3
         error("declarationFinish: FIXME #{decl.inspect}")
       end
     end
-    
+
     # Document start, instantiate
     def documentStart(prod)
       @formulae.push(nil)
       @prod_data << {}
     end
-    
+
     def dtlangToken(prod, tok)
       add_prod_data(:langcode, tok) if prod == "langcode"
     end
-    
+
     def existentialStart(prod)
       @prod_data << {}
     end
@@ -277,19 +332,19 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = Array(pd[:symbol])
       forSome.each do |term|
-        # Blank nodes are scoped to the document
-        @variables[term.to_s] = VarInfo.new(univar(term, distinguished: false))
+        var = univar(term, distinguished: false)
+        add_var_to_formula(@formulae.last, var)
       end
     end
-    
+
     def expressionStart(prod)
       @prod_data << {}
     end
-    
+
     # Process path items, and push on the last object for parent processing
     def expressionFinish
       expression = @prod_data.pop
-      
+
       # If we're in teh middle of a pathtail, append
       if @prod_data.last[:pathtail] && expression[:pathitem] && expression[:pathtail]
         path_list = [expression[:pathitem]] + expression[:pathtail]
@@ -307,31 +362,31 @@ module RDF::N3
         error("expressionFinish: FIXME #{expression.inspect}")
       end
     end
-    
+
     def literalStart(prod)
       @prod_data << {}
     end
-    
+
     def literalToken(prod, tok)
       tok = tok[0, 3] == '"""' ? tok[3..-4] : tok[1..-2]
       add_prod_data(:string, tok)
     end
-    
+
     def literalFinish
       lit = @prod_data.pop
       content = RDF::NTriples.unescape(lit[:string])
       language = lit[:langcode] if lit[:langcode]
       language = language.downcase if language && canonicalize?
       datatype = lit[:symbol]
-      
+
       lit = RDF::Literal.new(content, language: language, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
       add_prod_data(:literal, lit)
     end
-    
+
     def objectStart(prod)
       @prod_data << {}
     end
-    
+
     def objectFinish
       object = @prod_data.pop
       if object[:expression]
@@ -340,11 +395,11 @@ module RDF::N3
         error("objectFinish: FIXME #{object.inspect}")
       end
     end
-    
+
     def pathitemStart(prod)
       @prod_data << {}
     end
-    
+
     def pathitemToken(prod, tok)
       case prod
       when "numericliteral"
@@ -354,15 +409,19 @@ module RDF::N3
         when /\./ then RDF::XSD.decimal
         else RDF::XSD.integer
         end
-        
+
         lit = RDF::Literal.new(nl, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
         add_prod_data(:literal, lit)
       when "quickvariable"
         # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
         # universally quantified not in the formula but in its parent formula
         uri = process_qname(tok.sub('?', ':'))
-        @variables[uri.to_s] = VarInfo.new(univar(uri), @formulae[-2])
-        add_prod_data(:symbol, uri)
+        var = uri.variable? ? uri : univar(uri)
+        add_var_to_formula(@formulae[-2], var)
+        # Also add var to this formula
+        add_var_to_formula(@formulae.last, var)
+
+        add_prod_data(:symbol, var)
       when "boolean"
         lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
         add_prod_data(:literal, lit)
@@ -378,6 +437,12 @@ module RDF::N3
         node = RDF::Node.new
         @formulae << node
         @formulae_nodes[node] = true
+
+        # Promote variables defined on the earlier formula to this formula
+        @variables[node] = {}
+        @variables[@formulae[-2]].each do |name, vars|
+          @variables[node][name] = vars.dup
+        end
       when "}"
         # Pop off the formula
         formula = @formulae.pop
@@ -399,11 +464,11 @@ module RDF::N3
         error("pathitemFinish: FIXME #{pathitem.inspect}")
       end
     end
-    
+
     def pathlistStart(prod)
       @prod_data << {pathlist: []}
     end
-    
+
     def pathlistFinish
       pathlist = @prod_data.pop
       # Flatten propertylist into an array
@@ -411,11 +476,11 @@ module RDF::N3
       add_prod_data(:pathlist, expr) if expr
       add_prod_data(:pathlist, pathlist[:pathlist]) if pathlist[:pathlist]
     end
-    
+
     def pathtailStart(prod)
       @prod_data << {pathtail: []}
     end
-    
+
     def pathtailToken(prod, tok)
       case tok
       when "!", "."
@@ -424,33 +489,33 @@ module RDF::N3
         add_prod_data(:direction, :reverse)
       end
     end
-    
+
     def pathtailFinish
       pathtail = @prod_data.pop
       add_prod_data(:pathtail, pathtail[:pathtail])
       add_prod_data(:direction, pathtail[:direction]) if pathtail[:direction]
       add_prod_data(:directiontail, pathtail[:directiontail]) if pathtail[:directiontail]
     end
-    
+
     def propertylistStart(prod)
       @prod_data << {}
     end
-    
+
     def propertylistFinish
       propertylist = @prod_data.pop
       # Flatten propertylist into an array
       ary = [propertylist, propertylist.delete(:propertylist)].flatten.compact
       @prod_data.last[:propertylist] = ary
     end
-    
+
     def simpleStatementStart(prod)
       @prod_data << {}
     end
-    
+
     # Completion of Simple Statement, all productions include :subject, and :propertyList
     def simpleStatementFinish
       statement = @prod_data.pop
-      
+
       subject = statement[:subject]
       properties = Array(statement[:propertylist])
       properties.each do |p|
@@ -472,17 +537,17 @@ module RDF::N3
     def subjectStart(prod)
       @prod_data << {}
     end
-    
+
     def subjectFinish
       subject = @prod_data.pop
-      
+
       if subject[:expression]
         add_prod_data(:subject, subject[:expression])
       else
         error("unknown expression type")
       end
     end
-    
+
     def symbolToken(prod, tok)
       term = case prod
       when 'explicituri'
@@ -492,7 +557,7 @@ module RDF::N3
       else
         error("symbolToken(#{prod}, #{tok}): FIXME #{term.inspect}")
       end
-      
+
       add_prod_data(:symbol, term)
     end
 
@@ -510,21 +575,21 @@ module RDF::N3
       pd = @prod_data.pop
       forAll = Array(pd[:symbol])
       forAll.each do |term|
-        @variables[term.to_s] = VarInfo.new(univar(term), @formulae.last)
+        add_var_to_formula(@formulae.last, univar(term))
       end
     end
 
     def verbStart(prod)
       @prod_data << {}
     end
-    
+
     def verbToken(prod, tok)
       term = case prod
       when '<='
-        add_prod_data(:expression, RDF::LOG.implies)
+        add_prod_data(:expression, RDF::N3::Log.implies)
         add_prod_data(:invert, true)
       when '=>'
-        add_prod_data(:expression, RDF::LOG.implies)
+        add_prod_data(:expression, RDF::N3::Log.implies)
       when '='
         add_prod_data(:expression, RDF::OWL.sameAs)
       when '@a'
@@ -536,7 +601,7 @@ module RDF::N3
       else
         error("verbToken(#{prod}, #{tok}): FIXME #{term.inspect}")
       end
-      
+
       add_prod_data(:symbol, term)
     end
 
@@ -551,16 +616,16 @@ module RDF::N3
         error("verbFinish: FIXME #{verb.inspect}")
       end
     end
-    
+
     private
-    
+
     ###################
     # Utility Functions
     ###################
 
     def process_anonnode(anonnode)
       log_debug("process_anonnode", depth: depth) {anonnode.inspect}
-      
+
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
         bnode = RDF::Node.new
@@ -568,7 +633,13 @@ module RDF::N3
           predicate = p[:verb]
           log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
           objects = Array(p[:object])
-          objects.each { |object| add_statement("anonnode", bnode, predicate, object) }
+          objects.each do |object|
+            if p[:invert]
+              add_statement("anonnode", object, predicate, bnode)
+            else
+              add_statement("anonnode", bnode, predicate, object)
+            end
+          end
         end
         bnode
       elsif anonnode[:pathlist]
@@ -593,7 +664,7 @@ module RDF::N3
 
       pathitem = expression[:pathitem]
       pathtail = expression[:pathtail]
-      
+
       direction_list = [expression[:direction], expression[:directiontail]].flatten.compact
 
       pathtail.each do |pred|
@@ -612,7 +683,7 @@ module RDF::N3
     def process_uri(uri)
       uri(base_uri, RDF::NTriples.unescape(uri))
     end
-    
+
     def process_qname(tok)
       if tok.include?(":")
         prefix, name = tok.split(":")
@@ -639,7 +710,8 @@ module RDF::N3
         log_debug('process_qname(bnode)', name, depth: depth)
         # If we're in a formula, create a non-distigushed variable instead
         if @formulae.last
-          univar(name, distinguished: false)
+          var = find_var(@formulae.last, name) || univar(term)
+          add_var_to_formula(formulae.last, var)
         else
           bnode(name)
         end
@@ -651,7 +723,7 @@ module RDF::N3
       log_debug('process_qname', depth: depth) {uri.inspect}
       uri
     end
-    
+
     # Add values to production data, values aranged as an array
     def add_prod_data(sym, value)
       case @prod_data.last[sym]
@@ -714,7 +786,7 @@ module RDF::N3
         raise RDF::ReaderError, "unqualified keyword '#{kw}' used without @keyword directive" if validate?
       end
     end
-    
+
     # Create URIs
     def uri(value, append = nil)
       value = RDF::URI(value)
@@ -722,20 +794,36 @@ module RDF::N3
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
       value = RDF::URI.intern(value, {}) if intern?
-      
-      # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
-      # the current formula
-      var = @variables[value.to_s]
-      value = var.var if var
+
+      # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than the current formula
+      var = find_var(@formulae.last, value)
+      value = var if var
 
       value
     end
-    
+
     def ns(prefix, suffix)
       base = prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
       log_debug("ns", depth: depth) {"base: '#{base}', suffix: '#{suffix}'"}
       uri(base + suffix.to_s)
+    end
+
+    # Find any variable that may be defined in the formula identified by `bn`
+    # @param [RDF::Node] bn
+    # @param [#to_s] name
+    # @return [RDF::Query::Variable]
+    def find_var(bn, name)
+      ((@variables[bn] ||= {})[name.to_s] ||= []).last
+    end
+
+    # Add a variable to the formula identified by `bn`, returning the formula
+    # @param [RDF::Node] bn
+    # @param [RDF::Query::Variable] var
+    # @return [RDF::Query::Variable]
+    def add_var_to_formula(bn, var)
+      ((@variables[bn] ||= {})[var.name.to_s] ||= []) << var
+      var
     end
   end
 end

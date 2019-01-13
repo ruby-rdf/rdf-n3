@@ -20,7 +20,7 @@ module RDF::N3
         if todo_stack.last[:terms].nil?
           todo_stack.last[:terms] = []
           tok = self.token
-          #log_debug("parse tok: '#{tok}'", depth: depth) {"prod #{todo_stack.last[:prod]}"}
+          log_debug("parse tok: '#{tok}'", depth: depth) {"prod #{todo_stack.last[:prod]}"}
 
           # Got an opened production
           onStart(abbr(todo_stack.last[:prod]))

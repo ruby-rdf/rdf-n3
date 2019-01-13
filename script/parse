@@ -5,28 +5,26 @@ require "bundler/setup"
 require 'logger'
 require 'rdf/n3'
 require 'rdf/ntriples'
+require 'rdf/trig'
 require 'getoptlong'
 require 'open-uri'
 
 def run(input, options)
+  require 'profiler' if options[:profile]
+
   reader_class = RDF::Reader.for(options[:input_format].to_sym)
   raise "Reader not found for #{options[:input_format]}" unless reader_class
 
-  prefixes = {}
   start = Time.new
   num = 0
-  if options[:parse_only]
-    include RDF::N3::Meta
-    include RDF::N3::Parser
-    puts "\nparse #{input.read}---\n\n" unless options[:quiet]
-    input.rewind
-    if options[:quiet]
-      $stdout = StringIO.new
-    end
-    test(input, BRANCHES, REGEXPS)
-    if options[:quiet]
-      $stdout = STDOUT
-      print "."
+  Profiler__::start_profile if options[:profile]
+  if options[:think]
+    # Parse into a new reasoner and evaluate
+    reader_class.new(input, options[:parser_options]) do |reader|
+      reasoner = RDF::N3::Reasoner.new(input, options[:parser_options])
+      repo = reasoner.execute(options)
+      num = repo.count
+      options[:output].puts repo.dump(options[:output_format], base_uri: options[:base_uri], prefixes: reader.prefixes, standard_prefixes: true)    
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
     reader_class.new(input, options[:parser_options]).each do |statement|
@@ -39,6 +37,10 @@ def run(input, options)
        options[:output].puts statement.to_ntriples
       end
     end
+  elsif options[:output_format] == :sxp
+    reader_class.new(input, options[:parser_options]) do |reader|
+      SXP::Generator.print(reader.to_sxp_bin)
+    end
   elsif options[:output_format] == :inspect
     reader_class.new(input, options[:parser_options]).each do |statement|
       num += 1
@@ -49,6 +51,10 @@ def run(input, options)
     g = RDF::Graph.new << r
     num = g.count
     options[:output].puts g.dump(options[:output_format], base_uri: options[:base_uri], prefixes: r.prefixes, standard_prefixes: true)
+  end
+  if options[:profile]
+    Profiler__::stop_profile
+    Profiler__::print_profile($stderr)
   end
   puts
   secs = Time.new - start
@@ -72,41 +78,75 @@ parser_options = {
 
 options = {
   parser_options: parser_options,
+  logger: logger,
   output: STDOUT,
   output_format: :ntriples,
   input_format: :n3,
 }
 input = nil
 
-opts = GetoptLong.new(
-  ["--dbg", GetoptLong::NO_ARGUMENT],
-  ["--errors", GetoptLong::NO_ARGUMENT],
-  ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
-  ["--canonicalize", GetoptLong::NO_ARGUMENT],
-  ["--format", GetoptLong::REQUIRED_ARGUMENT],
-  ["--input-format", GetoptLong::REQUIRED_ARGUMENT],
-  ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT],
-  ["--profile", GetoptLong::NO_ARGUMENT],
-  ["--progress", GetoptLong::NO_ARGUMENT],
-  ["--quiet", GetoptLong::NO_ARGUMENT],
-  ["--uri", GetoptLong::REQUIRED_ARGUMENT],
-  ["--validate", GetoptLong::NO_ARGUMENT],
-  ["--verbose", GetoptLong::NO_ARGUMENT]
-)
+OPT_ARGS = [
+  ["--apply", GetoptLong::REQUIRED_ARGUMENT, "Apply rules from specified file"],
+  ["--canonicalize", GetoptLong::NO_ARGUMENT, "Canonize all terms"],
+  ["--data", GetoptLong::NO_ARGUMENT, "Remove all except plain RDF triples (formulae, forAll, etc)v"],
+  ["--debug", GetoptLong::NO_ARGUMENT, "Debugging output"],
+  ["--errors", GetoptLong::NO_ARGUMENT, "Display invalid statements"],
+  ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT, "Run against source in argument"],
+  ["--format", GetoptLong::REQUIRED_ARGUMENT, "Output format, any RDF format symbol, sxp, or inspect"],
+  ["--help", "-?", GetoptLong::NO_ARGUMENT, "print this message"],
+  ["--input-format", GetoptLong::REQUIRED_ARGUMENT, "Format of the input file, defaults to n3"],
+  ["--info", GetoptLong::NO_ARGUMENT, "Show progress on execution"],
+  ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT, "Save output to file"],
+  ["--profile", GetoptLong::NO_ARGUMENT, "Show an execution profile"],
+  ["--quiet", GetoptLong::NO_ARGUMENT, "Do not show parser output"],
+  ["--rules", GetoptLong::NO_ARGUMENT, "Run rules adding to the store"],
+  ["--think", GetoptLong::NO_ARGUMENT, "Run rules until until no more triples generated"],
+  ["--uri", GetoptLong::REQUIRED_ARGUMENT, "Default base URI"],
+  ["--validate", GetoptLong::NO_ARGUMENT, "Run parser in strict validation mode"],
+  #["--verbose", GetoptLong::NO_ARGUMENT, "Verbose output"],
+]
+
+def usage
+  STDERR.puts %{
+    n3 version #{RDF::N3::VERSION}
+    Exersize N3 parser/reasoner
+    
+    Usage: #{$0} [options] file ...
+  }.gsub(/^    /, '')
+  width = OPT_ARGS.map do |o|
+    l = o.first.length
+    l += o[1].length + 2 if o[1].is_a?(String)
+    l
+  end.max
+  OPT_ARGS.each do |o|
+    s = "  %-*s  " % [width, (o[1].is_a?(String) ? "#{o[0,2].join(', ')}" : o[0])]
+    s += o.last
+    STDERR.puts s
+  end
+  exit(1)
+end
+
+opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
+
 opts.each do |opt, arg|
   case opt
-  when '--dbg'          then logger.level = Logger::DEBUG
+  when '--apply'        then # Read rules
+  when "--data"         then options[:data] = true
+  when '--debug'        then logger.level = Logger::DEBUG
   when '--canonicalize' then parser_options[:canonicalize] = true
   when '--errors'       then options[:errors] = true
   when '--execute'      then input = arg
   when '--format'       then options[:output_format] = arg.to_sym
+  when "--help"         then usage()
+  when '--info'         then logger.level = Logger::INFO
   when '--input-format' then options[:input_format] = arg.to_sym
   when '--output'       then options[:output] = File.open(arg, "w")
   when '--profile'      then options[:profile] = true
-  when '--progress'     then logger.level = Logger::INFO
   when '--quiet'
     options[:quiet] = true
     logger.level = Logger::FATAL
+  when '--rules'        then options[:rules] = true
+  when '--think'        then options[:think] = true
   when '--uri'          then parser_options[:base_uri] = arg
   when '--validate'     then parser_options[:debug] ||= 1
   when '--verbose'      then $verbose = true

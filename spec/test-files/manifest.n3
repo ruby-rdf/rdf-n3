@@ -1,0 +1,153 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> .
+@prefix rdft: <http://www.w3.org/ns/rdftest#> .
+@prefix test: <http://www.w3.org/2000/10/swap/test.n3#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix :    <#>.
+@prefix x:   <#>.
+
+<>  a mf:Manifest ;
+    rdfs:label "Notation3 tests" ;
+    mf:entries
+    (
+      # From swap/test/includes
+      :listin :bnode
+
+      # From swap/test/list
+      :t1018b1 :t1018b2 :t1031 :t2004u2 :t2004u3 :t2004u4 :t2004u5 :t2005 :t2006 :t2007
+    ) .
+
+# List tests from swap/tests/includes
+
+:listin a test:CwmTest;
+  mf:name      "list membership" ;
+  rdfs:comment "Builtins for list membership, binding multiple values." ;
+  mf:action <list-in.n3>;
+  mf:result <list-in-ref.n3>;
+  test:options [test:think true; test:data true;] .
+
+:bnode a test:CwmTest;
+  mf:name      "list membership" ;
+  rdfs:comment "Builtins for list membership, binding multiple values." ;
+  mf:action <bnodeConclude.n3>;
+  mf:result <bnode-conclude-ref.n3>;
+  test:options [test:think true; test:data true;] .
+
+# List tests from swap/test/list
+
+:t1018b1 a test:CwmTest;
+  mf:name      "list-bug1.n3" ;
+  rdfs:comment "List processing bug check 1" ;
+  mf:action <list-bug1.n3>;
+  mf:result <list-bug1-ref.n3>;
+  test:options [] .
+
+:t1018b2 a test:CwmTest;
+  mf:name      "list-bug2.n3" ;
+  rdfs:comment "List processing bug check 2" ;
+  mf:action <list-bug2.n3>;
+  mf:result <list-bug2-ref.n3>;
+  test:options [] .
+
+:t1031 a test:CwmTest;
+  mf:name      "li-r1.n3" ;
+  rdfs:comment "Inference using lists" ;
+  mf:action <r1.n3>;
+  mf:result <r1-ref.n3>;
+  test:options [test:think true;] .
+
+:t2004u2 a test:CwmTest;
+  mf:name      "list-unify2.n3" ;
+  rdfs:comment "List unification 2 - variable in list" ;
+  mf:action <unify2.n3>;
+  mf:result <unify2-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2004u3 a test:CwmTest;
+  mf:name      "list-unify3.n3" ;
+  rdfs:comment "List unification 3 - nested lists" ;
+  mf:action <unify3.n3>;
+  mf:result <unify3-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2004u4 a test:CwmTest;
+  mf:name      "list-unify4.n3" ;
+  rdfs:comment "List unification 4 - nested lists" ;
+  mf:action <unify4.n3>;
+  mf:result <unify4-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2004u5 a test:CwmTest;
+  mf:name      "list-unify5.n3" ;
+  rdfs:comment "List unification 5 - multiple values" ;
+  mf:action <unify5.n3>;
+  mf:result <unify5-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2005 a test:CwmTest;
+  mf:name      "append-out.n3" ;
+  rdfs:comment "Iterative ops on lists" ;
+  mf:action <append.n3>;
+  mf:result <append-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2006 a test:CwmTest;
+  mf:name      "list-last.n3" ;
+  rdfs:comment "last, in builtins on lists" ;
+  mf:action <last.n3>;
+  mf:result <last-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+:t2007 a test:CwmTest;
+  mf:name      "list-builtin_generated_match.n3" ;
+  rdfs:comment "last, in builtins on lists" ;
+  mf:action <builtin_generated_match.n3>;
+  mf:result <builtin_generated_match-ref.n3>;
+  test:options [test:think true; test:data true] .
+
+####
+# Test Vocabulary
+
+test:apply a rdf:Property;
+  rdfs:comment "Read rules from foo, apply to store, adding conclusions to store";
+  rdfs:domain test:Options;
+  rdfs:range rdfs:Resource;
+  .
+
+test:data a rdf:Property;
+  rdfs:comment "Remove all except plain RDF triples (formulae, forAll, etc)";
+  rdfs:domain test:Options;
+  rdfs:range xsd:boolean;
+  .
+
+test:filter a rdf:Property;
+  rdfs:comment "Read rules from foo, apply to store, REPLACING store with conclusions";
+  rdfs:domain test:Options;
+  rdfs:range rdfs:Resource;
+  .
+
+test:patch a rdf:Property;
+  rdfs:comment "Read patches from foo, applying insertions and deletions to store";
+  rdfs:domain test:Options;
+  rdfs:range rdfs:Resource;
+  .
+
+test:options a rdf:Property;
+  rdfs:domain test:CwmTest;
+  rdfs:range test:Options;
+  rdfs:comment "Options for running tests";
+  .
+
+test:rules a rdf:Property;
+  rdfs:comment "Apply rules in store to store, adding conclusions to store";
+  rdfs:domain test:Options;
+  rdfs:domain xsd:boolean;
+  .
+
+test:think a rdf:Property;
+  rdfs:comment "as test:rules but continue until no more rule matches (or forever!)";
+  rdfs:domain test:Options;
+  rdfs:domain xsd:boolean;
+  .

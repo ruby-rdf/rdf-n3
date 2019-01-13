@@ -395,6 +395,22 @@ describe "RDF::N3::Reader" do
         )
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
       end
+
+      it "should generate inverse predicate for 'is xxx of' with blankNodePropertyList" do
+        n3 = %([ is :prop of :George])
+        nt = %(
+        <http://a/b#George> <http://a/b#prop> _:bn .
+        )
+        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
+      end
+
+      it "should generate inverse predicate for 'is xxx of' with bnode" do
+        n3 = %(_:bn is :prop of :George.)
+        nt = %(
+        <http://a/b#George> <http://a/b#prop> _:bn .
+        )
+        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger)
+      end
       
       it "should generate predicate for 'has xxx'" do
         n3 = %(@prefix a: <http://foo/a#> . a:b has :pred a:c .)
@@ -481,7 +497,7 @@ describe "RDF::N3::Reader" do
         n3 = %(@forSome :x . :x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
-        expect(statement.subject).to be_node
+        expect(statement.subject).to be_variable
         expect(statement.predicate.to_s).to eq "http://a/b#y"
         expect(statement.object.to_s).to eq "http://a/b#z"
       end
@@ -490,9 +506,9 @@ describe "RDF::N3::Reader" do
         n3 = %(@forSome :x, :y, :z . :x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
-        expect(statement.subject).to be_node
-        expect(statement.predicate).to be_node
-        expect(statement.object).to be_node
+        expect(statement.subject).to be_variable
+        expect(statement.predicate).to be_variable
+        expect(statement.object).to be_variable
         expect(statement.subject).not_to equal statement.predicate
         expect(statement.object).not_to equal statement.predicate
         expect(statement.predicate).not_to equal statement.object
@@ -580,7 +596,7 @@ describe "RDF::N3::Reader" do
         :bar :d :c.
         :a :d :c.
         )
-        reader = RDF::N3::Reader.new(n3)
+        reader = RDF::N3::Reader.new(n3, validate: true)
         reader.each {|statement|}
         expect(reader.prefixes).to eq({
           rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -872,15 +888,36 @@ describe "RDF::N3::Reader" do
       it "creates an RDF::Node instance for formula" do
         n3 = %(:a :b {})
         nq = %(:a :b _:c .)
-        result = parse(n3, graph: @repo, base_uri: "http://a/b")
-        expected = parse(nq, graph: @repo, base_uri: "http://a/b")
+        result = parse(n3, repo: @repo, base_uri: "http://a/b")
+        expected = parse(nq, repo: @repo, base_uri: "http://a/b")
         expect(result).to be_equivalent_graph(expected, logger: logger)
       end
 
       it "adds statements with graph_name" do
         n3 = %(:a :b {[:c :d]})
         trig = %(<#a> <#b> _:c . _:c {[<#c> <#d>] .})
-        result = parse(n3, graph: @repo, base_uri: "http://a/b")
+        result = parse(n3, repo: @repo, base_uri: "http://a/b")
+        expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
+        expect(result).to be_equivalent_graph(expected, logger: logger)
+      end
+
+      it "creates quads for patterns when added to a repository" do
+        n3 = %(
+          @prefix x: <http://example.org/x-ns/#> .
+          @prefix log: <http://www.w3.org/2000/10/swap/log#> .
+          @prefix dc: <http://purl.org/dc/elements/1.1/#> .
+          { [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] } a log:falsehood .
+        )
+        trig = %(
+          @prefix x: <http://example.org/x-ns/#> .
+          @prefix log: <http://www.w3.org/2000/10/swap/log#> .
+          @prefix dc: <http://purl.org/dc/elements/1.1/#> .
+          _:f a log:falsehood .
+          _:f {
+            [ x:firstname  "Ora" ] dc:wrote [ dc:title  "Moby Dick" ] .
+          }
+        )
+        result = parse(n3, repo: @repo, base_uri: "http://a/b")
         expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
         expect(result).to be_equivalent_graph(expected, logger: logger)
       end
@@ -906,7 +943,7 @@ describe "RDF::N3::Reader" do
             # ENDS
           )
           @repo = RDF::Repository.new
-          parse(n3, graph: @repo, base_uri: "http://a/b")
+          parse(n3, repo: @repo, base_uri: "http://a/b")
         end
 
         it "assumption graph has 2 statements" do
@@ -1234,9 +1271,9 @@ EOF
       validate: false,
       canonicalize: false,
     }.merge(options)
-    graph = options[:graph] || RDF::Graph.new
-    RDF::N3::Reader.new(input, options).each do |statement|
-      graph << statement
+    graph = options[:repo] || RDF::Repository.new
+    RDF::N3::Reader.new(input, options).each_pattern do |pattern|
+      graph << pattern
     end
     graph
   end

@@ -3,13 +3,12 @@ $:.unshift File.dirname(__FILE__)
 
 require "bundler/setup"
 require 'rspec'
-require 'bigdecimal'  # XXX Remove Me
+require 'matchers'
+require 'rdf/isomorphic'
 require 'rdf/n3'
 require 'rdf/ntriples'
 require 'rdf/spec'
 require 'rdf/spec/matchers'
-require 'matchers'
-require 'rdf/isomorphic'
 require 'yaml'    # XXX should be in open-uri/cached
 
 ::RSpec.configure do |c|
@@ -18,6 +17,12 @@ require 'yaml'    # XXX should be in open-uri/cached
   c.exclusion_filter = {
     ruby: lambda { |version| !(RUBY_VERSION.to_s =~ /^#{version.to_s}/) },
   }
+end
+
+module RDF
+  module Isomorphic
+    alias_method :==, :isomorphic_with?
+  end
 end
 
 # Heuristically detect the input stream
