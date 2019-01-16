@@ -476,7 +476,7 @@ describe "RDF::N3::Reader" do
     context "patterns" do
       it "substitutes variable for URI with @forAll" do
         n3 = %(@forAll :x . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b", patterns: true)
+        g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
         expect(statement.predicate.to_s).to eq "http://a/b#y"
@@ -485,7 +485,7 @@ describe "RDF::N3::Reader" do
 
       it "substitutes variable for URIs with @forAll" do
         n3 = %(@forAll :x, :y, :z . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b", patterns: true)
+        g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
         expect(statement.predicate).to be_variable
@@ -497,7 +497,7 @@ describe "RDF::N3::Reader" do
 
       it "substitutes node for URI with @forEach" do
         n3 = %(@forSome :x . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b", patterns: true)
+        g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable, logger.to_s
         expect(statement.predicate.to_s).to eq "http://a/b#y"
@@ -506,7 +506,7 @@ describe "RDF::N3::Reader" do
 
       it "substitutes node for URIs with @forEach" do
         n3 = %(@forSome :x, :y, :z . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b", patterns: true)
+        g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
         expect(statement.predicate).to be_variable
@@ -1274,14 +1274,8 @@ EOF
       canonicalize: false,
     }.merge(options)
     graph = options[:repo] || RDF::Repository.new
-    if options[:patterns]
-      RDF::N3::Reader.new(input, options).each_pattern do |statement|
-        graph << statement
-      end
-    else
-      RDF::N3::Reader.new(input, options).each_statement do |statement|
-        graph << statement
-      end
+    RDF::N3::Reader.new(input, options).each_statement do |statement|
+      graph << statement
     end
     graph
   end

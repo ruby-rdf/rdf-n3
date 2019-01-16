@@ -101,11 +101,11 @@ module RDF::N3
     end
 
     ##
-    # Iterates over both statements and patterns.
-    # @yield [pattern]
-    # @yieldparam [RDF::Pattern] pattern
+    # Iterates the given block for each RDF statement in the input.
+    # @yield  [statement]
+    # @yieldparam [RDF::Statement] statement
     # @return [void]
-    def each_pattern(&block)
+    def each_statement(&block)
       if block_given?
         @callback = block
 
@@ -113,43 +113,6 @@ module RDF::N3
 
         if validate? && log_statistics[:error]
           raise RDF::ReaderError, "Errors found during processing"
-        end
-      end
-      enum_for(:each_pattern)
-    end
-
-    ##
-    # Iterates the given block for each RDF statement in the input.
-    #
-    # @yield  [statement]
-    # @yieldparam [RDF::Statement] statement
-    # @return [void]
-    def each_statement
-      if block_given?
-        each_pattern do |pattern|
-          # Turn patterns into statements through simple BNode replacement
-          if pattern.is_a?(RDF::Query::Pattern) || pattern.variable?
-            yield RDF::Statement.new(
-              *pattern.to_triple.map do |r|
-                # If bound, replace variable with it's value, otherwise
-                # create a URI.
-                if r.variable?
-                  if r.bound?
-                    r.value
-                  elsif r.distinguished?
-                    RDF::URI(r.name.to_s)
-                  else
-                    bnode(r.name)
-                  end
-                else
-                  r
-                end
-              end,
-              graph_name: pattern.graph_name
-            )
-          else
-            yield pattern
-          end
         end
       end
       enum_for(:each_statement)
@@ -186,7 +149,7 @@ module RDF::N3
         # Add patterns to appropiate formula based on graph_name,
         # and replace subject and object bnodes which identify
         # named graphs with those formula
-        each_pattern do |pattern|
+        each_statement do |pattern|
           # A graph name indicates a formula. If not already allocated, create a new formula and use that for inserting statements or other operators
           form = formulae[pattern.graph_name] ||= begin
             Algebra::Formula.new(graph_name: pattern.graph_name, **@options)
