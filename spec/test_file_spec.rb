@@ -108,10 +108,16 @@ describe RDF::N3::Reader do
             pending "support for li:member"
           when *%w{t2006}
             pending "support for li:last"
-          when *%w{t1018b2}
-            pending "support for string:concat"
-          when *%w{t2005}
+          when *%w{t1018b2 t103 t104 t105}
+            pending "support for string"
+          when *%w{t2005 t555}
             pending "understanding output filtering"
+          when *%w{t06proof}
+            pending "support for math"
+          when *%w{t01}
+            pending "support for log:supports"
+          when *%w{t553 t554}
+            pending "support for inference over quoted graphs"
           end
 
           reader = RDF::N3::Reader.new(t.input,
