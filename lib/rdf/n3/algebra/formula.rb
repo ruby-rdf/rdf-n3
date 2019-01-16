@@ -30,11 +30,8 @@ module RDF::N3::Algebra
     def execute(queryable, **options, &block)
       log_debug {"formula #{graph_name} #{operands.to_sxp}"}
 
-      patterns = operands.select {|op| op.is_a?(RDF::Statement) && op.variable?}
-      sub_ops = operands.reject {|op| op.is_a?(RDF::Statement)}
-
-      query = RDF::Query.new(patterns)
-      @solutions = queryable.query(query, **options)
+      @query ||= RDF::Query.new(patterns)
+      @solutions = queryable.query(@query, **options)
 
       # Join solutions from other operands
       log_depth do
@@ -61,11 +58,15 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(&block)
-      @solutions ||= RDF::Query::Solutions.new
+      @solutions ||= begin
+        # If there are no solutions, create bindings for all existential variables using the variable name as the bnode identifier
+        RDF::Query::Solutions.new(
+          [RDF::Query::Solution.new(
+            patterns.ndvars.inject({}) {|memo, v| memo.merge(v.name => RDF::Node.intern(v.name))}
+          )]
+        )
+      end
       log_debug {"formula #{graph_name} each #{@solutions.inspect}"}
-      constants = operands.select {|op| op.is_a?(RDF::Statement) && op.constant?}
-      patterns = operands.select {|op| op.is_a?(RDF::Statement) && op.variable?}
-      sub_ops = operands.reject {|op| op.is_a?(RDF::Statement)}
 
       # Yield constant statements/patterns
       constants.each do |pattern|
@@ -115,6 +116,47 @@ module RDF::N3::Algebra
     # Graph name associated with this formula
     # @return [RDF::Resource]
     def graph_name; @options[:graph_name]; end
+
+    ##
+    # Statements memoizer
+    def statements
+      # BNodes in statements are existential variables
+      @statements ||= operands.
+        select {|op| op.is_a?(RDF::Statement)}.
+        map do |pattern|
+
+        terms = {}
+        [:subject, :predicate, :object].each do |r|
+          terms[r] = case o = pattern.send(r)
+          when RDF::Node then RDF::Query::Variable.new(o.id, distinguished: false)
+          else                o
+          end
+        end
+
+        RDF::Query::Pattern.from(terms)
+      end
+    end
+
+    ##
+    # Constants memoizer
+    def constants
+      # BNodes in statements are existential variables
+      @constants ||= statements.select(&:constant?)
+    end
+
+    ##
+    # Patterns memoizer
+    def patterns
+      # BNodes in statements are existential variables
+      @patterns ||= statements.reject(&:constant?)
+    end
+
+    ##
+    # Non-statement operands memoizer
+    def sub_ops
+      # BNodes in statements are existential variables
+      @sub_ops ||= operands.reject {|op| op.is_a?(RDF::Statement)}
+    end
 
     def to_sxp_bin
       @existentials = ndvars.uniq

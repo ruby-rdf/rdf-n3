@@ -629,7 +629,7 @@ module RDF::N3
 
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
-        bnode = @formulae.last ? univar(nil, distinguished: false) : bnode()
+        bnode = bnode()
         properties.each do |p|
           predicate = p[:verb]
           log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
@@ -649,27 +649,9 @@ module RDF::N3
         list_subjects = {}
         list.each_statement do |statement|
           next if statement.predicate == RDF.type && statement.object == RDF.List
-
-          # In formula, use variables instead of bnodes
-          subject = if @formulae.last && statement.subject.node?
-            list_subjects[statement.subject.id] ||= univar(statement.subject.id, distinguished: false)
-          else
-            statement.subject
-          end
-
-          object = if @formulae.last && statement.object.node? && statement.predicate == RDF.rest
-            list_subjects[statement.object.id] ||= univar(statement.object.id, distinguished: false)
-          else
-            statement.object
-          end
-          add_statement("anonnode(list)", subject, statement.predicate, object)
+          add_statement("anonnode(list)", statement.subject, statement.predicate, statement.object)
         end
-
-        if @formulae.last && list.subject.node?
-          list_subjects[list.subject.id] ||= univar(list.subject.id, distinguished: false)
-        else
-          list.subject
-        end
+        list.subject
       end
     end
 
@@ -729,12 +711,7 @@ module RDF::N3
       elsif prefix == '_'
         log_debug('process_qname(bnode)', name, depth: depth)
         # If we're in a formula, create a non-distigushed variable instead
-        if @formulae.last
-          var = find_var(@formulae.last, name) || univar(name, distinguished: false)
-          add_var_to_formula(formulae.last, name, var)
-        else
-          bnode(name)
-        end
+        bnode(name)
       else
         log_debug('process_qname(default_ns)', name, depth: depth)
         namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
