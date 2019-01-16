@@ -61,6 +61,7 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(&block)
+      @solutions ||= RDF::Query::Solutions.new
       log_debug {"formula #{graph_name} each #{@solutions.inspect}"}
       constants = operands.select {|op| op.is_a?(RDF::Statement) && op.constant?}
       patterns = operands.select {|op| op.is_a?(RDF::Statement) && op.variable?}
@@ -69,7 +70,7 @@ module RDF::N3::Algebra
       # Yield constant statements/patterns
       constants.each do |pattern|
         log_debug {"(formula constant) #{pattern.to_sxp}"}
-        block.call(RDF::Statement.from(pattern))
+        block.call(RDF::Statement.from(pattern, graph_name: graph_name))
       end
 
       # Yield patterns by binding variables
@@ -89,7 +90,7 @@ module RDF::N3::Algebra
 
           # Sanity checking on statement
           if statement.subject.nil? || statement.predicate.nil? || statement.object.nil? ||
-             statement.subject.literal? || statement.predicate.literal? ||
+             statement.predicate.literal? ||
              statement.subject.is_a?(SPARQL::Algebra::Operator) ||
              statement.object.is_a?(SPARQL::Algebra::Operator)
             log_debug {"(formula skip) #{statement.to_sxp}"}

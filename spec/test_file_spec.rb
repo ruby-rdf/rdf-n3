@@ -105,10 +105,20 @@ describe RDF::N3::Reader do
 
           case t.id.split('#').last
           when *%w{listin bnode}
-            #pending "support for li:member"
+            pending "support for li:member"
+          when *%w{t2006}
+            pending "support for li:last"
+          when *%w{t1018b2}
+            pending "support for string:concat"
+          when *%w{t2005}
+            pending "understanding output filtering"
           end
 
           reader = RDF::N3::Reader.new(t.input,
+              base_uri:  t.base,
+              logger: t.logger)
+
+          reasoner = RDF::N3::Reasoner.new(t.input,
               base_uri:  t.base,
               logger: t.logger)
 
@@ -116,7 +126,11 @@ describe RDF::N3::Reader do
 
           if t.positive_test?
             begin
-              repo << reader
+              if t.options["think"]
+                repo = reasoner.execute(logger: t.logger, think: t.options['think'])
+              else
+                repo << reader
+              end
             rescue Exception => e
               expect(e.message).to produce("Not exception #{e.inspect}", t)
             end

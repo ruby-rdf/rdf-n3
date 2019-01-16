@@ -42,21 +42,21 @@
   rdfs:comment "List processing bug check 1" ;
   mf:action <list-bug1.n3>;
   mf:result <list-bug1-ref.n3>;
-  test:options [] .
+  test:options [test:think true; test:data true;] .
 
 :t1018b2 a test:CwmTest;
   mf:name      "list-bug2.n3" ;
   rdfs:comment "List processing bug check 2" ;
   mf:action <list-bug2.n3>;
   mf:result <list-bug2-ref.n3>;
-  test:options [] .
+  test:options [test:think true; test:data true;] .
 
 :t1031 a test:CwmTest;
   mf:name      "li-r1.n3" ;
   rdfs:comment "Inference using lists" ;
   mf:action <r1.n3>;
   mf:result <r1-ref.n3>;
-  test:options [test:think true;] .
+  test:options [test:think true; test:data true;] .
 
 :t2004u2 a test:CwmTest;
   mf:name      "list-unify2.n3" ;

@@ -2,7 +2,8 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "rdf",              github: "ruby-rdf/rdf", branch: "develop"
+#gem "rdf",              github: "ruby-rdf/rdf", branch: "develop"
+gem "rdf",              path: '../rdf'
 
 group :development do
   gem "rdf-spec",       github: "ruby-rdf/rdf-spec",        branch: "develop"

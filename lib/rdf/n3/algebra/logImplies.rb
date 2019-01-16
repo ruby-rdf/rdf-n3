@@ -41,6 +41,7 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(&block)
+      @solutions ||= RDF::Query::Solutions.new
       log_debug {"logImplies each #{@solutions.inspect}"}
       _, object = operands
 
@@ -48,8 +49,13 @@ module RDF::N3::Algebra
       log_depth do
         object.solutions = @solutions
 
-        # Yield statements
-        object.each(&block)
+        # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
+        if !object.solutions.empty?
+          # Yield statements into the default graph
+          object.each do |statement|
+            block.call(RDF::Statement.from(statement.to_triple))
+          end
+        end
       end
     end
   end

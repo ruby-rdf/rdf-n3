@@ -39,6 +39,7 @@ module RDF::N3
     # @yieldreturn [void] ignored
     # @return [RDF::N3::Reasoner]
     def initialize(input, **options, &block)
+      @options = options
       @formula = case input
       when RDF::N3::Algebra::Formula then input
       else RDF::N3::Reader.new(input, **options).formula
@@ -68,25 +69,24 @@ module RDF::N3
 
       # Evaluate once to create initial triples for reasoning
       log_info("reasoner: seed")
-      formula.execute(results, **options)
       results << formula
 
       # If thinking, continuously execute until results stop growing
       if options[:think]
         count = 0
-        log_info("reasoner: think start", options) { "count: #{results.count}"}
+        log_info("reasoner: think start") { "count: #{count}"}
         while results.count > count
+          count = results.count
           log_depth {formula.execute(results, **options)}
           results << formula
-          count = results.count
         end
-        log_info("reasoner: think end") { "count: #{results.count}"}
+        log_info("reasoner: think end") { "count: #{count}"}
       else
         # Run one iteration
-        log_info("reasoner: apply start") { "count: #{results.count}"}
+        log_info("reasoner: apply start") { "count: #{count}"}
         log_depth {formula.execute(results, **options)}
         results << formula
-        log_info("reasoner: apply end") { "count: #{results.count}"}
+        log_info("reasoner: apply end") { "count: #{count}"}
       end
 
       log_debug("reasoner: results") {results.to_sxp}

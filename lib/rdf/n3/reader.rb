@@ -333,7 +333,7 @@ module RDF::N3
       forSome = Array(pd[:symbol])
       forSome.each do |term|
         var = univar(term, distinguished: false)
-        add_var_to_formula(@formulae.last, var)
+        add_var_to_formula(@formulae.last, term, var)
       end
     end
 
@@ -417,9 +417,9 @@ module RDF::N3
         # universally quantified not in the formula but in its parent formula
         uri = process_qname(tok.sub('?', ':'))
         var = uri.variable? ? uri : univar(uri)
-        add_var_to_formula(@formulae[-2], var)
+        add_var_to_formula(@formulae[-2], uri, var)
         # Also add var to this formula
-        add_var_to_formula(@formulae.last, var)
+        add_var_to_formula(@formulae.last, uri, var)
 
         add_prod_data(:symbol, var)
       when "boolean"
@@ -434,6 +434,7 @@ module RDF::N3
         add_prod_data(:symbol, symbol)
       when "{"
         # A new formula, push on a node as a named graph
+        # XXX use existential if embedded?
         node = RDF::Node.new
         @formulae << node
         @formulae_nodes[node] = true
@@ -575,7 +576,7 @@ module RDF::N3
       pd = @prod_data.pop
       forAll = Array(pd[:symbol])
       forAll.each do |term|
-        add_var_to_formula(@formulae.last, univar(term))
+        add_var_to_formula(@formulae.last, term, univar(term))
       end
     end
 
@@ -628,7 +629,7 @@ module RDF::N3
 
       if anonnode[:propertylist]
         properties = anonnode[:propertylist]
-        bnode = RDF::Node.new
+        bnode = @formulae.last ? univar(nil, distinguished: false) : bnode()
         properties.each do |p|
           predicate = p[:verb]
           log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
@@ -645,11 +646,30 @@ module RDF::N3
       elsif anonnode[:pathlist]
         objects = Array(anonnode[:pathlist])
         list = RDF::List[*objects]
+        list_subjects = {}
         list.each_statement do |statement|
           next if statement.predicate == RDF.type && statement.object == RDF.List
-          add_statement("anonnode(list)", statement.subject, statement.predicate, statement.object)
+
+          # In formula, use variables instead of bnodes
+          subject = if @formulae.last && statement.subject.node?
+            list_subjects[statement.subject.id] ||= univar(statement.subject.id, distinguished: false)
+          else
+            statement.subject
+          end
+
+          object = if @formulae.last && statement.object.node? && statement.predicate == RDF.rest
+            list_subjects[statement.object.id] ||= univar(statement.object.id, distinguished: false)
+          else
+            statement.object
+          end
+          add_statement("anonnode(list)", subject, statement.predicate, object)
         end
-        list.subject
+
+        if @formulae.last && list.subject.node?
+          list_subjects[list.subject.id] ||= univar(list.subject.id, distinguished: false)
+        else
+          list.subject
+        end
       end
     end
 
@@ -710,8 +730,8 @@ module RDF::N3
         log_debug('process_qname(bnode)', name, depth: depth)
         # If we're in a formula, create a non-distigushed variable instead
         if @formulae.last
-          var = find_var(@formulae.last, name) || univar(term)
-          add_var_to_formula(formulae.last, var)
+          var = find_var(@formulae.last, name) || univar(name, distinguished: false)
+          add_var_to_formula(formulae.last, name, var)
         else
           bnode(name)
         end
@@ -738,8 +758,12 @@ module RDF::N3
 
     # Keep track of allocated BNodes
     def bnode(value = nil)
-      @bnode_cache ||= {}
-      @bnode_cache[value.to_s] ||= RDF::Node.new(value)
+      if value
+        @bnode_cache ||= {}
+        @bnode_cache[value.to_s] ||= RDF::Node.new(value)
+      else
+        RDF::Node.new
+      end
     end
 
     def univar(label, distinguished: true)
@@ -747,9 +771,8 @@ module RDF::N3
         @unnamed_label ||= "var0"
         label = @unnamed_label = @unnamed_label.succ
       end
-      v = RDF::Query::Variable.new(label.to_s)
-      v.distinguished = distinguished
-      v
+      #label = "_:#{label}" unless distinguished || label.start_with?('_:')
+      RDF::Query::Variable.new(label.to_s, distinguished: distinguished)
     end
 
     # add a pattern or statement
@@ -767,7 +790,7 @@ module RDF::N3
       else
         RDF::Statement(subject, predicate, object)
       end
-      log_debug(node, depth: depth) {statement.to_s}
+      log_debug("statement(#{node})", depth: depth) {statement.to_s}
       @callback.call(statement)
     end
 
@@ -810,19 +833,20 @@ module RDF::N3
     end
 
     # Find any variable that may be defined in the formula identified by `bn`
-    # @param [RDF::Node] bn
+    # @param [RDF::Node] bn name of formula
     # @param [#to_s] name
     # @return [RDF::Query::Variable]
-    def find_var(bn, name)
-      ((@variables[bn] ||= {})[name.to_s] ||= []).last
+    def find_var(sym, name)
+      (@variables[sym] ||= {}).fetch(name.to_s, []).last
     end
 
     # Add a variable to the formula identified by `bn`, returning the formula
-    # @param [RDF::Node] bn
+    # @param [RDF::Node] bn name of formula
+    # @param [#to_s] name of variable for lookup
     # @param [RDF::Query::Variable] var
     # @return [RDF::Query::Variable]
-    def add_var_to_formula(bn, var)
-      ((@variables[bn] ||= {})[var.name.to_s] ||= []) << var
+    def add_var_to_formula(bn, name, var)
+      ((@variables[bn] ||= {})[name.to_s] ||= []) << var
       var
     end
   end
