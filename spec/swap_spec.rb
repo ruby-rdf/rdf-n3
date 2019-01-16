@@ -14,7 +14,7 @@ describe RDF::N3::Reader do
             case t.name
             when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
               pending("Formulae inferrence not supported")
-            when *%w(n3_10006 n3_10009)
+            when *%w(n3_10003 n3_10006 n3_10009)
               pending("Verified test results are incorrect")
             when *%w(n3_10013)
               pending("numeric representation")
