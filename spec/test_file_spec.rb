@@ -54,6 +54,8 @@ module Fixtures
 
     class Entry < JSON::LD::Resource
       attr_accessor :logger
+      # For debug output formatting
+      def format; :n3; end
 
       def base
         action
