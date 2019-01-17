@@ -1,6 +1,7 @@
 # coding: utf-8
 require_relative 'spec_helper'
 require 'rdf/spec/writer'
+require 'rdf/vocab'
 
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
@@ -26,301 +27,283 @@ describe RDF::N3::Writer do
   end
 
   describe "simple tests" do
-    it "should use full URIs without base" do
-      input = %(<http://a/b> <http://a/c> <http://a/d> .)
-      serialize(input, nil, [%r(^<http://a/b> <http://a/c> <http://a/d> \.$)])
-    end
-
-    it "should use relative URIs with base" do
-      input = %(<http://a/b> <http://a/c> <http://a/d> .)
-      serialize(input, "http://a/",
-       [ %r(^@base <http://a/> \.$),
-        %r(^<b> <c> <d> \.$)]
-      )
-    end
-
-    it "should use qname URIs with prefix" do
-      input = %(<http://xmlns.com/foaf/0.1/b> <http://xmlns.com/foaf/0.1/c> <http://xmlns.com/foaf/0.1/d> .)
-      serialize(input, nil,
-        [%r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^foaf:b foaf:c foaf:d \.$)],
-        prefixes: { foaf: "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-
-    it "should use qname URIs with empty prefix" do
-      input = %(<http://xmlns.com/foaf/0.1/b> <http://xmlns.com/foaf/0.1/c> <http://xmlns.com/foaf/0.1/d> .)
-      serialize(input, nil,
-        [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :d \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    # see example-files/arnau-registered-vocab.rb
-    it "should use qname URIs with empty suffix" do
-      input = %(<http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> .)
-      serialize(input, nil,
-        [%r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^foaf: foaf: foaf: \.$)],
+    {
+      "full URIs without base" => {
+        input: %(<http://a/b> <http://a/c> <http://a/d> .),
+        regexp: [%r(^<http://a/b> <http://a/c> <http://a/d> \.$)],
+      },
+      "relative URIs with base" => {
+        input: %(<http://a/b> <http://a/c> <http://a/d> .),
+        regexp: [ %r(^@base <http://a/> \.$), %r(^<b> <c> <d> \.$)],
+        base_uri: "http://a/"
+      },
+      "qname URIs with prefix" => {
+        input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
+        regexp: [
+          %r(^@prefix ex: <http://example.com/> \.$),
+          %r(^ex:b ex:c ex:d \.$)
+        ],
+        prefixes: {ex: "http://example.com/"}
+      },
+      "qname URIs with empty prefix" => {
+        input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
+        regexp:  [
+          %r(^@prefix : <http://example.com/> \.$),
+          %r(^:b :c :d \.$)
+        ],
+        prefixes: {"" => "http://example.com/"}
+      },
+      # see example-files/arnau-registered-vocab.rb
+      "qname URIs with empty suffix" => {
+        input: %(<http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> .),
+        regexp:  [
+          %r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
+          %r(^foaf: foaf: foaf: \.$)
+        ],
         prefixes: { "foaf" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should not use qname with illegal local part" do
-      input = %(
-        @prefix db: <http://dbpedia.org/resource/> .
-        @prefix dbo: <http://dbpedia.org/ontology/> .
-        db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> .
-      )
-
-      serialize(input, nil,
-        [%r(^@prefix db: <http://dbpedia.org/resource/> \.$),
-        %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> \.$)],
+      },
+      "order properties" => {
+        input: %(
+          @prefix ex: <http://example.com/> .
+          @prefix dc: <http://purl.org/dc/elements/1.1/> .
+          @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+          ex:b ex:c ex:d .
+          ex:b dc:title "title" .
+          ex:b a ex:class .
+          ex:b rdfs:label "label" .
+        ),
+        regexp: [
+          %r(^ex:b a ex:class;$),
+          %r(ex:class;\s+rdfs:label "label")m,
+          %r("label";\s+ex:c ex:d)m,
+          %r(ex:d;\s+dc:title "title" \.$)m
+        ],
+      },
+      "object list" => {
+        input: %(@prefix ex: <http://example.com/> . ex:b ex:c ex:d, ex:e .),
+        regexp: [
+          %r(^@prefix ex: <http://example.com/> \.$),
+          %r(^ex:b ex:c ex:[de],\s+ex:[de] \.$)m,
+        ],
+      },
+      "property list" => {
+        input: %(@prefix ex: <http://example.com/> . ex:b ex:c ex:d; ex:e ex:f .),
+        regexp: [
+          %r(^@prefix ex: <http://example.com/> \.$),
+          %r(^ex:b ex:c ex:d;$),
+          %r(^\s+ex:e ex:f \.$)
+        ],
+      },
+      "bare anon" => {
+        input: %(@prefix ex: <http://example.com/> . [ex:a ex:b] .),
+        regexp: [%r(^\s*\[ ex:a ex:b\] \.$)],
+      },
+      "anon as subject" => {
+        input: %(@prefix ex: <http://example.com/> . [ex:a ex:b] ex:c ex:d .),
+        regexp: [
+          %r(^\s*\[\s*ex:a ex:b;$)m,
+          %r(^\s+ex:c ex:d\s*\] \.$)m
+        ],
+      },
+      "anon as object" => {
+        input: %(@prefix ex: <http://example.com/> . ex:a ex:b [ex:c ex:d] .),
+        regexp: [%r(^ex:a ex:b \[ ex:c ex:d\] \.$)],
+      },
+      "reuses BNode labels by default" => {
+        input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
+        regexp: [%r(^\s*_:a ex:b _:a \.$)]
+      },
+      "generated BNodes with :unique_bnodes" => {
+        input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
+        regexp: [%r(^\s*_:g\w+ ex:b _:g\w+ \.$)],
+        unique_bnodes: true
+      },
+      "standard prefixes" => {
+        input: %(
+          <a> a <http://xmlns.com/foaf/0.1/Person>;
+            <http://purl.org/dc/terms/title> "Person" .
+        ),
+        regexp: [
+          %r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
+          %r(^@prefix dc: <http://purl.org/dc/terms/> \.$),
+          %r(^<a> a foaf:Person;$),
+          %r(dc:title "Person" \.$),
+        ],
+        standard_prefixes: true, prefixes: {}
+      },
+      "should not use qname with illegal local part" => {
+        input: %(
+          @prefix db: <http://dbpedia.org/resource/> .
+          @prefix dbo: <http://dbpedia.org/ontology/> .
+          db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> .
+        ),
+        regexp: [
+          %r(^@prefix db: <http://dbpedia.org/resource/> \.$),
+          %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> \.$)
+        ],
         prefixes: {
           "db" => RDF::URI("http://dbpedia.org/resource/"),
           "dbo" => RDF::URI("http://dbpedia.org/ontology/")}
-      )
-    end
-
-    it "should order properties" do
-      input = %(
-        @prefix : <http://xmlns.com/foaf/0.1/> .
-        @prefix dc: <http://purl.org/dc/elements/1.1/> .
-        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-        :b :c :d .
-        :b dc:title "title" .
-        :b a :class .
-        :b rdfs:label "label" .
-      )
-      serialize(input, nil,
-        [
-          %r(^:b a :class;$),
-          %r(:class;\s+rdfs:label "label")m,
-          %r("label";\s+dc:title "title")m,
-          %r("title";\s+:c :d \.$)m
-        ],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/", dc: "http://purl.org/dc/elements/1.1/", rdfs: RDF::RDFS}
-      )
-    end
-    
-    it "should generate object list" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d, :e .)
-      serialize(input, nil,
-        [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :c :[de],\s+:[de] \.$)m],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate property list" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :b :c :d; :e :f .)
-      serialize(input, nil,
-        [%r(^@prefix : <http://xmlns.com/foaf/0.1/> \.$),
-        %r(^:b :[ce] :[df];\s+:[ce] :[df] \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-  end
-  
-  describe "anons" do
-    it "should generate bare anon" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . [:a :b] .)
-      serialize(input, nil,
-        [%r(^\s*\[ :a :b\] \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate anon as subject" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . [:a :b] :c :d .)
-      serialize(input, nil,
-        [%r(^\s*\[ :a :b;$),
-        %r(^\s+:c :d\] \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate anon as object" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b [:c :d] .)
-      serialize(input, nil,
-        [%r(^\s*\:a :b \[ :c :d\] \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-  end
-
-  describe "BNodes" do
-    let(:input) {%(@prefix : <http://xmlns.com/foaf/0.1/> . _:a :b _:a .)}
-    it "reuses BNode labels by default" do
-      serialize(input, nil,
-        [%r(^\s*_:a :b _:a \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    it "uses generated BNodes with :unique_bnodes" do
-      serialize(input, nil,
-        [%r(^\s*_:g\w+ :b _:g\w+ \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"},
-        unique_bnodes: true
-      )
+      }
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], params)
+      end
     end
   end
 
   describe "lists" do
-    it "should generate bare list" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . (:a :b) .)
-      serialize(input, nil,
-        [%r(^\(:a :b\) \.$)],
+    {
+      "bare list": {
+        input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) .),
+        regexp: [%r(^\(\s*ex:a ex:b\s*\) \.$)]
+      },
+      "literal list": {
+        input: %(@prefix ex: <http://example.com/> . ex:a ex:b ( "apple" "banana" ) .),
+        regexp: [%r(^ex:a ex:b \(\s*"apple" "banana"\s*\) \.$)]
+      },
+      "empty list": {
+        input: %(@prefix ex: <http://example.com/> . ex:a ex:b () .),
+        regexp: [%r(^ex:a ex:b \(\s*\) \.$)],
+        prefixes: { "" => RDF::Vocab::FOAF}
+      },
+      "should generate empty list(2)" => {
+        input: %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .),
+        regexp: [%r(^:emptyList (<.*sameAs>|owl:sameAs) \(\) \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-
-    it "should generate literal list" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b ( "apple" "banana" ) .)
-      serialize(input, nil,
-        [%r(^:a :b \("apple" "banana"\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate empty list" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :a :b () .)
-      serialize(input, nil,
-        [%r(^:a :b \(\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate empty list(2)" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .)
-      serialize(input, nil,
-        [%r(^:emptyList (<.*sameAs>|owl:sameAs) \(\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate empty list as subject" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . () :a :b .)
-      serialize(input, nil,
-        [%r(^\(\) :a :b \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate list as subject" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . (:a) :b :c .)
-      serialize(input, nil,
-        [%r(^\(:a\) :b :c \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-
-    it "should generate list of empties" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :listOf2Empties = (() ()) .)
-      serialize(input, nil,
-        [%r(^:listOf2Empties (<.*sameAs>|owl:sameAs) \(\(\) \(\)\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate list anon" do
-      input = %(@prefix : <http://xmlns.com/foaf/0.1/> . :twoAnons = ([a :mother] [a :father]) .)
-      serialize(input, nil,
-        [%r(^:twoAnons (<.*sameAs>|owl:sameAs) \(\[\s*a :(mother|father)\] \[\s*a :(mother|father)\]\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
-      )
-    end
-    
-    it "should generate owl:unionOf list" do
-      input = %(
-        @prefix : <http://xmlns.com/foaf/0.1/> .
-        @prefix owl: <http://www.w3.org/2002/07/owl#> .
-        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-        :a rdfs:domain [
-          a owl:Class;
-          owl:unionOf [
+      },
+      "empty list as subject": {
+        input: %(@prefix ex: <http://example.com/> . () ex:a ex:b .),
+        regexp: [%r(^\(\s*\) ex:a ex:b \.$)]
+      },
+      "list as subject": {
+        input: %(@prefix ex: <http://example.com/> . (ex:a) ex:b ex:c .),
+        regexp: [%r(^\(\s*ex:a\s*\) ex:b ex:c \.$)]
+      },
+      "list of empties": {
+        input: %(@prefix ex: <http://example.com/> . [ex:listOf2Empties (() ())] .),
+        regexp: [%r(\[\s*ex:listOf2Empties \(\s*\(\s*\) \(\s*\)\s*\)\s*\] \.$)]
+      },
+      "list anon": {
+        input: %(@prefix ex: <http://example.com/> . [ex:twoAnons ([a ex:mother] [a ex:father])] .),
+        regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)]
+      },
+      "owl:unionOf list": {
+        input: %(
+          @prefix ex: <http://example.com/> .
+          @prefix owl: <http://www.w3.org/2002/07/owl#> .
+          @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+          @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+          ex:a rdfs:domain [
             a owl:Class;
-            rdf:first :b;
-            rdf:rest [
+            owl:unionOf [
               a owl:Class;
-              rdf:first :c;
-              rdf:rest rdf:nil
+              rdf:first ex:b;
+              rdf:rest [
+                a owl:Class;
+                rdf:first ex:c;
+                rdf:rest rdf:nil
+              ]
             ]
-          ]
-        ] .
-      )
-      #$verbose = true
-      serialize(input, nil,
-        [
-          %r(:a rdfs:domain \[\s*a owl:Class;\s+owl:unionOf\s+\(:b\s+:c\)\]\s*\.$)m,
-          %r(@prefix : <http://xmlns.com/foaf/0.1/> \.),
+          ] .
+        ),
+        regexp: [
+          %r(ex:a rdfs:domain \[\s*a owl:Class;\s+owl:unionOf\s+\(\s*ex:b\s+ex:c\s*\)\s*\]\s*\.$)m,
+          %r(@prefix ex: <http://example.com/> \.),
           %r(@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \.),
-        ],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/", dfs: RDF::RDFS, owl: RDF::OWL, rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}
-      )
-      #$verbose = false
-    end
-
-    it "should generate list with first subject a URI" do
-      input = %(
-      <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
-      <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006741228480 .
-      _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
-      _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006737917560 .
-      _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
-      _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-      )
-      #$verbose = true
-      serialize(input, nil,
-        [
+        ]
+      },
+      "list with first subject a URI": {
+        input: %(
+          <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+          <http://example.com> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006741228480 .
+          _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+          _:g47006741228480 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g47006737917560 .
+          _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+          _:g47006737917560 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        ),
+        regexp: [
           %r(@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \.),
           %r(<http://example.com> rdf:first 1;),
-          %r(rdf:rest \(2 3\) \.),
+          %r(rdf:rest \(\s*2 3\s*\) \.),
         ],
         standard_prefixes: true
-      )
-      #$verbose = false
+      },
+      "list pattern without rdf:nil": {
+        input: %(
+          <http://example.com> <http://example.com/property> _:a .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
+          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
+        ),
+        regexp: [%r(<http://example.com> <http://example.com/property> \[),
+          %r(rdf:first "a";),
+          %r(rdf:rest \[),
+          %r(rdf:first "b";),
+          %r(rdf:rest \[\s*rdf:first "c"\s*\]),
+        ],
+        standard_prefixes: true
+      },
+      "list pattern with extra properties": {
+        input: %(
+          <http://example.com> <http://example.com/property> _:a .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+          _:a <http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest" .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
+          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
+          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        ),
+        regexp: [%r(<http://example.com> <http://example.com/property> \[),
+          %r(<http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest";),
+          %r(rdf:first "a";),
+          %r(rdf:rest \(\s*"b" "c"\s*\)),
+        ],
+        standard_prefixes: true
+      },
+      "list with empty list": {
+        input: %(
+          <http://example.com/a> <http://example.com/property> _:l1 .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        ),
+        regexp: [
+          %r(<http://example.com/a> <http://example.com/property> \(\s*\(\)\) .)
+        ],
+        standard_prefixes: true
+      },
+      "list with multiple lists": {
+        input: %(
+        <http://example.com/a> <http://example.com/property> _:l1 .
+        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:a .
+        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:l2 .
+        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:b .
+        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+        ),
+        regexp: [
+          %r(<http://example.com/a> <http://example.com/property> \(\s*\(\s*"a"\) \(\s*"b"\)\) .)
+        ],
+        standard_prefixes: true
+      },
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], params)
+      end
     end
   end
 
   describe "literals" do
-    describe "plain" do
-      it "encodes embedded \"\"\"" do
-        n3 = %(:a :b """testing string parsing in N3.
-  """ .)
-        serialize(n3, nil, [/testing string parsing in N3.\n/])
-      end
-
-      it "encodes embedded \"" do
-        n3 = %(:a :b """string with " escaped quote marks""" .)
-        serialize(n3, nil, [/string with \\" escaped quote mark/])
-      end
-
-      it "encodes embedded \\" do
-        n3 = %(:a :b """string with \\\\ escaped quote marks""" .)
-        serialize(n3, nil, [/string with \\\\ escaped quote mark/])
-      end
-
-      it "encodes embedded \\ multi-line" do
-        n3 = %(:a :b """string with \\\\ escaped quote marks
-  """ .)
-        serialize(n3, nil, [/string with \\\\ escaped quote mark/])
-      end
-    end
-    
-    describe "with language" do
-      it "specifies language for literal with language" do
-        ttl = %q(:a :b "string"@en .)
-        serialize(ttl, nil, [%r("string"@en)])
-      end
-    end
-    
     describe "xsd:anyURI" do
       it "uses xsd namespace for datatype" do
-        ttl = %q(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b "http://foo/"^^xsd:anyURI .)
-        serialize(ttl, nil, [
+        ttl = %q(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> "http://foo/"^^xsd:anyURI .)
+        serialize(ttl, [
           %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
           %r("http://foo/"\^\^xsd:anyURI \.),
         ])
@@ -339,11 +322,27 @@ describe RDF::N3::Writer do
         [%q(false), /false ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
-          serialize(ttl, nil, [
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
+          serialize(ttl, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
           ], canonicalize: true)
+        end
+      end
+
+      [
+        [true, "true"],
+        [false, "false"],
+        [1, "true"],
+        [0, "false"],
+        ["true", "true"],
+        ["false", "false"],
+        ["1", "true"],
+        ["0", "false"],
+        ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#boolean>}],
+      ].each do |(l,r)|
+        it "serializes #{l.inspect} to #{r.inspect}" do
+          expect(subject.format_literal(RDF::Literal::Boolean.new(l))).to eql r
         end
       end
     end
@@ -358,11 +357,25 @@ describe RDF::N3::Writer do
         [%q(10), /10 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
-          serialize(ttl, nil, [
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
+          serialize(ttl, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
           ], canonicalize: true)
+        end
+      end
+
+      [
+        [0, "0"],
+        [10, "10"],
+        [-1, "-1"],
+        ["0", "0"],
+        ["true", %{"true"^^<http://www.w3.org/2001/XMLSchema#integer>}],
+        ["false", %{"false"^^<http://www.w3.org/2001/XMLSchema#integer>}],
+        ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#integer>}],
+      ].each do |(l,r)|
+        it "serializes #{l.inspect} to #{r.inspect}" do
+          expect(subject.format_literal(RDF::Literal::Integer.new(l))).to eql r
         end
       end
     end
@@ -374,8 +387,8 @@ describe RDF::N3::Writer do
         [%q("10"^^xsd:int), /"10"\^\^xsd:int ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
-          serialize(ttl, nil, [
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
+          serialize(ttl, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
           ], canonicalize: true)
@@ -393,11 +406,30 @@ describe RDF::N3::Writer do
         [%q(10.02), /10.02 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
-          serialize(ttl, nil, [
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
+          serialize(ttl, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
           ], canonicalize: true)
+        end
+      end
+
+      [
+        [0, "0.0"],
+        [10, "10.0"],
+        [-1, "-1.0"],
+        ["0", "0.0"],
+        ["10", "10.0"],
+        ["-1", "-1.0"],
+        ["1.0", "1.0"],
+        ["0.1", "0.1"],
+        ["10.01", "10.01"],
+        ["true", %{"true"^^<http://www.w3.org/2001/XMLSchema#decimal>}],
+        ["false", %{"false"^^<http://www.w3.org/2001/XMLSchema#decimal>}],
+        ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#decimal>}],
+      ].each do |(l,r)|
+        it "serializes #{l.inspect} to #{r.inspect}" do
+          expect(subject.format_literal(RDF::Literal::Decimal.new(l))).to eql r
         end
       end
     end
@@ -410,13 +442,33 @@ describe RDF::N3::Writer do
         [%q(0.1e1), /1.0e0 ./],
         [%q("10.02e1"^^xsd:double), /1.002e2 ./],
         [%q(10.02e1), /1.002e2 ./],
+        [%q("14"^^xsd:double), /1.4e1 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
-          ttl = %(@prefix : <http://example> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . :a :b #{l} .)
-          serialize(ttl, nil, [
+          ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
+          serialize(ttl, [
             %r(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> \.),
             r,
           ], canonicalize: true)
+        end
+      end
+
+      [
+        [0, "0.0e0"],
+        [10, "1.0e1"],
+        [-1, "-1.0e0"],
+        ["0", "0.0e0"],
+        ["10", "1.0e1"],
+        ["-1", "-1.0e0"],
+        ["1.0", "1.0e0"],
+        ["0.1", "1.0e-1"],
+        ["10.01", "1.001e1"],
+        ["true", %{"true"^^<http://www.w3.org/2001/XMLSchema#double>}],
+        ["false", %{"false"^^<http://www.w3.org/2001/XMLSchema#double>}],
+        ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#double>}],
+      ].each do |(l,r)|
+        it "serializes #{l.inspect} to #{r.inspect}" do
+          expect(subject.format_literal(RDF::Literal::Double.new(l))).to eql r
         end
       end
     end
@@ -431,10 +483,10 @@ describe RDF::N3::Writer do
   end
 
   # Serialize ntstr to a string and compare against regexps
-  def serialize(ntstr, base = nil, regexps = [], options = {})
+  def serialize(ntstr, regexps = [], base_uri: nil, **options)
     prefixes = options[:prefixes] || {}
-    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base, prefixes: prefixes, validate: false, logger: [])
-    result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base, prefixes: prefixes)) do |writer|
+    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [])
+    result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
       writer << g
     end
     if $verbose
@@ -445,7 +497,7 @@ describe RDF::N3::Writer do
     logger.info "result: #{result}"
     regexps.each do |re|
       logger.info "match: #{re.inspect}"
-      expect(result).to match_re(re, about: base, logger: logger, input: ntstr), logger.to_s
+      expect(result).to match_re(re, about: base_uri, logger: logger, input: ntstr), logger.to_s
     end
     
     result

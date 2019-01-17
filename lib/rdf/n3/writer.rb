@@ -1,42 +1,39 @@
 # coding: utf-8
 module RDF::N3
   ##
-  # A Turtle serialiser in Ruby
+  # A Notation-3 serialiser in Ruby
   #
   # Note that the natural interface is to write a whole graph at a time.
   # Writing statements or Triples will create a graph to add them to
   # and then serialize the graph.
   #
-  # @example Obtaining a Turtle writer class
+  # @example Obtaining a N3 writer class
   #   RDF::Writer.for(:n3)         #=> RDF::N3::Writer
   #   RDF::Writer.for("etc/test.n3")
-  #   RDF::Writer.for("etc/test.ttl")
   #   RDF::Writer.for(file_name:      "etc/test.n3")
-  #   RDF::Writer.for(file_name:      "etc/test.ttl")
   #   RDF::Writer.for(file_extension: "n3")
-  #   RDF::Writer.for(file_extension: "ttl")
   #   RDF::Writer.for(content_type:   "text/n3")
   #
-  # @example Serializing RDF graph into an Turtle file
+  # @example Serializing RDF graph into an N3 file
   #   RDF::N3::Writer.open("etc/test.n3") do |writer|
   #     writer << graph
   #   end
   #
-  # @example Serializing RDF statements into an Turtle file
+  # @example Serializing RDF statements into an N3 file
   #   RDF::N3::Writer.open("etc/test.n3") do |writer|
   #     graph.each_statement do |statement|
   #       writer << statement
   #     end
   #   end
   #
-  # @example Serializing RDF statements into an Turtle string
+  # @example Serializing RDF statements into an N3 string
   #   RDF::N3::Writer.buffer do |writer|
   #     graph.each_statement do |statement|
   #       writer << statement
   #     end
   #   end
   #
-  # The writer will add prefix definitions, and use them for creating @prefix definitions, and minting QNames
+  # The writer will add prefix definitions, and use them for creating @prefix definitions, and minting pnames
   #
   # @example Creating @base and @prefix definitions in output
   #   RDF::N3::Writer.buffer(base_uri: "http://example.com/", prefixes: {
@@ -56,8 +53,6 @@ module RDF::N3
 
     # @return [Graph] Graph of statements serialized
     attr_accessor :graph
-    # @return [URI] Base URI used for relativizing URIs
-    attr_accessor :base_uri
 
     ##
     # N3 Writer options
@@ -78,7 +73,7 @@ module RDF::N3
     end
 
     ##
-    # Initializes the Turtle writer instance.
+    # Initializes the N3 writer instance.
     #
     # @param  [IO, File] output
     #   the output stream
@@ -106,10 +101,11 @@ module RDF::N3
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
+      @graph = RDF::Graph.new
+      @uri_to_pname = {}
+      @uri_to_prefix = {}
       super do
-        @graph = RDF::Graph.new
-        @uri_to_qname = {}
-        @uri_to_prefix = {}
+        reset
         if block_given?
           case block.arity
             when 0 then instance_eval(&block)
@@ -138,14 +134,20 @@ module RDF::N3
     # @see    #write_triple
     def write_epilogue
       @max_depth = @options[:max_depth] || 3
-      @base_uri = RDF::URI(@options[:base_uri])
 
       self.reset
 
       log_debug {"\nserialize: graph: #{@graph.size}"}
 
       preprocess
+
       start_document
+
+      # Remove lists that are referenced and have non-list properties;
+      # these are legal, but can't be serialized as lists
+      @lists.reject! do |node, list|
+        ref_count(node) > 0 && prop_count(node) > 0
+      end
 
       order_subjects.each do |subject|
         unless is_done?(subject)
@@ -155,11 +157,11 @@ module RDF::N3
 
       super
     end
-    
-    # Return a QName for the URI, or nil. Adds namespace of QName to defined prefixes
+
+    # Return a pname for the URI, or nil. Adds namespace of pname to defined prefixes
     # @param [RDF::Resource] resource
     # @return [String, nil] value to use to identify URI
-    def get_qname(resource)
+    def get_pname(resource)
       case resource
       when RDF::Node
         return options[:unique_bnodes] ? resource.to_unique_base : resource.to_base
@@ -169,37 +171,39 @@ module RDF::N3
         return nil
       end
 
-      log_debug {"get_qname(#{resource}), std?}"}
-      qname = case
-      when @uri_to_qname.has_key?(uri)
-        return @uri_to_qname[uri]
+      log_debug {"get_pname(#{resource}), std?}"}
+      pname = case
+      when @uri_to_pname.has_key?(uri)
+        return @uri_to_pname[uri]
       when u = @uri_to_prefix.keys.detect {|u| uri.index(u.to_s) == 0}
         # Use a defined prefix
         prefix = @uri_to_prefix[u]
-        prefix(prefix, u) unless u.to_s.empty? # Define for output
-        log_debug {"get_qname: add prefix #{prefix.inspect} => #{u}"}
-        uri.sub(u.to_s, "#{prefix}:")
+        unless u.to_s.empty?
+          prefix(prefix, u) unless u.to_s.empty?
+          log_debug("get_pname") {"add prefix #{prefix.inspect} => #{u}"}
+          uri.sub(u.to_s, "#{prefix}:")
+        end
       when @options[:standard_prefixes] && vocab = RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}
         prefix = vocab.__name__.to_s.split('::').last.downcase
         @uri_to_prefix[vocab.to_uri.to_s] = prefix
         prefix(prefix, vocab.to_uri) # Define for output
-        log_debug {"get_qname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"}
+        log_debug {"get_pname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"}
         uri.sub(vocab.to_uri.to_s, "#{prefix}:")
       else
         nil
       end
-      
-      # Make sure qname is a valid qname
-      if qname
-        md = QNAME.match(qname)
-        qname = nil unless md.to_s.length == qname.length
+
+      # Make sure pname is a valid pname
+      if pname
+        md = QNAME.match(pname)
+        pname = nil unless md.to_s.length == pname.length
       end
 
-      @uri_to_qname[uri] = qname
+      @uri_to_pname[uri] = pname
     rescue Addressable::URI::InvalidURIError => e
       raise RDF::WriterError, "Invalid URI #{resource.inspect}: #{e.message}"
     end
-    
+
     # Take a hash from predicate uris to lists of values.
     # Sort the lists of values.  Return a sorted list of properties.
     # @param [Hash{String => Array<Resource>}] properties A hash of Property to Resource mappings
@@ -207,17 +211,17 @@ module RDF::N3
     def sort_properties(properties)
       # Make sorted list of properties
       prop_list = []
-      
+
       predicate_order.each do |prop|
         next unless properties[prop.to_s]
         prop_list << prop.to_s
       end
-      
+
       properties.keys.sort.each do |prop|
         next if prop_list.include?(prop.to_s)
         prop_list << prop.to_s
       end
-      
+
       log_debug {"sort_properties: #{prop_list.join(', ')}"}
       prop_list
     end
@@ -232,11 +236,11 @@ module RDF::N3
       literal = literal.dup.canonicalize! if @options[:canonicalize]
       case literal
       when RDF::Literal
-        case literal.datatype
+        case literal.valid? ? literal.datatype : false
         when RDF::XSD.boolean, RDF::XSD.integer, RDF::XSD.decimal
-          literal.to_s
+          literal.canonicalize.to_s
         when RDF::XSD.double
-          literal.to_s.sub('E', 'e')  # Favor lower case exponent
+          literal.canonicalize.to_s.sub('E', 'e')  # Favor lower case exponent
         else
           text = quoted(literal.value)
           text << "@#{literal.language}" if literal.has_language?
@@ -247,21 +251,21 @@ module RDF::N3
         quoted(literal.to_s)
       end
     end
-    
+
     ##
-    # Returns the Turtle/N3 representation of a URI reference.
+    # Returns the N3 representation of a URI reference.
     #
     # @param  [RDF::URI] uri
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_uri(uri, options = {})
-      md = relativize(uri)
-      log_debug {"relativize(#{uri.inspect}) => #{md.inspect}"} if md != uri.to_s
-      md != uri.to_s ? "<#{md}>" : (get_qname(uri) || "<#{uri}>")
+      md = uri.relativize(base_uri)
+      log_debug("relativize") {"#{uri.to_ntriples} => #{md.inspect}"} if md != uri.to_s
+      md != uri.to_s ? "<#{md}>" : (get_pname(uri) || "<#{uri}>")
     end
-    
+
     ##
-    # Returns the Turtle/N3 representation of a blank node.
+    # Returns the N3 representation of a blank node.
     #
     # @param  [RDF::Node] node
     # @param  [Hash{Symbol => Object}] options
@@ -269,24 +273,16 @@ module RDF::N3
     def format_node(node, options = {})
       options[:unique_bnodes] ? node.to_unique_base : node.to_base
     end
-    
+
     protected
     # Output @base and @prefix definitions
     def start_document
       @output.write("#{indent}@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
-      
+
       log_debug {"start_document: #{prefixes.inspect}"}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
         @output.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
-    end
-    
-    # If base_uri is defined, use it to try to make uri relative
-    # @param [#to_s] uri
-    # @return [String]
-    def relativize(uri)
-      uri = uri.to_s
-      base_uri ? uri.sub(base_uri.to_s, "") : uri
     end
 
     # Defines rdf:type of subjects to be emitted at the beginning of the graph. Defaults to rdfs:Class
@@ -297,7 +293,7 @@ module RDF::N3
     # [rdf:type, rdfs:label, dc:title]
     # @return [Array<URI>]
     def predicate_order; [RDF.type, RDF::RDFS.label, RDF::URI("http://purl.org/dc/terms/title")]; end
-    
+
     # Order subjects for output. Override this to output subjects in another order.
     #
     # Uses #top_classes and #base_uri.
@@ -305,14 +301,13 @@ module RDF::N3
     def order_subjects
       seen = {}
       subjects = []
-      
+
       # Start with base_uri
       if base_uri && @subjects.keys.include?(base_uri)
         subjects << base_uri
         seen[base_uri] = true
       end
-      log_debug {"subjects1: #{subjects.inspect}"}
-      
+
       # Add distinguished classes
       top_classes.each do |class_uri|
         graph.query(predicate:  RDF.type, object:  class_uri).
@@ -325,7 +320,6 @@ module RDF::N3
           seen[subject] = true
         end
       end
-      log_debug {"subjects2: #{subjects.inspect}"}
 
       # Mark as seen lists that are part of another list
       @lists.values.map(&:statements).
@@ -333,18 +327,18 @@ module RDF::N3
           seen[st.object] = true if @lists.has_key?(st.object)
         end
 
+      # List elements should not be targets for top-level serialization
+      list_elements = @lists.values.map(&:to_a).flatten.compact
+
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
-      recursable = @subjects.keys.
+      recursable = (@subjects.keys - list_elements).
         select {|s| !seen.include?(s)}.
         map {|r| [r.node? ? 1 : 0, ref_count(r), r]}.
         sort
-      
-      log_debug {"subjects3: #{subjects.inspect}"}
+
       subjects += recursable.map{|r| r.last}
-      log_debug {"subjects4: #{subjects.inspect}"}
-      subjects
     end
-    
+
     # Perform any preprocessing of statements required
     def preprocess
       # Load defined prefixes
@@ -355,21 +349,24 @@ module RDF::N3
 
       prefix(nil, @options[:default_namespace]) if @options[:default_namespace]
 
+      @options[:prefixes] = {}  # Will define actual used when matched
       @graph.each {|statement| preprocess_statement(statement)}
     end
-    
+
     # Perform any statement preprocessing required. This is used to perform reference counts and determine required
     # prefixes.
     # @param [Statement] statement
     def preprocess_statement(statement)
       #log_debug {"preprocess: #{statement.inspect}"}
-      references = ref_count(statement.object) + 1
-      @references[statement.object] = references
-      @subjects[statement.subject] = true
+      bump_reference(statement.object)
+      # Count properties of this subject
+      (@subjects[statement.subject] ||= {})[statement.predicate] ||= 0
+      @subjects[statement.subject][statement.predicate] += 1
 
       # Collect lists
       if statement.predicate == RDF.first
-        @lists[statement.subject] = RDF::List.new(subject: statement.subject, graph: graph)
+        l = RDF::List.new(subject: statement.subject, graph: graph)
+        @lists[statement.subject] = l if l.valid?
       end
 
       if statement.object == RDF.nil || statement.subject == RDF.nil
@@ -377,31 +374,24 @@ module RDF::N3
         @lists[RDF.nil] ||= RDF::List[]
       end
 
-      # Pre-fetch qnames, to fill prefixes
-      get_qname(statement.subject)
-      get_qname(statement.predicate)
-      get_qname(statement.object)
-      get_qname(statement.object.datatype) if statement.object.literal? && statement.object.datatype
+      # Pre-fetch pnames, to fill prefixes
+      get_pname(statement.subject)
+      get_pname(statement.predicate)
+      get_pname(statement.object)
+      get_pname(statement.object.datatype) if statement.object.literal? && statement.object.datatype
 
-      @references[statement.predicate] = ref_count(statement.predicate) + 1
-    end
-    
-    # Return the number of times this node has been referenced in the object position
-    # @return [Integer]
-    def ref_count(node)
-      @references.fetch(node, 0)
+      bump_reference(statement.predicate) # XXX legacy
     end
 
     # Returns indent string multiplied by the depth
     # @param [Integer] modifier Increase depth by specified amount
     # @return [String] A number of spaces, depending on current depth
     def indent(modifier = 0)
-      " " * (@depth + modifier)
+      " " * (@options.fetch(:log_depth, log_depth) * 2 + modifier)
     end
 
     # Reset internal helper instance variables
     def reset
-      @depth = 0
       @lists = {}
 
       @references = {}
@@ -424,17 +414,17 @@ module RDF::N3
     end
 
     private
-    
+
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
-    def is_valid_list(l)
-      #log_debug {"is_valid_list: #{l.inspect}"}
+    def is_valid_list?(l)
+      #log_debug("is_valid_list?") {l.inspect}
       return @lists[l] && @lists[l].valid?
     end
-    
-    def do_list(l)
+
+    def do_list(l, position)
       list = @lists[l]
-      log_debug {"do_list: #{list.inspect}"}
-      position = :subject
+      log_debug("do_list") {list.inspect}
+      subject_done(RDF.nil)
       list.each_statement do |st|
         next unless st.predicate == RDF.first
         log_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
@@ -443,132 +433,149 @@ module RDF::N3
         position = :object
       end
     end
-    
-    def p_list(node, position)
-      return false if !is_valid_list(node)
-      #log_debug {"p_list: #{node.inspect}, #{position}"}
+
+    def collection(node, position)
+      return false if !is_valid_list?(node)
+      return false if position == :subject && ref_count(node) > 0
+      return false if position == :object && prop_count(node) > 0
+      #log_debug("collection") {"#{node.to_ntriples}, #{position}"}
 
       @output.write(position == :subject ? "(" : " (")
-      @depth += 2
-      do_list(node)
-      @depth -= 2
+      log_depth {do_list(node, position)}
       @output.write(')')
     end
-    
-    def p_squared?(node, position)
-      node.node? &&
-        !@serialized.has_key?(node) &&
-        ref_count(node) <= 1
-    end
-    
-    def p_squared(node, position)
-      return false unless p_squared?(node, position)
 
-      #log_debug {"p_squared: #{node.inspect}, #{position}"}
-      subject_done(node)
-      @output.write(position == :subject ? '[' : ' [')
-      @depth += 2
-      predicate_list(node)
-      @depth -= 2
-      @output.write(']')
-      
-      true
-    end
-    
-    def p_default(node, position)
-      #log_debug {"p_default: #{node.inspect}, #{position}"}
-      l = (position == :subject ? "" : " ") + format_term(node, options)
+    # Default singular resource representation.
+    def p_term(resource, position)
+      #log_debug("p_term") {"#{resource.to_ntriples}, #{position}"}
+      l = (position == :subject ? "" : " ") + format_term(resource, options)
       @output.write(l)
     end
-    
-    def path(node, position)
-      log_debug do
-        "path: #{node.inspect}, " +
+
+    # Represent a resource in subject, predicate or object position.
+    # Use either collection, blankNodePropertyList or singular resource notation.
+    def path(resource, position)
+      log_debug("path") do
+        "#{resource.to_ntriples}, " +
         "pos: #{position}, " +
-        "[]: #{is_valid_list(node)}, " +
-        "p2?: #{p_squared?(node, position)}, " +
-        "rc: #{ref_count(node)}"
+        "()?: #{is_valid_list?(resource)}, " +
+        "[]?: #{blankNodePropertyList?(resource, position)}, " +
+        "rc: #{ref_count(resource)}"
       end
-      raise RDF::WriterError, "Cannot serialize node '#{node}'" unless p_list(node, position) || p_squared(node, position) || p_default(node, position)
+      raise RDF::WriterError, "Cannot serialize resource '#{resource}'" unless
+        collection(resource, position) ||
+        blankNodePropertyList(resource, position) ||
+        p_term(resource, position)
     end
-    
-    def verb(node)
-      log_debug {"verb: #{node.inspect}"}
-      if node == RDF.type
+
+    def predicate(resource)
+      log_debug("predicate") {resource.to_ntriples}
+      if resource == RDF.type
         @output.write(" a")
       else
-        path(node, :predicate)
+        path(resource, :predicate)
       end
     end
-    
-    def object_list(objects)
-      log_debug {"object_list: #{objects.inspect}"}
+
+    # Render an objectList having a common subject and predicate
+    def objectList(objects)
+      log_debug("objectList") {objects.inspect}
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
-        @output.write(",\n#{indent(4)}") if i > 0
+        if i > 0 && blankNodePropertyList?(obj, :object)
+          @output.write ", "
+        elsif i > 0
+          @output.write ",\n#{indent(4)}"
+        end
         path(obj, :object)
       end
     end
-    
-    def predicate_list(subject)
+
+    # Render a predicateObjectList having a common subject.
+    # @return [Integer] the number of properties serialized
+    def predicateObjectList(subject, from_bpl = false)
       properties = {}
-      @graph.query(subject: subject) do |st|
-        properties[st.predicate.to_s] ||= []
-        properties[st.predicate.to_s] << st.object
+      @graph.query(subject:  subject) do |st|
+        (properties[st.predicate.to_s] ||= []) << st.object
       end
 
       prop_list = sort_properties(properties)
-      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if subject.node?
-      log_debug {"predicate_list: #{prop_list.inspect}"}
-      return if prop_list.empty?
+      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if @lists.include?(subject)
+      log_debug("predicateObjectList") {prop_list.inspect}
+      return 0 if prop_list.empty?
 
+      @output.write("\n#{indent(2)}") if properties.keys.length > 1 && from_bpl
       prop_list.each_with_index do |prop, i|
         begin
           @output.write(";\n#{indent(2)}") if i > 0
-          verb(prop[0, 2] == "_:" ? RDF::Node.intern(prop.split(':').last) : RDF::URI.intern(prop))
-          object_list(properties[prop])
-        rescue Addressable::URI::InvalidURIError => e
-          log_debug {"Predicate #{prop.inspect} is an invalid URI: #{e.message}"}
+          predicate(RDF::URI.intern(prop))
+          objectList(properties[prop])
         end
       end
+      properties.keys.length
     end
-    
-    def s_squared?(subject)
-      ref_count(subject) == 0 && subject.node? && !is_valid_list(subject)
+
+    # Can subject be represented as a blankNodePropertyList?
+    def blankNodePropertyList?(resource, position)
+      resource.node? &&
+        !is_valid_list?(resource) &&
+        (!is_done?(resource) || position == :subject) &&
+        ref_count(resource) == (position == :object ? 1 : 0)
     end
-    
-    def s_squared(subject)
-      return false unless s_squared?(subject)
-      
-      log_debug {"s_squared: #{subject.inspect}"}
-      @output.write("\n#{indent} [")
-      @depth += 1
-      predicate_list(subject)
-      @depth -= 1
-      @output.write("] .")
+
+    def blankNodePropertyList(resource, position)
+      return false unless blankNodePropertyList?(resource, position)
+
+      log_debug("blankNodePropertyList") {resource.to_ntriples}
+      subject_done(resource)
+      @output.write(position == :subject ? "\n#{indent} [" : ' [')
+      num_props = log_depth {predicateObjectList(resource, true)}
+      @output.write((num_props > 1 ? "\n#{indent}" : "") + (position == :object ? ']' : '] .'))
       true
     end
-    
-    def s_default(subject)
+
+    # Render triples having the same subject using an explicit subject
+    def triples(subject)
       @output.write("\n#{indent}")
       path(subject, :subject)
-      predicate_list(subject)
+      predicateObjectList(subject)
       @output.write(" .")
       true
     end
-    
+
     def statement(subject)
-      log_debug {"statement: #{subject.inspect}, s2?: #{s_squared?(subject)}"}
+      log_debug("statement") {"#{subject.to_ntriples}, bnodePL?: #{blankNodePropertyList?(subject, :subject)}"}
       subject_done(subject)
-      s_squared(subject) || s_default(subject)
-      @output.write("\n")
+      blankNodePropertyList(subject, :subject) || triples(subject)
+      @output.puts
     end
-    
+
+    # Return the number of statements having this resource as a subject other than for list properties
+    # @return [Integer]
+    def prop_count(subject)
+      @subjects.fetch(subject, {}).
+        reject {|k, v| [RDF.type, RDF.first, RDF.rest].include?(k)}.
+        values.reduce(:+) || 0
+    end
+
+    # Return the number of times this node has been referenced in the object position
+    # @return [Integer]
+    def ref_count(node)
+      @references.fetch(node, 0)
+    end
+
+    # Increase the reference count of this resource
+    # @param [RDF::Resource] resource
+    # @return [Integer] resulting reference count
+    def bump_reference(resource)
+      @references[resource] = ref_count(resource) + 1
+    end
+
     def is_done?(subject)
       @serialized.include?(subject)
     end
-    
+
     # Mark a subject as done.
     def subject_done(subject)
       @serialized[subject] = true
