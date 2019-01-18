@@ -169,7 +169,7 @@ describe RDF::N3::Writer do
       },
       "should generate empty list(2)" => {
         input: %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .),
-        regexp: [%r(^:emptyList (<.*sameAs>|owl:sameAs) \(\) \.$)],
+        regexp: [%r(^:emptyList (<.*sameAs>|owl:sameAs|=) \(\) \.$)],
         prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
       },
       "empty list as subject": {
@@ -474,12 +474,75 @@ describe RDF::N3::Writer do
     end
   end
 
-  def parse(input, options = {})
-    graph = RDF::Graph.new
-    RDF::N3::Reader.new(input, options).each do |statement|
-      graph << statement
+  describe "formulae" do
+    {
+      "empty subject" => {
+        input: %({} <b> <c> .),
+        regexp: [
+          %r(\[ <b> <c>\] \.)
+        ]
+      },
+      "empty object" => {
+        input: %(<a> <b> {} .),
+        regexp: [
+          %r(<a> <b> \[\] \.)
+        ]
+      },
+      "as subject with constant content" => {
+        input: %({<x> <y> <z>} <b> <c> .),
+        regexp: [
+          %r({\s+<x> <y> <z> \.\s+} <b> <c> \.)m
+        ]
+      },
+      "as object with constant content" => {
+        input: %(<a> <b> {<x> <y> <z>} .),
+        regexp: [
+          %r(<a> <b> {\s+<x> <y> <z> \.\s+} \.)m
+        ]
+      },
+      "implies" => {
+        input: %({ _:x :is :happy } => {_:x :is :happy } .),
+        regexp: [
+          %r({\s+_:x :is :happy \.\s+} => {\s+_:x :is :happy \.\s+} \.)m
+        ]
+      },
+      "formula simple" => {
+        input: %(<> :about { :c :d :e }.),
+        regexp: [
+          %r(<> :about {\s+:c :d :e \.\s+} \.)
+        ]
+      },
+      "nested" => {
+        input: %(
+          @prefix doc:  <http://www.w3.org/2000/10/swap/pim/doc#> .
+          @prefix ex:   <http://www.example.net/2000/10/whatever#> .
+          @prefix contact:  <http://www.w3.org/2000/10/swap/pim/contact#> .
+          []
+            doc:creator [ contact:email <mailto:fred@example.com> ];
+            ex:says  {
+              [] doc:title "Huckleberry Finn";
+                doc:creator [ contact:knownAs "Mark Twain"]
+            }.
+        ),
+        regexp: [
+          %r(\[\s+ex:says {\s+\[)m,
+          %r(doc:creator \[ contact:knownAs "Mark Twain"\];),
+          %r(doc:title "Huckleberry Finn"),
+          %r(\] \.\s+};)m,
+          %r(doc:creator \[ contact:email <mailto:fred@example.com>)
+        ]
+      }
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], params)
+      end
     end
-    graph
+  end
+
+  def parse(input, options = {})
+    repo = RDF::Repository.new
+    repo << RDF::N3::Reader.new(input, options)
+    repo
   end
 
   # Serialize ntstr to a string and compare against regexps

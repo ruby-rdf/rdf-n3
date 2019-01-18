@@ -48,9 +48,9 @@ def run(input, options)
     end
   else
     r = reader_class.new(input, options[:parser_options])
-    g = RDF::Graph.new << r
-    num = g.count
-    options[:output].puts g.dump(options[:output_format], base_uri: options[:base_uri], prefixes: r.prefixes, standard_prefixes: true)
+    repo = RDF::Repository.new << r
+    num = repo.count
+    options[:output].puts repo.dump(options[:output_format], base_uri: options[:base_uri], prefixes: r.prefixes, standard_prefixes: true, logger: options[:logger])
   end
   if options[:profile]
     Profiler__::stop_profile

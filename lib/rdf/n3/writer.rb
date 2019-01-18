@@ -51,7 +51,10 @@ module RDF::N3
     include RDF::Util::Logger
     QNAME = Meta::REGEXPS[:"http://www.w3.org/2000/10/swap/grammar/n3#qname"]
 
-    # @return [Graph] Graph of statements serialized
+    # @return [RDF::Repository] Repository of statements serialized
+    attr_accessor :repo
+
+    # @return [RDF::Graph] Graph being serialized
     attr_accessor :graph
 
     ##
@@ -101,7 +104,7 @@ module RDF::N3
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, options = {}, &block)
-      @graph = RDF::Graph.new
+      @repo = RDF::Repository.new
       @uri_to_pname = {}
       @uri_to_prefix = {}
       super do
@@ -124,7 +127,19 @@ module RDF::N3
     # @raise  [NotImplementedError] unless implemented in subclass
     # @abstract
     def write_triple(subject, predicate, object)
-      @graph.insert(RDF::Statement(subject, predicate, object))
+      repo.insert(RDF::Statement(subject, predicate, object))
+    end
+
+    ##
+    # Adds a quad to be serialized
+    # @param  [RDF::Resource] subject
+    # @param  [RDF::URI]      predicate
+    # @param  [RDF::Value]    object
+    # @param  [RDF::Resource] graph_name
+    # @return [void]
+    def write_quad(subject, predicate, object, graph_name)
+      statement = RDF::Statement.new(subject, predicate, object, graph_name: graph_name)
+      repo.insert(statement)
     end
 
     ##
@@ -137,21 +152,25 @@ module RDF::N3
 
       self.reset
 
-      log_debug {"\nserialize: graph: #{@graph.size}"}
+      log_debug {"\nserialize: repo: #{repo.size}"}
 
       preprocess
 
       start_document
 
-      # Remove lists that are referenced and have non-list properties;
-      # these are legal, but can't be serialized as lists
-      @lists.reject! do |node, list|
-        ref_count(node) > 0 && prop_count(node) > 0
-      end
+      with_graph(nil) do
+        graph.each {|statement| preprocess_graph_statement(statement)}
 
-      order_subjects.each do |subject|
-        unless is_done?(subject)
-          statement(subject)
+        # Remove lists that are referenced and have non-list properties;
+        # these are legal, but can't be serialized as lists
+        @lists.reject! do |node, list|
+          ref_count(node) > 0 && prop_count(node) > 0 ||
+          list.subjects.any? {|elt| !resource_in_single_graph?(elt)}
+        end
+        order_subjects.each do |subject|
+          unless is_done?(subject)
+            statement(subject)
+          end
         end
       end
 
@@ -310,7 +329,7 @@ module RDF::N3
 
       # Add distinguished classes
       top_classes.each do |class_uri|
-        graph.query(predicate:  RDF.type, object:  class_uri).
+        repo.query(predicate: RDF.type, object: class_uri, graph_name: false).
           map {|st| st.subject}.
           sort.
           uniq.
@@ -350,7 +369,7 @@ module RDF::N3
       prefix(nil, @options[:default_namespace]) if @options[:default_namespace]
 
       @options[:prefixes] = {}  # Will define actual used when matched
-      @graph.each {|statement| preprocess_statement(statement)}
+      repo.each {|statement| preprocess_statement(statement)}
     end
 
     # Perform any statement preprocessing required. This is used to perform reference counts and determine required
@@ -358,9 +377,21 @@ module RDF::N3
     # @param [Statement] statement
     def preprocess_statement(statement)
       #log_debug {"preprocess: #{statement.inspect}"}
+
+      # Pre-fetch pnames, to fill prefixes
+      get_pname(statement.subject)
+      get_pname(statement.predicate)
+      get_pname(statement.object)
+      get_pname(statement.object.datatype) if statement.object.literal? && statement.object.datatype
+    end
+
+    # Perform graph-specific preprocessing
+    # @param [Statement]
+    def preprocess_graph_statement(statement)
       bump_reference(statement.object)
       # Count properties of this subject
-      (@subjects[statement.subject] ||= {})[statement.predicate] ||= 0
+      @subjects[statement.subject] ||= {}
+      @subjects[statement.subject][statement.predicate] ||= 0
       @subjects[statement.subject][statement.predicate] += 1
 
       # Collect lists
@@ -373,14 +404,6 @@ module RDF::N3
         # Add an entry for the list tail
         @lists[RDF.nil] ||= RDF::List[]
       end
-
-      # Pre-fetch pnames, to fill prefixes
-      get_pname(statement.subject)
-      get_pname(statement.predicate)
-      get_pname(statement.object)
-      get_pname(statement.object.datatype) if statement.object.literal? && statement.object.datatype
-
-      bump_reference(statement.predicate) # XXX legacy
     end
 
     # Returns indent string multiplied by the depth
@@ -393,7 +416,6 @@ module RDF::N3
     # Reset internal helper instance variables
     def reset
       @lists = {}
-
       @references = {}
       @serialized = {}
       @subjects = {}
@@ -458,11 +480,13 @@ module RDF::N3
       log_debug("path") do
         "#{resource.to_ntriples}, " +
         "pos: #{position}, " +
+        "{}?: #{formula?(resource, position)}, " +
         "()?: #{is_valid_list?(resource)}, " +
         "[]?: #{blankNodePropertyList?(resource, position)}, " +
         "rc: #{ref_count(resource)}"
       end
       raise RDF::WriterError, "Cannot serialize resource '#{resource}'" unless
+        formula(resource, position) ||
         collection(resource, position) ||
         blankNodePropertyList(resource, position) ||
         p_term(resource, position)
@@ -470,8 +494,13 @@ module RDF::N3
 
     def predicate(resource)
       log_debug("predicate") {resource.to_ntriples}
-      if resource == RDF.type
+      case resource
+      when RDF.type
         @output.write(" a")
+      when RDF::OWL.sameAs
+        @output.write(" =")
+      when RDF::N3::Log.implies
+        @output.write(" =>")
       else
         path(resource, :predicate)
       end
@@ -483,7 +512,7 @@ module RDF::N3
       return if objects.empty?
 
       objects.each_with_index do |obj, i|
-        if i > 0 && blankNodePropertyList?(obj, :object)
+        if i > 0 && (formula?(obj, :object) || blankNodePropertyList?(obj, :object))
           @output.write ", "
         elsif i > 0
           @output.write ",\n#{indent(4)}"
@@ -496,7 +525,7 @@ module RDF::N3
     # @return [Integer] the number of properties serialized
     def predicateObjectList(subject, from_bpl = false)
       properties = {}
-      @graph.query(subject:  subject) do |st|
+      @graph.query(subject: subject) do |st|
         (properties[st.predicate.to_s] ||= []) << st.object
       end
 
@@ -519,9 +548,12 @@ module RDF::N3
     # Can subject be represented as a blankNodePropertyList?
     def blankNodePropertyList?(resource, position)
       resource.node? &&
+        !formula?(resource, position) &&
         !is_valid_list?(resource) &&
         (!is_done?(resource) || position == :subject) &&
-        ref_count(resource) == (position == :object ? 1 : 0)
+        ref_count(resource) == (position == :object ? 1 : 0) &&
+        resource_in_single_graph?(resource) &&
+        !repo.has_graph?(resource)
     end
 
     def blankNodePropertyList(resource, position)
@@ -529,9 +561,45 @@ module RDF::N3
 
       log_debug("blankNodePropertyList") {resource.to_ntriples}
       subject_done(resource)
-      @output.write(position == :subject ? "\n#{indent} [" : ' [')
+      @output.write(position == :subject ? "\n#{indent}[" : ' [')
       num_props = log_depth {predicateObjectList(resource, true)}
       @output.write((num_props > 1 ? "\n#{indent}" : "") + (position == :object ? ']' : '] .'))
+      true
+    end
+
+    # Can subject be represented as a formula?
+    def formula?(resource, position)
+      resource.node? &&
+        repo.has_graph?(resource) &&
+        !is_valid_list?(resource) &&
+        (!is_done?(resource) || position == :subject) &&
+        ref_count(resource) == (position == :object ? 1 : 0) &&
+        resource_in_single_graph?(resource)
+    end
+
+    def formula(resource, position)
+      return false unless formula?(resource, position)
+
+      log_debug("formula") {resource.to_ntriples}
+      subject_done(resource)
+      @output.write(position == :subject ? "\n#{indent}{" : ' {')
+      log_depth do
+        with_graph(resource) do
+          graph.each {|statement| preprocess_graph_statement(statement)}
+
+          # Remove lists that are referenced and have non-list properties;
+          # these are legal, but can't be serialized as lists
+          @lists.reject! do |node, list|
+            ref_count(node) > 0 && prop_count(node) > 0
+          end
+          order_subjects.each do |subject|
+            unless is_done?(subject)
+              statement(subject)
+            end
+          end
+        end
+      end
+      @output.write((graph.count > 1 ? "\n#{indent}" : "") + '}')
       true
     end
 
@@ -579,6 +647,24 @@ module RDF::N3
     # Mark a subject as done.
     def subject_done(subject)
       @serialized[subject] = true
+    end
+
+    def resource_in_single_graph?(resource)
+      graph_names = @repo.query(subject: resource).map(&:graph_name)
+      graph_names += @repo.query(object: resource).map(&:graph_name)
+      graph_names.uniq.length <= 1
+    end
+
+    # Process a graph projection
+    def with_graph(graph_name)
+      old_lists, @lists = @lists, {}
+      old_references, @references = @references, {}
+      old_serialized, @serialized = @serialized, {}
+      old_subjects, @subjects = @subjects, {}
+      old_graph, @graph = @graph, repo.project_graph(graph_name)
+      yield
+    ensure
+      @graph, @lists, @references, @serialized, @subjects = old_graph, old_lists, old_references, old_serialized, old_subjects
     end
   end
 end
