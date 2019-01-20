@@ -495,7 +495,7 @@ describe "RDF::N3::Reader" do
         expect(statement.predicate).not_to equal statement.object
       end
 
-      it "substitutes node for URI with @forEach" do
+      it "substitutes node for URI with @forSome" do
         n3 = %(@forSome :x . :x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
@@ -504,7 +504,7 @@ describe "RDF::N3::Reader" do
         expect(statement.object.to_s).to eq "http://a/b#z"
       end
 
-      it "substitutes node for URIs with @forEach" do
+      it "substitutes node for URIs with @forSome" do
         n3 = %(@forSome :x, :y, :z . :x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first

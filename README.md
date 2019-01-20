@@ -58,7 +58,7 @@ when turned into an RDF Repository results in the following quads
 Reasoning requires the use of the Notation3 Algebra, rather than an `RDF::Repository`. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. So, for example, the following 
 
 ### Variables
-N3 Variables are introduced with @forAll, @forEach, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
+N3 Variables are introduced with @forAll, @forSome, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
 
     @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
 

@@ -2,6 +2,7 @@
 require_relative 'spec_helper'
 require 'rdf/spec/writer'
 require 'rdf/vocab'
+require 'rdf/trig'
 
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
@@ -531,6 +532,32 @@ describe RDF::N3::Writer do
           %r(\] \.\s+};)m,
           %r(doc:creator \[ contact:email <mailto:fred@example.com>)
         ]
+      },
+      "named with URI" => {
+        input: %q(
+          <a> <b> <c> .
+          <C> {<A> <b> <c> .}
+        ),
+        regexp: [
+          %r(<a> <b> <c> \.),
+          %r(<C> = {),
+          %r(<A> <b> <c> \.),
+          %r(} \.),
+        ],
+        input_format: :trig
+      },
+      "named with BNode" => {
+        input: %q(
+          <a> <b> <c> .
+          _:C {<A> <b> <c> .}
+        ),
+        regexp: [
+          %r(<a> <b> <c> \.),
+          %r(_:C = {),
+          %r(<A> <b> <c> \.),
+          %r(} \.),
+        ],
+        input_format: :trig
       }
     }.each do |name, params|
       it name do
@@ -539,16 +566,47 @@ describe RDF::N3::Writer do
     end
   end
 
-  def parse(input, options = {})
+  describe "variables" do
+    {
+      "@forAll": {
+        input: %(@forAll :o. :s :p :o .),
+        regexp: [
+          %r(@forAll :o \.),
+          %r(:s :p :o \.),
+        ]
+      },
+      "@forSome": {
+        input: %(@forSome :o. :s :p :o .),
+        regexp: [
+          %r(@forSome :o \.),
+          %r(:s :p :o \.),
+        ]
+      },
+      "?o": {
+        input: %(:s :p ?o .),
+        regexp: [
+          %r(@forAll :o \.),
+          %r(:s :p :o \.),
+        ]
+      },
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], params)
+      end
+    end
+  end
+
+  def parse(input, format: :n3, **options)
     repo = RDF::Repository.new
-    repo << RDF::N3::Reader.new(input, options)
+    reader = RDF::Reader.for(format)
+    repo << reader.new(input, options)
     repo
   end
 
   # Serialize ntstr to a string and compare against regexps
   def serialize(ntstr, regexps = [], base_uri: nil, **options)
     prefixes = options[:prefixes] || {}
-    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [])
+    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [], format: options.fetch(:input_format, :n3))
     result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
       writer << g
     end

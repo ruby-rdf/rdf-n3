@@ -159,18 +159,21 @@ module RDF::N3
       start_document
 
       with_graph(nil) do
-        graph.each {|statement| preprocess_graph_statement(statement)}
-
-        # Remove lists that are referenced and have non-list properties;
-        # these are legal, but can't be serialized as lists
-        @lists.reject! do |node, list|
-          ref_count(node) > 0 && prop_count(node) > 0 ||
-          list.subjects.any? {|elt| !resource_in_single_graph?(elt)}
-        end
         order_subjects.each do |subject|
           unless is_done?(subject)
             statement(subject)
           end
+        end
+
+        # Output any formulae not already serialized using owl:sameAs
+        repo.graph_names.each do |graph_name|
+          next if graph_done?(graph_name)
+
+          log_debug {"named graph(#{graph_name})"}
+          p_term(graph_name, :subject)
+          predicate(RDF::OWL.sameAs)
+          formula(graph_name, :graph_name)
+          @output.write(" .\n")
         end
       end
 
@@ -298,9 +301,21 @@ module RDF::N3
     def start_document
       @output.write("#{indent}@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
 
-      log_debug {"start_document: #{prefixes.inspect}"}
+      log_debug {"start_document: prefixes #{prefixes.inspect}"}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
         @output.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
+      end
+
+      unless @universals.empty?
+        log_debug {"start_document: universals #{@universals.inspect}"}
+        terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
+        @output.write("#{indent}@forAll #{terms.join(', ')} .\n") 
+      end
+
+      unless @existentials.empty?
+        log_debug {"start_document: universals #{@existentials.inspect}"}
+        terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s))}
+        @output.write("#{indent}@forSome #{terms.join(', ')} .\n") 
       end
     end
 
@@ -370,6 +385,9 @@ module RDF::N3
 
       @options[:prefixes] = {}  # Will define actual used when matched
       repo.each {|statement| preprocess_statement(statement)}
+
+      @universals = repo.enum_term.to_a.select {|r| r.is_a?(RDF::Query::Variable) && r.distinguished?}.uniq
+      @existentials = repo.enum_term.to_a.select {|r| r.is_a?(RDF::Query::Variable) && !r.distinguished?}.uniq
     end
 
     # Perform any statement preprocessing required. This is used to perform reference counts and determine required
@@ -415,9 +433,11 @@ module RDF::N3
 
     # Reset internal helper instance variables
     def reset
+      @universals, @existentials = [], []
       @lists = {}
       @references = {}
       @serialized = {}
+      @graphs = {}
       @subjects = {}
     end
 
@@ -470,7 +490,12 @@ module RDF::N3
     # Default singular resource representation.
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_ntriples}, #{position}"}
-      l = (position == :subject ? "" : " ") + format_term(resource, options)
+      l = (position == :subject ? "" : " ") +
+      if resource.is_a?(RDF::Query::Variable)
+        format_term(RDF::URI(resource.name.to_s))
+      else
+        format_term(resource, options)
+      end
       @output.write(l)
     end
 
@@ -569,7 +594,7 @@ module RDF::N3
 
     # Can subject be represented as a formula?
     def formula?(resource, position)
-      resource.node? &&
+      (resource.node? || position == :graph_name) &&
         repo.has_graph?(resource) &&
         !is_valid_list?(resource) &&
         (!is_done?(resource) || position == :subject) &&
@@ -585,13 +610,6 @@ module RDF::N3
       @output.write(position == :subject ? "\n#{indent}{" : ' {')
       log_depth do
         with_graph(resource) do
-          graph.each {|statement| preprocess_graph_statement(statement)}
-
-          # Remove lists that are referenced and have non-list properties;
-          # these are legal, but can't be serialized as lists
-          @lists.reject! do |node, list|
-            ref_count(node) > 0 && prop_count(node) > 0
-          end
           order_subjects.each do |subject|
             unless is_done?(subject)
               statement(subject)
@@ -649,6 +667,15 @@ module RDF::N3
       @serialized[subject] = true
     end
 
+    def graph_done?(subject)
+       @graphs.include?(subject)
+    end
+
+    # Mark a graph as done.
+    def graph_done(graph_name)
+      @graphs[graph_name] = true
+    end
+
     def resource_in_single_graph?(resource)
       graph_names = @repo.query(subject: resource).map(&:graph_name)
       graph_names += @repo.query(object: resource).map(&:graph_name)
@@ -662,6 +689,18 @@ module RDF::N3
       old_serialized, @serialized = @serialized, {}
       old_subjects, @subjects = @subjects, {}
       old_graph, @graph = @graph, repo.project_graph(graph_name)
+
+      graph_done(graph_name)
+
+      graph.each {|statement| preprocess_graph_statement(statement)}
+
+      # Remove lists that are referenced and have non-list properties;
+      # these are legal, but can't be serialized as lists
+      @lists.reject! do |node, list|
+        ref_count(node) > 0 && prop_count(node) > 0 ||
+        list.subjects.any? {|elt| !resource_in_single_graph?(elt)}
+      end
+
       yield
     ensure
       @graph, @lists, @references, @serialized, @subjects = old_graph, old_lists, old_references, old_serialized, old_subjects
