@@ -106,11 +106,9 @@ describe RDF::N3::Reader do
           t.logger.info "source:\n#{t.input}"
 
           case t.id.split('#').last
-          when *%w{listin bnode}
-            pending "support for li:member"
-          when *%w{t2006}
-            pending "support for li:last"
-          when *%w{t1018b2 t103 t104 t105}
+          when *%w{listin bnode concat t2006}
+            pending "support for lists"
+          when *%w{t1018b2 t103 t104 t105 concat}
             pending "support for string"
           when *%w{t2005 t555}
             pending "understanding output filtering"
@@ -118,6 +116,10 @@ describe RDF::N3::Reader do
             pending "support for math"
           when *%w{t01}
             pending "support for log:supports"
+          when *%w{conclusion-simple conclusion}
+            pending "support for log:conclusion"
+          when *%w{conjunction}
+            pending "support for log:conjunction"
           when *%w{t553 t554}
             pending "support for inference over quoted graphs"
           end

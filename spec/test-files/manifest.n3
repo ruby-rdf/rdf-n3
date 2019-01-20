@@ -21,7 +21,7 @@
       # From swap/test/i18n
 
       # From swap/test/includes
-      :listin :bnode
+      :listin :bnode :concat :conclusion-simple :conjunction
 
       # From swap/test/math
 
@@ -64,6 +64,27 @@
   rdfs:comment "Builtins for list membership, binding multiple values." ;
   mf:action <includes/bnodeConclude.n3>;
   mf:result <includes/bnode-conclude-ref.n3>;
+  test:options [test:think true; test:data true;] .
+
+:concat a test:CwmTest;
+  mf:name      "list concatenation" ;
+  rdfs:comment "Builtins for list concatenation." ;
+  mf:action <includes/concat.n3>;
+  mf:result <includes/concat-ref.n3>;
+  test:options [test:think true; test:data true;] .
+
+:conclusion-simple a test:CwmTest;
+  mf:name      "includes-conclusion-simple.n3" ;
+  rdfs:comment "Builtins for log:conclusion." ;
+  mf:action <includes/conclusion-simple.n3>;
+  mf:result <includes/conclusion-simple-ref.n3>;
+  test:options [test:think true; test:data true;] .
+
+:conjunction a test:CwmTest;
+  mf:name      "includes-conjunction.n3" ;
+  rdfs:comment "Builtins for log:conjunction." ;
+  mf:action <includes/conjunction.n3>;
+  mf:result <includes/conjunction-ref.n3>;
   test:options [test:think true; test:data true;] .
 
 # Tests from swap/test/norm
