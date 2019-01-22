@@ -14,10 +14,15 @@ module RDF
   end
 
   class Statement
+    # Override variable?
+    def variable?
+      to_a.any? {|term| !term.is_a?(RDF::Term) || term.variable?} || graph_name && graph_name.variable?
+    end
+
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
-      [(variable? ? :pattern : :triple), subject, predicate, object]
+      [(variable? ? :pattern : :triple), subject, predicate, object, graph_name].compact
     end
 
     ##

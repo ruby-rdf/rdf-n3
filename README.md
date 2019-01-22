@@ -39,7 +39,34 @@ Write a graph to a file:
        writer << graph
     end
 
-### Formulae
+### Reasoning
+Partial N3 reasoning is supported. Instantiate a reasoner from a dataset:
+
+    RDF::N3::Reasoner.new do |reasoner|
+      RDF::N3::Reader.open("etc/foaf.n3") {|reader| reasoner << reader}
+
+       reader.each_statement do |statement|
+         puts statement.inspect
+       end
+    end
+
+Reasoning is performed by turning a repository containing formula and predicate operators into an executable set of operators (similar to the executable SPARQL Algebra). Reasoning adds statements to the base dataset, marked with `:inferred` (e.g. `statement.inferred?`). Predicate operators are defined from the following vocabularies:
+
+* RDF List vocabulary <http://www.w3.org/2000/10/swap/list#>
+  * list:append (not implemented yet - See {RDF::N3::Algebra::ListAppend})
+  * list:in (not implemented yet - See {RDF::N3::Algebra::ListIn})
+  * list:last (not implemented yet - See {RDF::N3::Algebra::ListLast})
+  * list:member (not implemented yet - See {RDF::N3::Algebra::ListMember})
+* RDF Log vocabulary <http://www.w3.org/2000/10/swap/log#>
+  * log:conclusion (not implemented yet - See {RDF::N3::Algebra::LogConclusion})
+  * log:conjunction (not implemented yet - See {RDF::N3::Algebra::LogConjunction})
+  * log:equalTo (See {not implemented yet - RDF::N3::Algebra::LogEqualTo})
+  * log:implies (See {RDF::N3::Algebra::LogImplies})
+  * log:includes (not implemented yet - See {RDF::N3::Algebra::LogIncludes})
+  * log:notEqualTo (not implemented yet - See {RDF::N3::Algebra::LogNotEqualTo})
+  * log:notIncludes (not implemented yet - See {RDF::N3::Algebra::LogNotIncludes})
+  * log:outputString (not implemented yet - See {RDF::N3::Algebra::LogOutputString})
+
 N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the graph_name for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
     @prefix x: <http://example.org/x-ns/#> .
@@ -55,7 +82,7 @@ when turned into an RDF Repository results in the following quads
     _:ora <http://purl.org/dc/elements/1.1/#wrote> _:moby _:form .
     _:ora <http://example.org/x-ns/#firstname> "Ora" _:form .
 
-Reasoning requires the use of the Notation3 Algebra, rather than an `RDF::Repository`. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. So, for example, the following 
+Reasoning requires the use of the Notation3 Algebra, rather than an `RDF::Repository`. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
 
 ### Variables
 N3 Variables are introduced with @forAll, @forSome, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
@@ -95,7 +122,11 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * {RDF::N3}
 * {RDF::N3::Format}
 * {RDF::N3::Reader}
+* {RDF::N3::Reasoner}
 * {RDF::N3::Writer}
+* {RDF::N3::Algebra}
+* {RDF::N3::Algebra::Formula}
+* {RDF::N3::Algebra::LogImplies}
 
 ### Additional vocabularies
 * {RDF::LOG}

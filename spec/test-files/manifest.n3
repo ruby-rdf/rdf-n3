@@ -205,7 +205,7 @@
   test:options [test:think true; test:data true] .
 
 :t06proof a test:CwmTest;
-  mf:name      "reason-t5.n3" ;
+  mf:name      "reason-t6.n3" ;
   rdfs:comment "Proof for a little inference" ;
   mf:action <reason/t6.n3>;
   mf:result <reason/t6-ref.n3>;

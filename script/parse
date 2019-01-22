@@ -20,11 +20,19 @@ def run(input, options)
   Profiler__::start_profile if options[:profile]
   if options[:think]
     # Parse into a new reasoner and evaluate
-    reader_class.new(input, options[:parser_options]) do |reader|
-      reasoner = RDF::N3::Reasoner.new(input, options[:parser_options])
-      repo = reasoner.execute(options)
+    reader_class.new(input, options[:parser_options].merge(logger: nil)) do |reader|
+      reasoner = RDF::N3::Reasoner.new(reader, options[:parser_options])
+      reasoner.reason!(options)
+      repo = RDF::Repository.new
+      if options[:conclusions]
+        repo << reasoner.conclusions
+      elsif options[:data]
+        repo << reasoner.data
+      else
+        repo << reasoner
+      end
       num = repo.count
-      options[:output].puts repo.dump(options[:output_format], base_uri: options[:base_uri], prefixes: reader.prefixes, standard_prefixes: true)    
+      options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
     reader_class.new(input, options[:parser_options]).each do |statement|
@@ -39,7 +47,8 @@ def run(input, options)
     end
   elsif options[:output_format] == :sxp
     reader_class.new(input, options[:parser_options]) do |reader|
-      SXP::Generator.print(reader.to_sxp_bin)
+      reasoner = RDF::N3::Reasoner.new(reader)
+      SXP::Generator.print(reasoner.to_sxp_bin)
     end
   elsif options[:output_format] == :inspect
     reader_class.new(input, options[:parser_options]).each do |statement|
@@ -47,10 +56,10 @@ def run(input, options)
       options[:output].puts statement.inspect
     end
   else
-    r = reader_class.new(input, options[:parser_options])
-    repo = RDF::Repository.new << r
+    reader = reader_class.new(input, options[:parser_options])
+    repo = RDF::Repository.new << reader
     num = repo.count
-    options[:output].puts repo.dump(options[:output_format], base_uri: options[:base_uri], prefixes: r.prefixes, standard_prefixes: true, logger: options[:logger])
+    options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
   end
   if options[:profile]
     Profiler__::stop_profile
@@ -80,13 +89,14 @@ options = {
   parser_options: parser_options,
   logger: logger,
   output: STDOUT,
-  output_format: :ntriples,
+  output_format: :n3,
   input_format: :n3,
 }
 input = nil
 
 OPT_ARGS = [
   ["--apply", GetoptLong::REQUIRED_ARGUMENT, "Apply rules from specified file"],
+  ["--conclusions", GetoptLong::NO_ARGUMENT, "Remove all except conclusions"],
   ["--canonicalize", GetoptLong::NO_ARGUMENT, "Canonize all terms"],
   ["--data", GetoptLong::NO_ARGUMENT, "Remove all except plain RDF triples (formulae, forAll, etc)v"],
   ["--debug", GetoptLong::NO_ARGUMENT, "Debugging output"],
@@ -131,9 +141,10 @@ opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 opts.each do |opt, arg|
   case opt
   when '--apply'        then # Read rules
+  when '--conclusions'  then options[:conclusions] = true
+  when '--canonicalize' then parser_options[:canonicalize] = true
   when "--data"         then options[:data] = true
   when '--debug'        then logger.level = Logger::DEBUG
-  when '--canonicalize' then parser_options[:canonicalize] = true
   when '--errors'       then options[:errors] = true
   when '--execute'      then input = arg
   when '--format'       then options[:output_format] = arg.to_sym

@@ -135,59 +135,6 @@ module RDF::N3
       enum_for(:each_triple)
     end
 
-    ##
-    # Returns the top-level formula for this file
-    #
-    # @return [RDF::N3::Algebra::Formula]
-    def formula
-      # SPARQL used for SSE and algebra functionality
-      require 'sparql' unless defined?(:SPARQL)
-
-      @formula ||= begin
-        formulae = {}
-
-        # Add patterns to appropiate formula based on graph_name,
-        # and replace subject and object bnodes which identify
-        # named graphs with those formula
-        each_statement do |pattern|
-          # A graph name indicates a formula. If not already allocated, create a new formula and use that for inserting statements or other operators
-          form = formulae[pattern.graph_name] ||= begin
-            Algebra::Formula.new(graph_name: pattern.graph_name, **@options)
-          end
-
-          # Formulae may be the subject or object of a known operator
-          if klass = Algebra.for(pattern.predicate)
-            fs = formulae.fetch(pattern.subject, pattern.subject)
-            fo = formulae.fetch(pattern.object, pattern.object)
-            form.operands << klass.new(fs, fo, **@options)
-          else
-            # Add formulae as direct operators
-            if formulae.has_key?(pattern.subject)
-              form.operands << formulae[pattern.subject]
-            end
-            if formulae.has_key?(pattern.object)
-              form.operands << formulae[pattern.object]
-            end
-            pattern.graph_name = nil
-            form.operands << pattern
-          end
-        end
-      end
-
-      # Formula is that without a graph name
-      formulae[nil]
-    end
-
-    ##
-    # Returns the SPARQL S-Expression (SSE) representation of the parsed dataset.
-    # Formulae are represented as subjects and objects in the containing graph, along with their universals and existentials
-    #
-    # @return [Array] `self`
-    # @see    http://openjena.org/wiki/SSE
-    def to_sxp_bin
-      formula.to_sxp_bin
-    end
-
     protected
     # Start of production
     def onStart(prod)

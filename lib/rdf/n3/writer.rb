@@ -159,9 +159,11 @@ module RDF::N3
       start_document
 
       with_graph(nil) do
+        count = 0
         order_subjects.each do |subject|
           unless is_done?(subject)
-            statement(subject)
+            statement(subject, count)
+            count += 1
           end
         end
 
@@ -193,7 +195,7 @@ module RDF::N3
         return nil
       end
 
-      log_debug {"get_pname(#{resource}), std?}"}
+      #log_debug {"get_pname(#{resource}), std?}"}
       pname = case
       when @uri_to_pname.has_key?(uri)
         return @uri_to_pname[uri]
@@ -202,14 +204,14 @@ module RDF::N3
         prefix = @uri_to_prefix[u]
         unless u.to_s.empty?
           prefix(prefix, u) unless u.to_s.empty?
-          log_debug("get_pname") {"add prefix #{prefix.inspect} => #{u}"}
+          #log_debug("get_pname") {"add prefix #{prefix.inspect} => #{u}"}
           uri.sub(u.to_s, "#{prefix}:")
         end
       when @options[:standard_prefixes] && vocab = RDF::Vocabulary.each.to_a.detect {|v| uri.index(v.to_uri.to_s) == 0}
         prefix = vocab.__name__.to_s.split('::').last.downcase
         @uri_to_prefix[vocab.to_uri.to_s] = prefix
         prefix(prefix, vocab.to_uri) # Define for output
-        log_debug {"get_pname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"}
+        #log_debug {"get_pname: add standard prefix #{prefix.inspect} => #{vocab.to_uri}"}
         uri.sub(vocab.to_uri.to_s, "#{prefix}:")
       else
         nil
@@ -282,7 +284,7 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, options = {})
       md = uri.relativize(base_uri)
-      log_debug("relativize") {"#{uri.to_ntriples} => #{md.inspect}"} if md != uri.to_s
+      log_debug("relativize") {"#{uri.to_sxp} => #{md.inspect}"} if md != uri.to_s
       md != uri.to_s ? "<#{md}>" : (get_pname(uri) || "<#{uri}>")
     end
 
@@ -344,12 +346,12 @@ module RDF::N3
 
       # Add distinguished classes
       top_classes.each do |class_uri|
-        repo.query(predicate: RDF.type, object: class_uri, graph_name: false).
+        graph.query(predicate: RDF.type, object: class_uri).
           map {|st| st.subject}.
           sort.
           uniq.
           each do |subject|
-          log_debug("order_subjects") {subject.to_ntriples}
+          log_debug("order_subjects") {subject.to_sxp}
           subjects << subject
           seen[subject] = true
         end
@@ -361,8 +363,8 @@ module RDF::N3
           seen[st.object] = true if @lists.has_key?(st.object)
         end
 
-      # List elements should not be targets for top-level serialization
-      list_elements = @lists.values.map(&:to_a).flatten.compact
+      # List elements which are bnodes should not be targets for top-level serialization
+      list_elements = @lists.values.map(&:to_a).flatten.select(&:node?).compact
 
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
       recursable = (@subjects.keys - list_elements).
@@ -480,7 +482,7 @@ module RDF::N3
       return false if !is_valid_list?(node)
       return false if position == :subject && ref_count(node) > 0
       return false if position == :object && prop_count(node) > 0
-      #log_debug("collection") {"#{node.to_ntriples}, #{position}"}
+      #log_debug("collection") {"#{node.to_sxp}, #{position}"}
 
       @output.write(position == :subject ? "(" : " (")
       log_depth {do_list(node, position)}
@@ -489,10 +491,12 @@ module RDF::N3
 
     # Default singular resource representation.
     def p_term(resource, position)
-      #log_debug("p_term") {"#{resource.to_ntriples}, #{position}"}
+      #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
       l = (position == :subject ? "" : " ") +
       if resource.is_a?(RDF::Query::Variable)
         format_term(RDF::URI(resource.name.to_s))
+      elsif resource == RDF.nil
+        "()"
       else
         format_term(resource, options)
       end
@@ -503,7 +507,7 @@ module RDF::N3
     # Use either collection, blankNodePropertyList or singular resource notation.
     def path(resource, position)
       log_debug("path") do
-        "#{resource.to_ntriples}, " +
+        "#{resource.to_sxp}, " +
         "pos: #{position}, " +
         "{}?: #{formula?(resource, position)}, " +
         "()?: #{is_valid_list?(resource)}, " +
@@ -518,7 +522,7 @@ module RDF::N3
     end
 
     def predicate(resource)
-      log_debug("predicate") {resource.to_ntriples}
+      log_debug("predicate") {resource.to_sxp}
       case resource
       when RDF.type
         @output.write(" a")
@@ -550,8 +554,15 @@ module RDF::N3
     # @return [Integer] the number of properties serialized
     def predicateObjectList(subject, from_bpl = false)
       properties = {}
-      @graph.query(subject: subject) do |st|
-        (properties[st.predicate.to_s] ||= []) << st.object
+      if subject.variable?
+        # Can't query on variable
+        @graph.enum_statement.select {|s| s.subject.equal?(subject)}.each do |st|
+          (properties[st.predicate.to_s] ||= []) << st.object
+        end
+      else
+        @graph.query(subject: subject) do |st|
+          (properties[st.predicate.to_s] ||= []) << st.object
+        end
       end
 
       prop_list = sort_properties(properties)
@@ -584,7 +595,7 @@ module RDF::N3
     def blankNodePropertyList(resource, position)
       return false unless blankNodePropertyList?(resource, position)
 
-      log_debug("blankNodePropertyList") {resource.to_ntriples}
+      log_debug("blankNodePropertyList") {resource.to_sxp}
       subject_done(resource)
       @output.write(position == :subject ? "\n#{indent}[" : ' [')
       num_props = log_depth {predicateObjectList(resource, true)}
@@ -605,14 +616,16 @@ module RDF::N3
     def formula(resource, position)
       return false unless formula?(resource, position)
 
-      log_debug("formula") {resource.to_ntriples}
+      log_debug("formula") {resource.to_sxp}
       subject_done(resource)
       @output.write(position == :subject ? "\n#{indent}{" : ' {')
       log_depth do
         with_graph(resource) do
+          count = 0
           order_subjects.each do |subject|
             unless is_done?(subject)
-              statement(subject)
+              statement(subject, count)
+              count += 1
             end
           end
         end
@@ -630,11 +643,11 @@ module RDF::N3
       true
     end
 
-    def statement(subject)
-      log_debug("statement") {"#{subject.to_ntriples}, bnodePL?: #{blankNodePropertyList?(subject, :subject)}"}
+    def statement(subject, count)
+      log_debug("statement") {"#{subject.to_sxp}, bnodePL?: #{blankNodePropertyList?(subject, :subject)}"}
       subject_done(subject)
       blankNodePropertyList(subject, :subject) || triples(subject)
-      @output.puts
+      @output.puts if count > 0 || graph.graph_name
     end
 
     # Return the number of statements having this resource as a subject other than for list properties
@@ -677,8 +690,15 @@ module RDF::N3
     end
 
     def resource_in_single_graph?(resource)
-      graph_names = @repo.query(subject: resource).map(&:graph_name)
-      graph_names += @repo.query(object: resource).map(&:graph_name)
+      if resource.variable?
+       graph_names = @repo.
+         enum_statement.
+         select {|st| s.subject.equal?(resource) || st.object.equal?(resource)}.
+         map(&:graph_name)
+      else
+        graph_names = @repo.query(subject: resource).map(&:graph_name)
+        graph_names += @repo.query(object: resource).map(&:graph_name)
+      end
       graph_names.uniq.length <= 1
     end
 

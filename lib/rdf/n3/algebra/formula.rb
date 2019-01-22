@@ -90,7 +90,7 @@ module RDF::N3::Algebra
           statement = RDF::Statement.from(terms)
 
           # Sanity checking on statement
-          if statement.subject.nil? || statement.predicate.nil? || statement.object.nil? ||
+          if statement.variable? ||
              statement.predicate.literal? ||
              statement.subject.is_a?(SPARQL::Algebra::Operator) ||
              statement.object.is_a?(SPARQL::Algebra::Operator)

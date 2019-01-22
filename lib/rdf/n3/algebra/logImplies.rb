@@ -53,7 +53,7 @@ module RDF::N3::Algebra
         if !object.solutions.empty?
           # Yield statements into the default graph
           object.each do |statement|
-            block.call(RDF::Statement.from(statement.to_triple))
+            block.call(RDF::Statement.from(statement.to_triple, inferred: true))
           end
         end
       end
