@@ -172,8 +172,11 @@ module RDF::N3
           next if graph_done?(graph_name)
 
           log_debug {"named graph(#{graph_name})"}
+          @output.write("\n#{indent}")
           p_term(graph_name, :subject)
+          @output.write(" ")
           predicate(RDF::OWL.sameAs)
+          @output.write(" ")
           formula(graph_name, :graph_name)
           @output.write(" .\n")
         end
@@ -301,23 +304,23 @@ module RDF::N3
     protected
     # Output @base and @prefix definitions
     def start_document
-      @output.write("#{indent}@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
+      @output.write("@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
 
       log_debug {"start_document: prefixes #{prefixes.inspect}"}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
-        @output.write("#{indent}@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
+        @output.write("@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
 
       unless @universals.empty?
         log_debug {"start_document: universals #{@universals.inspect}"}
         terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
-        @output.write("#{indent}@forAll #{terms.join(', ')} .\n") 
+        @output.write("@forAll #{terms.join(', ')} .\n") 
       end
 
       unless @existentials.empty?
         log_debug {"start_document: universals #{@existentials.inspect}"}
         terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s))}
-        @output.write("#{indent}@forSome #{terms.join(', ')} .\n") 
+        @output.write("@forSome #{terms.join(', ')} .\n") 
       end
     end
 
@@ -469,12 +472,15 @@ module RDF::N3
       list = @lists[l]
       log_debug("do_list") {list.inspect}
       subject_done(RDF.nil)
+      index = 0
       list.each_statement do |st|
         next unless st.predicate == RDF.first
         log_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
+        @output.write(" ") if index > 0
         path(st.object, position)
         subject_done(st.subject)
         position = :object
+        index += 1
       end
     end
 
@@ -484,7 +490,7 @@ module RDF::N3
       return false if position == :object && prop_count(node) > 0
       #log_debug("collection") {"#{node.to_sxp}, #{position}"}
 
-      @output.write(position == :subject ? "(" : " (")
+      @output.write("(")
       log_depth {do_list(node, position)}
       @output.write(')')
     end
@@ -492,8 +498,7 @@ module RDF::N3
     # Default singular resource representation.
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
-      l = (position == :subject ? "" : " ") +
-      if resource.is_a?(RDF::Query::Variable)
+      l = if resource.is_a?(RDF::Query::Variable)
         format_term(RDF::URI(resource.name.to_s))
       elsif resource == RDF.nil
         "()"
@@ -525,11 +530,11 @@ module RDF::N3
       log_debug("predicate") {resource.to_sxp}
       case resource
       when RDF.type
-        @output.write(" a")
+        @output.write("a")
       when RDF::OWL.sameAs
-        @output.write(" =")
+        @output.write("=")
       when RDF::N3::Log.implies
-        @output.write(" =>")
+        @output.write("=>")
       else
         path(resource, :predicate)
       end
@@ -575,6 +580,7 @@ module RDF::N3
         begin
           @output.write(";\n#{indent(2)}") if i > 0
           predicate(RDF::URI.intern(prop))
+          @output.write(" ")
           objectList(properties[prop])
         end
       end
@@ -597,9 +603,9 @@ module RDF::N3
 
       log_debug("blankNodePropertyList") {resource.to_sxp}
       subject_done(resource)
-      @output.write(position == :subject ? "\n#{indent}[" : ' [')
+      @output.write(position == :subject ? "\n#{indent}[" : '[')
       num_props = log_depth {predicateObjectList(resource, true)}
-      @output.write((num_props > 1 ? "\n#{indent}" : "") + (position == :object ? ']' : '] .'))
+      @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :object ? ']' : '] .'))
       true
     end
 
@@ -618,7 +624,7 @@ module RDF::N3
 
       log_debug("formula") {resource.to_sxp}
       subject_done(resource)
-      @output.write(position == :subject ? "\n#{indent}{" : ' {')
+      @output.write('{')
       log_depth do
         with_graph(resource) do
           count = 0
@@ -638,8 +644,9 @@ module RDF::N3
     def triples(subject)
       @output.write("\n#{indent}")
       path(subject, :subject)
-      predicateObjectList(subject)
-      @output.write(" .")
+      @output.write(" ")
+      num_props = predicateObjectList(subject)
+      @output.write("#{num_props > 0 ? ' ' : ''}.")
       true
     end
 

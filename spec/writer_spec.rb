@@ -97,7 +97,7 @@ describe RDF::N3::Writer do
       },
       "bare anon" => {
         input: %(@prefix ex: <http://example.com/> . [ex:a ex:b] .),
-        regexp: [%r(^\s*\[ ex:a ex:b\] \.$)],
+        regexp: [%r(^\s*\[ex:a ex:b\] \.$)],
       },
       "anon as subject" => {
         input: %(@prefix ex: <http://example.com/> . [ex:a ex:b] ex:c ex:d .),
@@ -108,7 +108,7 @@ describe RDF::N3::Writer do
       },
       "anon as object" => {
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b [ex:c ex:d] .),
-        regexp: [%r(^ex:a ex:b \[ ex:c ex:d\] \.$)],
+        regexp: [%r(^ex:a ex:b \[ex:c ex:d\] \.$)],
       },
       "reuses BNode labels by default" => {
         input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
@@ -188,6 +188,14 @@ describe RDF::N3::Writer do
       "list anon": {
         input: %(@prefix ex: <http://example.com/> . [ex:twoAnons ([a ex:mother] [a ex:father])] .),
         regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)]
+      },
+      "list subjects": {
+        input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) . ex:a a ex:Thing . ex:b a ex:Thing .),
+        regexp: [
+          %r(\(ex:a ex:b\) \.),
+          %r(ex:a a ex:Thing \.),
+          %r(ex:b a ex:Thing \.),
+        ]
       },
       "owl:unionOf list": {
         input: %(
@@ -480,7 +488,7 @@ describe RDF::N3::Writer do
       "empty subject" => {
         input: %({} <b> <c> .),
         regexp: [
-          %r(\[ <b> <c>\] \.)
+          %r(\[<b> <c>\] \.)
         ]
       },
       "empty object" => {
@@ -519,18 +527,18 @@ describe RDF::N3::Writer do
           @prefix ex:   <http://www.example.net/2000/10/whatever#> .
           @prefix contact:  <http://www.w3.org/2000/10/swap/pim/contact#> .
           []
-            doc:creator [ contact:email <mailto:fred@example.com> ];
+            doc:creator [contact:email <mailto:fred@example.com> ];
             ex:says  {
               [] doc:title "Huckleberry Finn";
-                doc:creator [ contact:knownAs "Mark Twain"]
+                doc:creator [contact:knownAs "Mark Twain"]
             }.
         ),
         regexp: [
           %r(\[\s+ex:says {\s+\[)m,
-          %r(doc:creator \[ contact:knownAs "Mark Twain"\];),
+          %r(doc:creator \[contact:knownAs "Mark Twain"\];),
           %r(doc:title "Huckleberry Finn"),
           %r(\] \.\s+};)m,
-          %r(doc:creator \[ contact:email <mailto:fred@example.com>)
+          %r(doc:creator \[contact:email <mailto:fred@example.com>)
         ]
       },
       "named with URI" => {
