@@ -604,6 +604,55 @@ describe RDF::N3::Writer do
     end
   end
 
+  # W3C TriG Test suite
+  describe "w3c n3 parser tests" do
+    require_relative 'suite_helper'
+
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
+      describe m.comment do
+        m.entries.each do |t|
+          next unless t.positive_test? && t.evaluate?
+          specify "#{t.name}: #{t.comment} (action)" do
+            case t.name
+            when *%w(n3_10003 n3_10004 n3_10008)
+              skip "Blank Node predicates"
+            when *%w(n3_10012 n3_10016 n3_10017)
+              pending "Investigate"
+            when *%w(n3_10013)
+              pending "Number syntax"
+            end
+            logger.info t.inspect
+            logger.info "source: #{t.input}"
+            repo = parse(t.input, base_uri: t.base)
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
+            logger.info "serialized: #{n3}"
+            g2 = parse(n3, base_uri: t.base)
+            expect(g2).to be_equivalent_graph(repo, logger: logger)
+          end
+
+          specify "#{t.name}: #{t.comment} (result)" do
+            case t.name
+            when *%w(n3_10003 n3_10004 n3_10008)
+              skip "Blank Node predicates"
+            when *%w(n3_10012 n3_10016 n3_10017)
+              pending "Investigate"
+            when *%w(n3_10013)
+              pending "Number syntax"
+            end
+            logger.info t.inspect
+            logger.info "source: #{t.expected}"
+            format = detect_format(t.expected)
+            repo = parse(t.expected, base_uri: t.base, format: format)
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
+            logger.info "serialized: #{n3}"
+            g2 = parse(n3, base_uri: t.base)
+            expect(g2).to be_equivalent_graph(repo, logger: logger)
+          end
+        end
+      end
+    end
+  end unless ENV['CI']
+
   def parse(input, format: :n3, **options)
     repo = RDF::Repository.new
     reader = RDF::Reader.for(format)

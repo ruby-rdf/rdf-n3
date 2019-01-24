@@ -700,7 +700,7 @@ module RDF::N3
       if resource.variable?
        graph_names = @repo.
          enum_statement.
-         select {|st| s.subject.equal?(resource) || st.object.equal?(resource)}.
+         select {|st| st.subject.equal?(resource) || st.object.equal?(resource)}.
          map(&:graph_name)
       else
         graph_names = @repo.query(subject: resource).map(&:graph_name)
