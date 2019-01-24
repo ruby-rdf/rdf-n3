@@ -4,8 +4,8 @@ require 'json/ld'
 # For now, override RDF::Utils::File.open_file to look for the file locally before attempting to retrieve it
 module RDF::Util
   module File
-    REMOTE_PATH = "http://www.w3.org/2000/10/swap/"
-    LOCAL_PATH = ::File.expand_path("../swap", __FILE__) + '/'
+    REMOTE_PATH = "https://w3c.github.io/n3/"
+    LOCAL_PATH = ::File.expand_path("../w3c-n3", __FILE__) + '/'
 
     class << self
       alias_method :original_open_file, :open_file
@@ -67,35 +67,61 @@ end
 
 module Fixtures
   module SuiteTest
-    BASE = "http://www.w3.org/2000/10/swap/test/"
-    CONTEXT = JSON.parse(%q({
-      "n3test": "http://www.w3.org/2004/11/n3test#",
-
-      "inputDocument": {"@id": "n3test:inputDocument", "@type": "@id"},
-      "outputDocument": {"@id": "n3test:outputDocument", "@type": "@id"},
-      "description": "n3test:description"
+    FRAME = JSON.parse(%q({
+      "@context": {
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
+        "mq": "http://www.w3.org/2001/sw/DataAccess/tests/test-query#",
+        "rdft": "http://www.w3.org/ns/rdftest#",
+        "test": "https://w3c.github.io/n3/tests/test.n3#",
+        "comment": "rdfs:comment",
+        "entries": {"@id": "mf:entries", "@container": "@list"},
+        "name": "mf:name",
+        "action": {"@id": "mf:action", "@type": "@id"},
+        "result": {"@id": "mf:result", "@type": "@id"},
+        "options": {"@id": "test:options", "@type": "@id"},
+        "data": {"@id": "test:data", "@type": "xsd:boolean"},
+        "think": {"@id": "test:think", "@type": "xsd:boolean"},
+        "filter": {"@id": "test:filter", "@type": "xsd:boolean"},
+        "rules": {"@id": "test:rules", "@type": "xsd:boolean"}
+      },
+      "@type": "mf:Manifest",
+      "entries": {
+        "@type": [
+          "test:TestN3Reason",
+          "test:TestN3Eval",
+          "test:TestN3PositiveSyntax",
+          "test:TestN3NegativeSyntax"
+        ]
+      }
     }))
-
-    class Entry < JSON::LD::Resource
+ 
+    class Manifest < JSON::LD::Resource
       def self.open(file)
         #puts "open: #{file}"
-        g = RDF::Repository.load(file, format: :n3)
+        g = RDF::Repository.load(file, format:  :n3)
         JSON::LD::API.fromRDF(g) do |expanded|
-          JSON::LD::API.compact(expanded, CONTEXT) do |doc|
-            doc['@graph'].map {|r| Entry.new(r)}.
-            reject {|r| Array(r.attributes['@type']).empty?}.
-            sort_by(&:name).
-            each {|t| yield(t)}
+          JSON::LD::API.frame(expanded, FRAME) do |framed|
+            yield Manifest.new(framed['@graph'].first)
           end
         end
       end
+
+      def entries
+        # Map entries to resources
+        attributes['entries'].map {|e| Entry.new(e)}
+      end
+    end
+
+    class Entry < JSON::LD::Resource
       attr_accessor :logger
 
       # For debug output formatting
       def format; :n3; end
 
       def base
-        inputDocument
+        action
       end
 
       def name
@@ -104,11 +130,11 @@ module Fixtures
 
       # Alias data and query
       def input
-        RDF::Util::File.open_file(inputDocument)
+        @input ||= RDF::Util::File.open_file(action) {|f| f.read}
       end
 
       def expected
-        RDF::Util::File.open_file(outputDocument)
+        @expected ||= RDF::Util::File.open_file(result) {|f| f.read}
       end
 
       def positive_test?
@@ -120,16 +146,23 @@ module Fixtures
       end
 
       def evaluate?
-        !syntax?
+        !!attributes['@type'].to_s.match(/Eval/)
       end
 
       def syntax?
-        !outputDocument
+        !!attributes['@type'].to_s.match(/Syntax/)
+      end
+
+      def reason?
+        !!attributes['@type'].to_s.match(/Reason/)
       end
 
       def inspect
         super.sub('>', "\n" +
         "  positive?: #{positive_test?.inspect}\n" +
+        "  syntax?: #{syntax?.inspect}\n" +
+        "  eval?: #{evaluate?.inspect}\n" +
+        "  reason?: #{reason?.inspect}\n" +
         ">"
       )
       end
