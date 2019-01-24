@@ -2,7 +2,7 @@
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#name> "RDF::N3" .
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#homepage> <http://github.com/ruby-rdf/rdf-n3> .
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#license> <http://creativecommons.org/licenses/publicdomain/> .
-<http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#shortdesc> "N3 reader/writer for Ruby."@en .
+<http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#shortdesc> "N3 reader/writer reader/writer and reasoner for Ruby."@en .
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#description> "RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite."@en .
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#created> "2010-06-03"^^<http://www.w3.org/2001/XMLSchema#date> .
 <http://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#programming-language> "Ruby" .

@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.name                  = %q{rdf-n3}
   gem.homepage              = %q{http://ruby-rdf.github.com/rdf-n3}
   gem.license               = 'Unlicense'
-  gem.summary               = %q{Notation3 reader/writer for RDF.rb.}
-  gem.description           = %q{RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite.}
+  gem.summary               = %q{Notation3 reader/writer and reasoner for RDF.rb.}
+  gem.description           = %q{RDF::N3 is an Notation-3 reader/writer and reasoner for the RDF.rb library suite.}
 
   gem.authors               = %w(Gregg Kellogg)
   gem.email                 = 'public-rdf-ruby@w3.org'

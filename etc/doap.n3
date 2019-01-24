@@ -12,7 +12,7 @@
   doap:homepage      <http://github.com/ruby-rdf/rdf-n3> ;
   doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
   doap:shortdesc     "N3 reader/writer for Ruby."@en ;
-  doap:description   "RDF::N3 is an Notation-3 reader/writer for the RDF.rb library suite."@en ;
+  doap:description   "RDF::N3 is an Notation-3 reader/writer and reasoner for the RDF.rb library suite."@en ;
   doap:created       "2010-06-03"^^xsd:date;
   doap:programming-language "Ruby" ;
   doap:implements    <http://www.w3.org/DesignIssues/Notation3.html> ;

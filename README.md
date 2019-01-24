@@ -1,11 +1,11 @@
-# RDF::N3 reader/writer
+# RDF::N3 reader/writer and reasoner
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
 [![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](http://badge.fury.io/rb/rdf-n3)
 [![Build Status](https://travis-ci.org/ruby-rdf/rdf-n3.png?branch=master)](http://travis-ci.org/ruby-rdf/rdf-n3)
 
 ## Description
-RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite.
+RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite. Also implements N3 Entailment.
 
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
@@ -14,13 +14,12 @@ Support for Turtle mime-types and specific format support has been deprecated fr
 as Turtle is now implemented using [RDF::Turtle][RDF::Turtle].
 
 ## Features
-RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] into statements or triples. It also serializes to Turtle.
+RDF::N3 parses [Notation-3][N3], [Turtle][Turtle] and [N-Triples][N-Triples] into statements or quads. It also performs reasoning and serializes to N3.
 
 Install with `gem install rdf-n3`
 
 ## Limitations
-* Support for Variables in Formulae dependent on underlying repository. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
-* No support for N3 Reification. If there were, it would be through a :reify option to the reader.
+* Support for Variables in Formulae. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
 
 ## Usage
 Instantiate a reader from a local file:
@@ -82,7 +81,7 @@ when turned into an RDF Repository results in the following quads
     _:ora <http://purl.org/dc/elements/1.1/#wrote> _:moby _:form .
     _:ora <http://example.org/x-ns/#firstname> "Ora" _:form .
 
-Reasoning requires the use of the Notation3 Algebra, rather than an `RDF::Repository`. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
+Reasoning uses a Notation3 Algebra, similar to [SPARQL S-Expressions](). This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
 
 ### Variables
 N3 Variables are introduced with @forAll, @forSome, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
@@ -108,12 +107,8 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 
 [n3-selectors.n3][file:lib/rdf/n3/reader/n3-selectors.rb] is itself used to generate meta.rb using script/build_meta.
 
-## TODO
-* Generate Formulae and solutions using BGP and SPARQL CONSTRUCT mechanisms
-* Create equivalent to `--think` to iterate on solutions.
-
 ## Dependencies
-* [RDF.rb](http://rubygems.org/gems/rdf) (>= 3.0)
+* [RDF.rb](http://rubygems.org/gems/rdf) (~> 3.0, >= 3.0.10)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-rdf/rdf-n3/frames)
@@ -125,16 +120,28 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 * {RDF::N3::Reasoner}
 * {RDF::N3::Writer}
 * {RDF::N3::Algebra}
-* {RDF::N3::Algebra::Formula}
-* {RDF::N3::Algebra::LogImplies}
+  * {RDF::N3::Algebra::Formula}
+  * {RDF::N3::Algebra::ListAppend}
+  * {RDF::N3::Algebra::ListIn}
+  * {RDF::N3::Algebra::ListLast}
+  * {RDF::N3::Algebra::ListMember}
+  * {RDF::N3::Algebra::LogConclusion}
+  * {RDF::N3::Algebra::LogConjunction}
+  * {RDF::N3::Algebra::LogEqualTo}
+  * {RDF::N3::Algebra::LogImplies}
+  * {RDF::N3::Algebra::LogIncludes}
+  * {RDF::N3::Algebra::LogNotEqualTo}
+  * {RDF::N3::Algebra::LogNotIncludes}
+  * {RDF::N3::Algebra::LogOutputString}
 
 ### Additional vocabularies
-* {RDF::LOG}
-* {RDF::REI}
-
-### Patches
-* `Array`
-* `RDF::List`
+* {RDF::N3::Log}
+* {RDF::N3::Rei}
+* {RDF::N3::Crypto}
+* {RDF::N3::List}
+* {RDF::N3::Math}
+* {RDF::N3::Str}
+* {RDF::N3::Time}
 
 ## Resources
 * [RDF.rb][RDF.rb]
@@ -189,3 +196,4 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 [YARD]:         http://yardoc.org/
 [YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[SPARQL S-Expressions]: https://jena.apache.org/documentation/notes/sse.html
