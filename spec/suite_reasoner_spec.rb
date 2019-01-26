@@ -9,7 +9,7 @@ describe RDF::N3::Reader do
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-reasoner.n3") do |m|
       describe m.label do
         m.entries.each do |t|
-          specify "#{t.name}: #{t.description}" do
+          specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
             when *%w{listin bnode concat t2006}
               pending "support for lists"
@@ -51,7 +51,6 @@ describe RDF::N3::Reader do
               begin
                 if t.options["think"]
                   reasoner.execute(logger: t.logger, think: t.options['think'])
-                  reasoner.reason!(logger: t.logger, think: t.options['think'])
                   if t.options["conclusions"]
                     repo << reasoner.conclusions
                   elsif t.options["data"]
@@ -65,7 +64,7 @@ describe RDF::N3::Reader do
               rescue Exception => e
                 expect(e.message).to produce("Not exception #{e.inspect}: #{e.backtrace.join("\n")}", t)
               end
-              if t.evaluate?
+              if t.evaluate? || t.reason?
                 output_repo = RDF::Repository.load(t.result, format: :n3, base_uri:  t.base)
                 expect(repo).to be_equivalent_graph(output_repo, t)
               else

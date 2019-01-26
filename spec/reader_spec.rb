@@ -924,6 +924,15 @@ describe "RDF::N3::Reader" do
         expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
       end
 
+      it "creates unique bnodes within different formula" do
+        n3 = %(
+          _:a a :Thing .
+          {_:a a :Thing} => {_:a a :Thing}
+        )
+        result = parse(n3, repo: @repo, base_uri: "http://a/b")
+        expect(result.statements.uniq.length).to eq 4
+      end
+
       context "contexts" do
         before(:each) do
           n3 = %(

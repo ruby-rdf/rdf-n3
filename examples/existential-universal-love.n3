@@ -1,0 +1,8 @@
+:Raymond a :Person .
+:Julie a :Person; :loves :Raymond .
+:Steve a :Person; :loves :Raymond .
+:Nancy a :Person; :loves :Raymond .
+
+@forAll :g .
+@forSome :h .
+{:g :loves :h} => {:g a :Lover} .

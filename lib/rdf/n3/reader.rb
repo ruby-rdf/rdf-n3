@@ -66,6 +66,8 @@ module RDF::N3
 
         @formulae = []      # Nodes used as Formulae graph names
         @formulae_nodes = {}
+        @label_uniquifier ||= "#{Random.new_seed}_000000"
+        @bnodes = {}  # allocated bnodes by formula
         @variables = {}  # allocated variables by formula
 
         if options[:base_uri]
@@ -344,15 +346,14 @@ module RDF::N3
         add_prod_data(:symbol, symbol)
       when "{"
         # A new formula, push on a node as a named graph
-        # XXX use existential if embedded?
-        node = RDF::Node.new
+        node = RDF::Node.new(".form_#{unique_label}")
         @formulae << node
         @formulae_nodes[node] = true
 
         # Promote variables defined on the earlier formula to this formula
         @variables[node] = {}
-        @variables[@formulae[-2]].each do |name, vars|
-          @variables[node][name] = vars.dup
+        @variables[@formulae[-2]].each do |name, var|
+          @variables[node][name] = var
         end
       when "}"
         # Pop off the formula
@@ -612,7 +613,7 @@ module RDF::N3
         # old parser encountering true or false naked or in a @keywords
         return RDF::Literal.new(tok, datatype: RDF::XSD.boolean)
       else
-        error("Set user @keywords to use barenames.")
+        error("Set user @keywords to use barenames (#{tok}).")
       end
 
       uri = if prefix(prefix)
@@ -621,6 +622,7 @@ module RDF::N3
       elsif prefix == '_'
         log_debug('process_qname(bnode)', name, depth: depth)
         # If we're in a formula, create a non-distigushed variable instead
+        # Note from https://www.w3.org/TeamSubmission/n3/#bnodes, it seems the blank nodes are scoped to the formula, not the file.
         bnode(name)
       else
         log_debug('process_qname(default_ns)', name, depth: depth)
@@ -643,23 +645,20 @@ module RDF::N3
       end
     end
 
-    # Keep track of allocated BNodes
-    def bnode(value = nil)
-      if value
-        @bnode_cache ||= {}
-        @bnode_cache[value.to_s] ||= RDF::Node.new(value)
+    # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
+    def bnode(label = nil)
+      if label
+        value = "#{label}_#{unique_label}"
+        (@bnodes[@formulae.last] ||= {})[label.to_s] ||= RDF::Node.new(value)
       else
         RDF::Node.new
       end
     end
 
     def univar(label, distinguished: true)
-      unless label
-        @unnamed_label ||= "var0"
-        label = @unnamed_label = @unnamed_label.succ
-      end
-      #label = "_:#{label}" unless distinguished || label.start_with?('_:')
-      RDF::Query::Variable.new(label.to_s, distinguished: distinguished)
+      # Label using any provided label, followed by seed, followed by incrementing index
+      value = "#{label}_#{unique_label}"
+      RDF::Query::Variable.new(value, distinguished: distinguished)
     end
 
     # add a pattern or statement
@@ -719,22 +718,27 @@ module RDF::N3
       uri(base + suffix.to_s)
     end
 
+    # Returns a unique label
+    def unique_label
+      label, @label_uniquifier = @label_uniquifier, @label_uniquifier.succ
+      label
+    end
+
     # Find any variable that may be defined in the formula identified by `bn`
     # @param [RDF::Node] bn name of formula
     # @param [#to_s] name
     # @return [RDF::Query::Variable]
     def find_var(sym, name)
-      (@variables[sym] ||= {}).fetch(name.to_s, []).last
+      (@variables[sym] ||= {})[name.to_s]
     end
 
-    # Add a variable to the formula identified by `bn`, returning the formula
+    # Add a variable to the formula identified by `bn`, returning the variable. Useful as an LRU for variable name lookups
     # @param [RDF::Node] bn name of formula
     # @param [#to_s] name of variable for lookup
     # @param [RDF::Query::Variable] var
     # @return [RDF::Query::Variable]
     def add_var_to_formula(bn, name, var)
-      ((@variables[bn] ||= {})[name.to_s] ||= []) << var
-      var
+      (@variables[bn] ||= {})[name.to_s] = var
     end
   end
 end

@@ -112,12 +112,7 @@ describe RDF::N3::Writer do
       },
       "reuses BNode labels by default" => {
         input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
-        regexp: [%r(^\s*_:a ex:b _:a \.$)]
-      },
-      "generated BNodes with :unique_bnodes" => {
-        input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
-        regexp: [%r(^\s*_:g\w+ ex:b _:g\w+ \.$)],
-        unique_bnodes: true
+        regexp: [%r(^\s*_:a(_\d+_\d+) ex:b _:a\1 \.$)]
       },
       "standard prefixes" => {
         input: %(
@@ -510,9 +505,9 @@ describe RDF::N3::Writer do
         ]
       },
       "implies" => {
-        input: %({ _:x :is :happy } => {_:x :is :happy } .),
+        input: %({ _:x :is _:x } => {_:x :is _:x } .),
         regexp: [
-          %r({\s+_:x :is :happy \.\s+} => {\s+_:x :is :happy \.\s+} \.)m
+          %r({\s+_:x(_\d+_\d+) :is _:x\1 \.\s+} => {\s+_:x(_\d+_\d+) :is _:x\2 \.\s+} \.)m
         ]
       },
       "formula simple" => {
@@ -579,22 +574,22 @@ describe RDF::N3::Writer do
       "@forAll": {
         input: %(@forAll :o. :s :p :o .),
         regexp: [
-          %r(@forAll :o \.),
-          %r(:s :p :o \.),
+          %r(@forAll :o_\d+_\d+ \.),
+          %r(:s :p :o_\d+_\d+ \.),
         ]
       },
       "@forSome": {
         input: %(@forSome :o. :s :p :o .),
         regexp: [
-          %r(@forSome :o \.),
-          %r(:s :p :o \.),
+          %r(@forSome :o_\d+_\d+ \.),
+          %r(:s :p :o_\d+_\d+ \.),
         ]
       },
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
-          %r(@forAll :o \.),
-          %r(:s :p :o \.),
+          %r(@forAll :o_\d+_\d+ \.),
+          %r(:s :p :o_\d+_\d+ \.),
         ]
       },
     }.each do |name, params|

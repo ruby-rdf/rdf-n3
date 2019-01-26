@@ -9,7 +9,7 @@ describe RDF::N3::Reader do
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
       describe m.label do
         m.entries.each do |t|
-          specify "#{t.name}: #{t.description}" do
+          specify "#{t.name}: #{t.comment}" do
             case t.name
             when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
               pending("Reification not supported")

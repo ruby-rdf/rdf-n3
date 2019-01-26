@@ -149,6 +149,10 @@ module Fixtures
         !!attributes['@type'].to_s.match(/Eval/)
       end
 
+      def reason?
+        !!attributes['@type'].to_s.match(/Reason/)
+      end
+
       def syntax?
         !!attributes['@type'].to_s.match(/Syntax/)
       end
