@@ -96,7 +96,7 @@ module RDF::N3
     end
 
     ##
-    # Updates the datastore by reasoning over the formula, optionally yielding each conclusion
+    # Updates the datastore by reasoning over the formula, optionally yielding each conclusion; uses triples from the graph associated with this formula as the dataset over which to reason.
     #
     # @param  [Hash{Symbol => Object}] options
     # @option options [Boolean] :apply
@@ -113,14 +113,16 @@ module RDF::N3
         log_info("reasoner: think start") { "count: #{count}"}
         while @mutable.count > count
           count = @mutable.count
-          log_depth {formula.execute(@mutable, **options)}
+          dataset = RDF::Graph.new << @mutable.project_graph(nil)
+          log_depth {formula.execute(dataset, **options)}
           @mutable << formula
         end
         log_info("reasoner: think end") { "count: #{count}"}
       else
         # Run one iteration
         log_info("reasoner: apply start") { "count: #{count}"}
-        log_depth {formula.execute(@mutable, **options)}
+        dataset = RDF::Graph.new << @mutable.project_graph(nil)
+        log_depth {formula.execute(dataset, **options)}
         @mutable << formula
         log_info("reasoner: apply end") { "count: #{count}"}
       end
@@ -269,6 +271,12 @@ module RDF::N3
             pattern.graph_name = nil
             form.operands << pattern
           end
+        end
+
+        # Order operands in each formula by either the graph_name or subject
+        formulae.each_value do |operator|
+          next unless operator.is_a?(Algebra::Formula)
+          operator.reorder_operands!
         end
 
         # Formula is that without a graph name

@@ -27,9 +27,10 @@ module RDF::N3::Algebra
     # @yieldreturn [void] ignored
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, **options, &block)
-      log_debug {"logImplies #{operands.to_sxp}"}
+      @queryable = queryable
+      log_debug {"logImplies #{graph_name}"}
       @solutions = log_depth {operands.first.execute(queryable, **options, &block)}
-      log_debug {"(logImplies solutions) #{@solutions.inspect}"}
+      log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
       @solutions
     end
 
@@ -42,21 +43,31 @@ module RDF::N3::Algebra
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      log_debug {"logImplies each #{@solutions.inspect}"}
-      _, object = operands
+      log_debug {"logImplies #{graph_name} each #{@solutions.to_sxp}"}
+      subject, object = operands
+
+      # Graph based on solutions from subject
+      subject_graph = log_depth {RDF::Graph.new {|g| g << subject}}
 
       # Use solutions from subject for object
-      log_depth do
-        object.solutions = @solutions
+      object.solutions = @solutions
 
-        # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
-        if !object.solutions.empty?
-          # Yield statements into the default graph
+      # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
+      if @queryable.contain?(subject_graph)
+        log_debug("(logImplies implication true)")
+        # Yield statements into the default graph
+        log_depth do
           object.each do |statement|
             block.call(RDF::Statement.from(statement.to_triple, inferred: true))
           end
         end
+      else
+        log_debug("(logImplies implication false)")
       end
     end
+
+    # Graph name associated with this operation, using the name of the first operand
+    # @return [RDF::Resource]
+    def graph_name; operands.first {|o| o.respond_to?(:graph_name)}.graph_name; end
   end
 end

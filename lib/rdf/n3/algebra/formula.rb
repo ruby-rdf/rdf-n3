@@ -29,24 +29,21 @@ module RDF::N3::Algebra
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, **options, &block)
       log_debug {"formula #{graph_name} #{operands.to_sxp}"}
+      log_debug {"(formula bindings) #{options.fetch(:bindings, {}).map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
 
-      @query ||= RDF::Query.new(patterns)
-      @solutions = queryable.query(@query, **options)
+      # Only query as patterns if this is an embedded formula
+      @query ||= RDF::Query.new(patterns).optimize!
+      @solutions = @query.patterns.empty? ? RDF::Query::Solutions.new : queryable.query(@query, **options)
+      @solutions.distinct!
 
+      # Use our solutions for sub-ops, without binding solutions from those sub-ops
       # Join solutions from other operands
       log_depth do
         sub_ops.each do |op|
-          old_solutions, @solutions = @solutions, RDF::Query::Solutions.new
-          
-          ## XXX consider if this scope introduces new variables with same names
-          op.execute(queryable, bindings: old_solutions.bindings) do |soln|
-            log_debug {"(formula execute object) => #{soln.inspect}"}
-            @solutions << soln
-          end
+          op.execute(queryable, bindings: @solutions.bindings)
         end
       end
-      @solutions.distinct!
-      log_debug {"(formula solutions) #{@solutions.inspect}"}
+      log_debug {"(formula solutions) #{@solutions.to_sxp}"}
       @solutions
     end
 
@@ -66,7 +63,7 @@ module RDF::N3::Algebra
           )]
         )
       end
-      log_debug {"formula #{graph_name} each #{@solutions.inspect}"}
+      log_debug {"formula #{graph_name} each #{@solutions.to_sxp}"}
 
       # Yield constant statements/patterns
       constants.each do |pattern|
@@ -76,7 +73,7 @@ module RDF::N3::Algebra
 
       # Yield patterns by binding variables
       @solutions.each do |solution|
-        log_debug {"(formula apply) #{solution.inspect} to BGP"}
+        log_debug {"(formula apply) #{solution.to_sxp} to BGP"}
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
           terms = {}
@@ -125,15 +122,20 @@ module RDF::N3::Algebra
         select {|op| op.is_a?(RDF::Statement)}.
         map do |pattern|
 
-        terms = {}
-        [:subject, :predicate, :object].each do |r|
-          terms[r] = case o = pattern.send(r)
-          when RDF::Node then RDF::Query::Variable.new(o.id, distinguished: false)
-          else                o
+        # Map nodes to variables (except when in top-level formula)
+        if graph_name
+          terms = {}
+          [:subject, :predicate, :object].each do |r|
+            terms[r] = case o = pattern.send(r)
+            when RDF::Node then RDF::Query::Variable.new(o.id, distinguished: false)
+            else                o
+            end
           end
-        end
 
-        RDF::Query::Pattern.from(terms)
+          RDF::Query::Pattern.from(terms)
+        else
+          RDF::Query::Pattern.from(pattern)
+        end
       end
     end
 
@@ -154,8 +156,14 @@ module RDF::N3::Algebra
     ##
     # Non-statement operands memoizer
     def sub_ops
-      # BNodes in statements are existential variables
+      # operands that aren't statements, ordered by their graph_name
       @sub_ops ||= operands.reject {|op| op.is_a?(RDF::Statement)}
+    end
+
+    ##
+    # Reorder operands by graph_name or subject
+    def reorder_operands!
+      @operands = @operands.sort_by {|op| op.graph_name || op.subject}
     end
 
     def to_sxp_bin

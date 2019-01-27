@@ -11,6 +11,15 @@ module RDF
     # Universal quantifiers defined on this enumerable
     # @return [Array<RDF::Query::Variable>]
     attr_accessor :universals
+
+    ##
+    # An enumerable contains another enumerable if every statement in other is a statement in self
+    #
+    # @param [RDF::Enumerable] other
+    # @return [Boolean]
+    def contain?(other)
+      other.all? {|statement| has_statement?(statement)}
+    end
   end
 
   class Statement
@@ -23,6 +32,40 @@ module RDF
     # @return [Array]
     def to_sxp_bin
       [(variable? ? :pattern : :triple), subject, predicate, object, graph_name].compact
+    end
+
+    ##
+    # Returns an S-Expression (SXP) representation
+    #
+    # @return [String]
+    def to_sxp
+      to_sxp_bin.to_sxp
+    end
+  end
+
+  class Query::Solution
+
+    # Transform Statement into an SXP
+    # @return [Array]
+    def to_sxp_bin
+      [:solution] + bindings.map {|k, v| Query::Variable.new(k, v).to_sxp_bin}
+    end
+
+    ##
+    # Returns an S-Expression (SXP) representation
+    #
+    # @return [String]
+    def to_sxp
+      to_sxp_bin.to_sxp
+    end
+  end
+
+  class Query::Variable
+
+    # Transform Statement into an SXP
+    # @return [Array]
+    def to_sxp_bin
+      [:var, name, (value.to_sxp_bin if value)].compact
     end
 
     ##

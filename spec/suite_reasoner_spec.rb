@@ -15,8 +15,6 @@ describe RDF::N3::Reader do
               pending "support for lists"
             when *%w{t1018b2 t103 t104 t105 concat}
               pending "support for string"
-            when *%w{t2005 t555}
-              pending "understanding output filtering"
             when *%w{t06proof}
               pending "support for math"
             when *%w{t01}
@@ -25,9 +23,9 @@ describe RDF::N3::Reader do
               pending "support for log:conclusion"
             when *%w{conjunction}
               pending "support for log:conjunction"
-            when *%w{t553 t554}
+            when *%w{t553}
               pending "support for inference over quoted graphs"
-            when *%w{norm}
+            when *%w{t2005}
               pending "something else"
             end
 
@@ -38,8 +36,7 @@ describe RDF::N3::Reader do
             reader = RDF::N3::Reader.new(t.input,
                 base_uri: t.base,
                 canonicalize: false,
-                validate: false,
-                logger: t.logger)
+                validate: false)
 
             reasoner = RDF::N3::Reasoner.new(reader,
                 base_uri:  t.base,
@@ -49,17 +46,13 @@ describe RDF::N3::Reader do
 
             if t.positive_test?
               begin
-                if t.options["think"]
-                  reasoner.execute(logger: t.logger, think: t.options['think'])
-                  if t.options["conclusions"]
-                    repo << reasoner.conclusions
-                  elsif t.options["data"]
-                    repo << reasoner.data
-                  else
-                    repo << reasoner
-                  end
+                reasoner.execute(logger: t.logger, think: !!t.options['think'])
+                if t.options["filter"]
+                  repo << reasoner.conclusions
+                elsif t.options["data"]
+                  repo << reasoner.data
                 else
-                  repo << reader
+                  repo << reasoner
                 end
               rescue Exception => e
                 expect(e.message).to produce("Not exception #{e.inspect}: #{e.backtrace.join("\n")}", t)
