@@ -1,11 +1,11 @@
-module RDF::N3::Algebra
+module RDF::N3::Algebra::Log
   ##
   # Logical implication.
   #
   # This is the relation between the antecedent (subject) and conclusion (object) of a rule. The application of a rule to a knowledge-base is as follows. For every substitution which, applied to the antecedent, gives a formula which is a subset of the knowledge-base, then the result of applying that same substitution to the conclusion may be added to the knowledge-base.
   #
   # related: See log:conclusion.
-  class LogImplies < SPARQL::Algebra::Operator::Binary
+  class Implies < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::Enumerable

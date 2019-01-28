@@ -1,4 +1,4 @@
-module RDF::N3::Algebra
+module RDF::N3::Algebra::Log
   ##
   # The subject formula includes the object formula.
   #
@@ -7,7 +7,7 @@ module RDF::N3::Algebra
   # Variable substitution is applied recursively to nested compound terms such as formulae, lists and sets.
   #
   # (Understood natively by cwm when in in the antecedent of a rule. You can use this to peer inside nested formulae.)
-  class LogIncludes < SPARQL::Algebra::Operator::Binary
+  class Includes < SPARQL::Algebra::Operator::Binary
     NAME = :logIncludes
   end
 end

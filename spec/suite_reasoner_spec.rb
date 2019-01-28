@@ -18,8 +18,8 @@ describe RDF::N3::Reader do
             when *%w{t06proof}
               pending "support for math"
             when *%w{t01}
-              pending "support for log:supports"
-            when *%w{conclusion-simple conclusion}
+              pending "support for log:supports"  # log:supports not defined in vocabulary
+            when *%w{conclusion-simple}
               pending "support for log:conclusion"
             when *%w{conjunction}
               pending "support for log:conjunction"
