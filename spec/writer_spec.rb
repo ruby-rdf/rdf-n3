@@ -611,7 +611,7 @@ describe RDF::N3::Writer do
             case t.name
             when *%w(n3_10003 n3_10004 n3_10008)
               skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10016 n3_10017)
+            when *%w(n3_10012 n3_10017)
               pending "Investigate"
             when *%w(n3_10013)
               pending "Number syntax"
@@ -629,7 +629,7 @@ describe RDF::N3::Writer do
             case t.name
             when *%w(n3_10003 n3_10004 n3_10008)
               skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10016 n3_10017)
+            when *%w(n3_10012 n3_10017)
               pending "Investigate"
             when *%w(n3_10013)
               pending "Number syntax"

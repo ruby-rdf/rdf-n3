@@ -1277,17 +1277,17 @@ EOF
     )
   end
 
-  def parse(input, options = {})
+  def parse(input, **options)
     options = {
       logger: logger,
       validate: false,
       canonicalize: false,
     }.merge(options)
-    graph = options[:repo] || RDF::Repository.new
-    RDF::N3::Reader.new(input, options).each_statement do |statement|
-      graph << statement
+    repo = options[:repo] || RDF::Repository.new
+    RDF::N3::Reader.new(input, **options).each_statement do |statement|
+      repo << statement
     end
-    graph
+    repo
   end
 
   def test_file(filepath)

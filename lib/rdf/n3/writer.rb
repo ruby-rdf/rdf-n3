@@ -391,8 +391,9 @@ module RDF::N3
       @options[:prefixes] = {}  # Will define actual used when matched
       repo.each {|statement| preprocess_statement(statement)}
 
-      @universals = repo.enum_term.to_a.select {|r| r.is_a?(RDF::Query::Variable) && r.distinguished?}.uniq
-      @existentials = repo.enum_term.to_a.select {|r| r.is_a?(RDF::Query::Variable) && !r.distinguished?}.uniq
+      vars = repo.enum_term.to_a.uniq.select {|r| r.is_a?(RDF::Query::Variable)}
+      @universals = vars.reject(&:existential?)
+      @existentials = vars - @universals
     end
 
     # Perform any statement preprocessing required. This is used to perform reference counts and determine required
@@ -453,7 +454,7 @@ module RDF::N3
     # @return [String]
     def quoted(string)
       if string.to_s.match(/[\t\n\r]/)
-        string = string.gsub('\\', '\\\\\\\\').gsub('"""', '\\"""')
+        string = string.gsub('\\', '\\\\\\\\').gsub('"""', '\\"\\"\\"')
         %("""#{string}""")
       else
         "\"#{escaped(string)}\""
@@ -499,7 +500,7 @@ module RDF::N3
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
       l = if resource.is_a?(RDF::Query::Variable)
-        format_term(RDF::URI(resource.name.to_s))
+        format_term(RDF::URI(resource.name.to_s.sub(/^\$/, '')))
       elsif resource == RDF.nil
         "()"
       else

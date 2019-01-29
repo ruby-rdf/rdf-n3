@@ -9,6 +9,8 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
+  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are tracked using `$`, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  #
   # @todo
   # * Formulae as RDF::Query representations
   # * Formula expansion similar to SPARQL Construct
@@ -244,7 +246,7 @@ module RDF::N3
       pd = @prod_data.pop
       forSome = Array(pd[:symbol])
       forSome.each do |term|
-        var = univar(term, distinguished: false)
+        var = univar(term, existential: true)
         add_var_to_formula(@formulae.last, term, var)
       end
     end
@@ -655,10 +657,10 @@ module RDF::N3
       end
     end
 
-    def univar(label, distinguished: true)
+    def univar(label, existential: false)
       # Label using any provided label, followed by seed, followed by incrementing index
       value = "#{label}_#{unique_label}"
-      RDF::Query::Variable.new(value, distinguished: distinguished)
+      RDF::Query::Variable.new(value, existential: existential)
     end
 
     # add a pattern or statement

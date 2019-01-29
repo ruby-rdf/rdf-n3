@@ -16,6 +16,8 @@ module RDF::N3::Algebra
     ##
     # Yields solutions from patterns and other operands. Solutions are created by evaluating each pattern and other sub-operand against `queryable`.
     #
+    # When executing, blank nodes are turned into non-distinguished existential variables, noted with `$$`. These variables are removed from the returned solutions, as they can't be bound outside of the formula.
+    #
     # @param  [RDF::Queryable] queryable
     #   the graph or repository to query
     # @param  [Hash{Symbol => Object}] options
@@ -44,7 +46,10 @@ module RDF::N3::Algebra
         end
       end
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
-      @solutions
+
+      # Only return solutions with distinguished variables
+      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
+      variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
     end
 
     ##
@@ -56,12 +61,8 @@ module RDF::N3::Algebra
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= begin
-        # If there are no solutions, create bindings for all existential variables using the variable name as the bnode identifier
-        RDF::Query::Solutions.new(
-          [RDF::Query::Solution.new(
-            patterns.ndvars.inject({}) {|memo, v| memo.merge(v.name => RDF::Node.intern(v.name))}
-          )]
-        )
+        # If there are no solutions, create a single solution
+        RDF::Query::Solutions.new(RDF::Query::Solution.new)
       end
       log_debug {"formula #{graph_name} each #{@solutions.to_sxp}"}
 
@@ -72,7 +73,13 @@ module RDF::N3::Algebra
       end
 
       # Yield patterns by binding variables
+      # FIXME: do we need to do something with non-bound non-distinguished extistential variables?
       @solutions.each do |solution|
+        # Bind blank nodes to the solution when it doesn't contain a solution for an existential variable
+        existential_vars.each do |var|
+          solution[var.name] ||= RDF::Node.intern(var.name.to_s.sub(/^\$+/, ''))
+        end
+
         log_debug {"(formula apply) #{solution.to_sxp} to BGP"}
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
@@ -117,17 +124,17 @@ module RDF::N3::Algebra
     ##
     # Statements memoizer
     def statements
-      # BNodes in statements are existential variables
+      # BNodes in statements are non-distinguished existential variables
       @statements ||= operands.
         select {|op| op.is_a?(RDF::Statement)}.
         map do |pattern|
 
-        # Map nodes to variables (except when in top-level formula)
+        # Map nodes to non-distinguished existential variables (except when in top-level formula)
         if graph_name
           terms = {}
           [:subject, :predicate, :object].each do |r|
             terms[r] = case o = pattern.send(r)
-            when RDF::Node then RDF::Query::Variable.new(o.id, distinguished: false)
+            when RDF::Node then RDF::Query::Variable.new(o.id, existential: true, distinguished: false)
             else                o
             end
           end
@@ -161,17 +168,19 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Existential vars in this formula
+    def existential_vars
+      @existentials ||= patterns.vars.select(&:existential?)
+    end
+
+    ##
     # Reorder operands by graph_name or subject
     def reorder_operands!
       @operands = @operands.sort_by {|op| op.graph_name || op.subject}
     end
 
     def to_sxp_bin
-      @existentials = ndvars.uniq
-      @universals = vars.uniq - @existentials
       [:formula, graph_name].compact +
-      (Array(universals).empty? ? [] : [universals.unshift(:universals)]) +
-      (Array(existentials).empty? ? [] : [existentials.unshift(:existentials)]) +
       operands.map(&:to_sxp_bin)
     end
   end
