@@ -31,18 +31,41 @@ module RDF::N3::Algebra
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, **options, &block)
       log_debug {"formula #{graph_name} #{operands.to_sxp}"}
+
+      # If we were passed solutions in options, extract bindings to use for query
       log_debug {"(formula bindings) #{options.fetch(:bindings, {}).map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
-      @solutions = @query.patterns.empty? ? RDF::Query::Solutions.new : queryable.query(@query, **options)
+      options[:bindings] = options[:solutions].bindings if options.has_key?(:solutions)
+      @solutions = @query.patterns.empty? ? RDF::Query::Solutions.new : queryable.query(@query, options.merge(solutions: RDF::Query::Solution.new))
+
+      # Merge solution sets
+      if options[:solutions]
+        if @solutions.empty?
+          @solutions = options[:solutions]
+        elsif options[:solutions].empty?
+          @solutions
+        else
+          # Merge solutions
+          old_solutions, @solutions = @solutions, RDF::Query::Solutions()
+          options[:solutions].each do |s1|
+            old_solutions.each do |s2|
+              @solutions << s1.compatible?(s2) ? s1.merge(s2) : s2
+            end
+          end
+        end
+      end
+
+      # Reject solutions which include variables as values
+      @solutions.filter {|s| s.enum_value.none?(&:variable?)}
       @solutions.distinct!
 
       # Use our solutions for sub-ops, without binding solutions from those sub-ops
       # Join solutions from other operands
       log_depth do
         sub_ops.each do |op|
-          op.execute(queryable, bindings: @solutions.bindings)
+          op.execute(queryable, solutions: @solutions)
         end
       end
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
