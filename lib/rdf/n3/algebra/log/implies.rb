@@ -29,9 +29,12 @@ module RDF::N3::Algebra::Log
     def execute(queryable, **options, &block)
       @queryable = queryable
       log_debug {"logImplies #{graph_name}"}
+      orig_solutions = options[:solutions]
       @solutions = log_depth {operands.first.execute(queryable, **options, &block)}
       log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
-      @solutions
+
+      # Return original solutions, without bindings
+      orig_solutions
     end
 
     ##
@@ -66,8 +69,8 @@ module RDF::N3::Algebra::Log
       end
     end
 
-    # Graph name associated with this operation, using the name of the first operand
+    # Graph name associated with this operation, using the name of the parent
     # @return [RDF::Resource]
-    def graph_name; operands.first {|o| o.respond_to?(:graph_name)}.graph_name; end
+    def graph_name; parent.graph_name; end
   end
 end

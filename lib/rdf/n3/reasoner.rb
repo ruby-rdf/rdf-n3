@@ -242,6 +242,7 @@ module RDF::N3
       require 'sparql' unless defined?(:SPARQL)
 
       @formula ||= begin
+        # Create formulae from statement graph_names
         formulae = (@mutable.graph_names.unshift(nil)).inject({}) do |memo, graph_name|
           memo.merge(graph_name => Algebra::Formula.new(graph_name: graph_name, **@options))
         end
@@ -252,14 +253,14 @@ module RDF::N3
         @mutable.each_statement do |statement|
           pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
 
-          # A graph name indicates a formula. If not already allocated, create a new formula and use that for inserting statements or other operators
+          # A graph name indicates a formula.
           form = formulae[pattern.graph_name]
 
           # Formulae may be the subject or object of a known operator
           if klass = Algebra.for(pattern.predicate)
             fs = formulae.fetch(pattern.subject, pattern.subject)
             fo = formulae.fetch(pattern.object, pattern.object)
-            form.operands << klass.new(fs, fo, **@options)
+            form.operands << klass.new(fs, fo, parent: form, **@options)
           else
             # Add formulae as direct operators
             if formulae.has_key?(pattern.subject)
@@ -271,12 +272,6 @@ module RDF::N3
             pattern.graph_name = nil
             form.operands << pattern
           end
-        end
-
-        # Order operands in each formula by either the graph_name or subject
-        formulae.each_value do |operator|
-          next unless operator.is_a?(Algebra::Formula)
-          operator.reorder_operands!
         end
 
         # Formula is that without a graph name

@@ -41,31 +41,16 @@ module RDF::N3::Algebra
       @solutions = @query.patterns.empty? ? RDF::Query::Solutions.new : queryable.query(@query, options.merge(solutions: RDF::Query::Solution.new))
 
       # Merge solution sets
-      if options[:solutions]
-        if @solutions.empty?
-          @solutions = options[:solutions]
-        elsif options[:solutions].empty?
-          @solutions
-        else
-          # Merge solutions
-          old_solutions, @solutions = @solutions, RDF::Query::Solutions()
-          options[:solutions].each do |s1|
-            old_solutions.each do |s2|
-              @solutions << s1.compatible?(s2) ? s1.merge(s2) : s2
-            end
-          end
-        end
-      end
-
       # Reject solutions which include variables as values
-      @solutions.filter {|s| s.enum_value.none?(&:variable?)}
-      @solutions.distinct!
+      @solutions = @solutions
+        .merge(options[:solutions])
+        .filter {|s| s.enum_value.none?(&:variable?)}
 
-      # Use our solutions for sub-ops, without binding solutions from those sub-ops
+      # Use our solutions for sub-ops
       # Join solutions from other operands
       log_depth do
         sub_ops.each do |op|
-          op.execute(queryable, solutions: @solutions)
+          @solutions = op.execute(queryable, solutions: @solutions)
         end
       end
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
@@ -194,12 +179,6 @@ module RDF::N3::Algebra
     # Existential vars in this formula
     def existential_vars
       @existentials ||= patterns.vars.select(&:existential?)
-    end
-
-    ##
-    # Reorder operands by graph_name or subject
-    def reorder_operands!
-      @operands = @operands.sort_by {|op| op.graph_name || op.subject}
     end
 
     def to_sxp_bin
