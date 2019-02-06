@@ -49,6 +49,12 @@ module RDF::N3::Algebra::Log
       log_debug {"logImplies #{graph_name} each #{@solutions.to_sxp}"}
       subject, object = operands
 
+      if @solutions == RDF::Literal::FALSE
+        # Some evalaluatable operand evaluated to false
+        log_debug("(logImplies implication false)")
+        return
+      end
+
       # Graph based on solutions from subject
       subject_graph = log_depth {RDF::Graph.new {|g| g << subject}}
 

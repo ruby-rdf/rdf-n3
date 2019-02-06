@@ -84,6 +84,27 @@ describe "RDF::N3::Reasoner" do
     end
   end
 
+  context "n3:string" do
+    context "string:startsWith" do
+      {
+        "literal starts with literal" => {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {"abc" string:startsWith "a"} => {:test a :Success}.
+          ),
+          expect: %(
+            :test a :Success.
+          )
+        }
+      }.each do |name, options|
+        it name do
+          result = parse(options[:expect])
+          expect(reason(options[:input])).to be_equivalent_graph(result, logger: logger)
+        end
+      end
+    end
+  end
+
   # Parse N3 input into a repository
   def parse(input, **options)
     repo = options[:repo] || RDF::Repository.new

@@ -56,7 +56,7 @@ module RDF::N3::Algebra
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
 
       # Only return solutions with distinguished variables
-      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
+      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?(/^(\$\$|\?\?)/)}
       variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
     end
 
