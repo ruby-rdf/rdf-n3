@@ -24,21 +24,17 @@ module RDF::N3::Algebra
     #   any additional keyword options
     # @option options [RDF::Query::Solutions] solutions
     #   optional initial solutions for chained queries
-    # @yield  [statement]
-    #   each matching statement
-    # @yieldparam  [RDF::Statement] solution
-    # @yieldreturn [void] ignored
     # @return [RDF::Solutions] distinct solutions
-    def execute(queryable, **options, &block)
+    def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
       log_debug {"formula #{graph_name} #{operands.to_sxp}"}
 
       # If we were passed solutions in options, extract bindings to use for query
-      log_debug {"(formula bindings) #{options.fetch(:bindings, {}).map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
+      bindings = solutions.bindings
+      log_debug {"(formula bindings) #{bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
-      options[:bindings] = options[:solutions].bindings if options.has_key?(:solutions)
-      @solutions = @query.patterns.empty? ? RDF::Query::Solutions.new : queryable.query(@query, options.merge(solutions: RDF::Query::Solution.new))
+      @solutions = @query.patterns.empty? ? solutions : queryable.query(@query, solutions: solutions, bindings: bindings, **options)
 
       # Merge solution sets
       # Reject solutions which include variables as values
@@ -56,7 +52,7 @@ module RDF::N3::Algebra
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
 
       # Only return solutions with distinguished variables
-      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?(/^(\$\$|\?\?)/)}
+      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
       variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
     end
 
@@ -70,7 +66,7 @@ module RDF::N3::Algebra
     def each(&block)
       @solutions ||= begin
         # If there are no solutions, create a single solution
-        RDF::Query::Solutions.new(RDF::Query::Solution.new)
+        RDF::Query::Solutions(RDF::Query::Solution.new)
       end
       log_debug {"formula #{graph_name} each #{@solutions.to_sxp}"}
 

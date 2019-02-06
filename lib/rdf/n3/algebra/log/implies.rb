@@ -21,20 +21,15 @@ module RDF::N3::Algebra::Log
     #   any additional keyword options
     # @option options [RDF::Query::Solutions] solutions
     #   optional initial solutions for chained queries
-    # @yield  [statement]
-    #   each matching statement
-    # @yieldparam  [RDF::Statement] solution
-    # @yieldreturn [void] ignored
     # @return [RDF::Solutions] distinct solutions
-    def execute(queryable, **options, &block)
+    def execute(queryable, solutions:, **options)
       @queryable = queryable
-      log_debug {"logImplies #{graph_name}"}
-      orig_solutions = options[:solutions]
-      @solutions = log_depth {operands.first.execute(queryable, **options, &block)}
+      log_debug {"logImplies"}
+      @solutions = log_depth {operands.first.execute(queryable, solutions: solutions, **options)}
       log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
 
       # Return original solutions, without bindings
-      orig_solutions
+      solutions
     end
 
     ##
@@ -46,12 +41,12 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      log_debug {"logImplies #{graph_name} each #{@solutions.to_sxp}"}
+      log_debug {"logImplies each #{@solutions.to_sxp}"}
       subject, object = operands
 
-      if @solutions == RDF::Literal::FALSE
+      if @solutions.empty?
         # Some evalaluatable operand evaluated to false
-        log_debug("(logImplies implication false)")
+        log_debug("(logImplies implication false - no solutions)")
         return
       end
 
@@ -67,7 +62,7 @@ module RDF::N3::Algebra::Log
         # Yield statements into the default graph
         log_depth do
           object.each do |statement|
-            block.call(RDF::Statement.from(statement.to_triple, inferred: true))
+            block.call(RDF::Statement.from(statement.to_triple, inferred: true, graph_name: graph_name))
           end
         end
       else

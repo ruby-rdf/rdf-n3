@@ -90,9 +90,11 @@ describe "RDF::N3::Reasoner" do
         "literal starts with literal" => {
           input: %(
             @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            :a :b :c .
             {"abc" string:startsWith "a"} => {:test a :Success}.
           ),
           expect: %(
+            :a :b :c .
             :test a :Success.
           )
         }

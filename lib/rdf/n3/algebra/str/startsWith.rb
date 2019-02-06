@@ -2,42 +2,55 @@ module RDF::N3::Algebra::Str
   ##
   # True iff the subject string starts with the object string.
   class StartsWith < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Evaluatable
+    include SPARQL::Algebra::Query
+    include SPARQL::Algebra::Update
+    include RDF::Enumerable
     include RDF::Util::Logger
 
     NAME = :strStartsWith
 
     ##
-    # The STRSTARTS function corresponds to the XPath fn:starts-with function. The arguments must be argument compatible otherwise an error is raised.
+    # The string:startsWith operator corresponds to the XPath fn:starts-with function. The arguments must be argument compatible otherwise an error is raised.
     #
-    # For such input pairs, the function returns true if the lexical form of arg1 starts with the lexical form of arg2, otherwise it returns false.
+    # For constant inputs that evaulate to true, the original solutions are returned.
     #
-    # @example
-    #     strStarts("foobar", "foo") #=> true
-    #     strStarts("foobar"@en, "foo"@en) #=> true
-    #     strStarts("foobar"^^xsd:string, "foo"^^xsd:string) #=> true
-    #     strStarts("foobar"^^xsd:string, "foo") #=> true
-    #     strStarts("foobar", "foo"^^xsd:string) #=> true
-    #     strStarts("foobar"@en, "foo") #=> true
-    #     strStarts("foobar"@en, "foo"^^xsd:string) #=> true
+    # For constant inputs that evaluate to false, the empty solution set is returned. XXX
     #
-    # @param  [RDF::Literal] left
-    #   a literal
-    # @param  [RDF::Literal] right
-    #   a literal
-    # @return [RDF::Literal::Boolean]
+    # Otherwise, for variable operands, it binds matching variables to the solution set.
+    #
+    # @param [RDF::Queryable] queryable
+    # @param [RDF::Query::Solutions] solutions
+    # @return [RDF::Query::Solutions]
     # @raise  [TypeError] if operands are not compatible
-    def apply(left, right)
-      case
-      when !left.compatible?(right)
-        raise TypeError, "expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"
-      when left.to_s.start_with?(right.to_s) then RDF::Literal::TRUE
-      else RDF::Literal::FALSE
+    def execute(queryable, solutions:, **options)
+      log_debug {"strStartsWith #{operands.to_sxp}"}
+      @solutions = solutions.filter do |solution|
+        left, right = operands.map {|op| op.evaluate(solution.bindings)}
+        if !left.compatible?(right)
+          log_debug {"(strStartsWith incompatible operands #{[left, right].to_sxp})"}
+          false
+        elsif !left.to_s.start_with?(right.to_s)
+          log_debug {"(strStartsWith false #{[left, right].to_sxp})"}
+          false
+        else
+          log_debug {"(strStartsWith true #{[left, right].to_sxp})"}
+          true
+        end
       end
     end
 
-    # Graph name associated with this operation, just a random BNode
+    ##
+    # Does not yield statements.
+    #
+    # @yield  [statement]
+    #   each matching statement
+    # @yieldparam  [RDF::Statement] solution
+    # @yieldreturn [void] ignored
+    def each(&block)
+    end
+
+    # Graph name associated with this operation, using the name of the parent
     # @return [RDF::Resource]
-    def graph_name; RDF::Node.new; end
+    def graph_name; parent.graph_name; end
   end
 end
