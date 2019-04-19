@@ -39,7 +39,7 @@ Write a graph to a file:
     end
 
 ### Reasoning
-Partial N3 reasoning is supported. Instantiate a reasoner from a dataset:
+Experimental N3 reasoning is supported. Instantiate a reasoner from a dataset:
 
     RDF::N3::Reasoner.new do |reasoner|
       RDF::N3::Reader.open("etc/foaf.n3") {|reader| reasoner << reader}
@@ -93,6 +93,8 @@ results in:
     h = RDF::Query::Variable.new(<#h>)
     g = RDF::Node.new()
     RDF::Statement(f, <#loves>, h)
+
+Note that the behavior of both existential and universal variables is not entirely in keeping with the [Team Submission][], and neither work quite like SPARQL variables. When used in the antecedent part of an implication, universal variables should behave much like SPARQL variables. This area is subject to a fair amount of change.
 
 ## Implementation Notes
 The parser is driven through a rules table contained in lib/rdf/n3/reader/meta.rb. This includes
@@ -191,6 +193,7 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 [RDF.rb]:       http://ruby-rdf.github.com/rdf
 [RDF::Turtle]:  http://ruby-rdf.github.com/rdf-turtle/
 [N3]:           http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
+[Team Submission]: https://www.w3.org/TeamSubmission/n3/
 [Turtle]:       http://www.w3.org/TR/turtle/
 [N-Triples]:    http://www.w3.org/TR/n-triples/
 [YARD]:         http://yardoc.org/

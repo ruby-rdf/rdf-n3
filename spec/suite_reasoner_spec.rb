@@ -23,7 +23,7 @@ describe RDF::N3::Reader do
               pending "support for log:conclusion"
             when *%w{conjunction}
               pending "support for log:conjunction"
-            when *%w{t553}
+            when *%w{t553 t554}
               pending "support for inference over quoted graphs"
             when *%w{t2005}
               pending "something else"
