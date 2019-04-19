@@ -330,7 +330,7 @@ module RDF::N3
       # Mark as seen lists that are part of another list
       @lists.values.map(&:statements).
         flatten.each do |st|
-          seen[st.object] if @lists.has_key?(st.object)
+          seen[st.object] = true if @lists.has_key?(st.object)
         end
 
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
