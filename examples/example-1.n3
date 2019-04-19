@@ -1,0 +1,16 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@keywords.
+@forAll x, y, z. {x parent y. y sister z} log:implies {x aunt z}.
+
+# This N3 formula has three universally quantified variables and one statement.  The subject of the statement, 
+
+# {x parent y. y sister z} # is the antecedent of the rule and the object,  
+
+# {x aunt z} # is the conclusion. Given data
+
+Joe parent Alan.
+Alan sister Susie.
+
+# a rule engine would conclude
+
+# => Joe aunt Susie.

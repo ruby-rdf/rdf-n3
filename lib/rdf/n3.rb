@@ -16,17 +16,20 @@ module RDF
   #   end
   #
   # @see http://www.rubydoc.info/github/ruby-rdf/rdf/
-  # @see http://www.w3.org/TR/REC-rdf-syntax/
+  # @see https://www.w3.org/TR/REC-rdf-syntax/
   #
   # @author [Gregg Kellogg](http://greggkellogg.net/)
   module N3
+    require 'rdf/n3/algebra'
     require 'rdf/n3/format'
     require 'rdf/n3/vocab'
+    require 'rdf/n3/extensions'
     require 'rdf/n3/patches/array_hacks'
-    autoload :Meta,    'rdf/n3/reader/meta'
-    autoload :Parser,  'rdf/n3/reader/parser'
-    autoload :Reader,  'rdf/n3/reader'
-    autoload :VERSION, 'rdf/n3/version'
-    autoload :Writer,  'rdf/n3/writer'
+    autoload :Meta,     'rdf/n3/reader/meta'
+    autoload :Parser,   'rdf/n3/reader/parser'
+    autoload :Reader,   'rdf/n3/reader'
+    autoload :Reasoner, 'rdf/n3/reasoner'
+    autoload :VERSION,  'rdf/n3/version'
+    autoload :Writer,   'rdf/n3/writer'
   end
 end

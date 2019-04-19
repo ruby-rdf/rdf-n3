@@ -1,0 +1,5 @@
+[is con:zipcode of [
+    is con:address of [
+        is con:home of [
+            is off:assistant of [
+                is rel:mother of :George]]]]]

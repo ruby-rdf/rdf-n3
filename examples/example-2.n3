@@ -1,0 +1,19 @@
+@keywords.
+@forAll x, y, z.
+{ x wrote y.
+  y log:includes {z weather w}.
+  x livesIn z
+} log:implies {
+  Boston weather y
+}.
+
+# Here the rule fires when x is bound to a symbol denoting some person who is the author of a formula y, when the formula makes a statement about the weather in (presumably some place) z, and x's home is z.  That is, we believe statements about the weather at a place only from people who live there.  Given the data
+
+Bob livesIn  Boston.
+Bob wrote  { Boston weather sunny }.
+Alice livesIn Adelaide.
+Alice wrote { Boston weather cold }.
+
+# a valid inference would be
+
+# => Boston weather sunny.

@@ -1,0 +1,2 @@
+:Woman = foo:FemaleAdult .
+:Title a rdf:Property; = dc:title .
