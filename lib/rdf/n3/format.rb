@@ -15,7 +15,7 @@ module RDF::N3
   # @example Obtaining serialization format file extension mappings
   #     RDF::Format.file_extensions    #=> {n3: "text/n3"}
   #
-  # @see http://www.w3.org/TR/rdf-testcases/#ntriples
+  # @see https://www.w3.org/TR/rdf-testcases/#ntriples
   class Format < RDF::Format
     content_type     'text/n3',             extension: :n3, aliases: %w(text/rdf+n3;q=0.2 application/rdf+n3;q=0.2)
     content_encoding 'utf-8'

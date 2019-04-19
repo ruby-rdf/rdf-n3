@@ -1,8 +1,8 @@
 # RDF::N3 reader/writer and reasoner
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
-[![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](http://badge.fury.io/rb/rdf-n3)
-[![Build Status](https://travis-ci.org/ruby-rdf/rdf-n3.png?branch=master)](http://travis-ci.org/ruby-rdf/rdf-n3)
+[![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
+[![Build Status](https://travis-ci.org/ruby-rdf/rdf-n3.png?branch=master)](https://travis-ci.org/ruby-rdf/rdf-n3)
 
 ## Description
 RDF::N3 is an Notation-3 parser for Ruby using the [RDF.rb][RDF.rb]  library suite. Also implements N3 Entailment.
@@ -110,10 +110,10 @@ http://www.w3.org/2000/10/swap/grammar/n3.n3 (along with bnf-rules.n3) using cwm
 [n3-selectors.n3][file:lib/rdf/n3/reader/n3-selectors.rb] is itself used to generate meta.rb using script/build_meta.
 
 ## Dependencies
-* [RDF.rb](http://rubygems.org/gems/rdf) (~> 3.0, >= 3.0.10)
+* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.0, >= 3.0.10)
 
 ## Documentation
-Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-rdf/rdf-n3/frames)
+Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-rdf/rdf-n3)
 
 ### Principle Classes
 * {RDF::N3}
@@ -148,21 +148,21 @@ Full documentation available on [RubyDoc.info](http://rubydoc.info/github/ruby-r
 ## Resources
 * [RDF.rb][RDF.rb]
 * [Distiller](http://rdf.greggkellogg.net/distiller)
-* [Documentation](http://rubydoc.info/github/ruby-rdf/rdf-n3/master/frames)
+* [Documentation](https://rubydoc.info/github/ruby-rdf/rdf-n3/)
 * [History](file:file.History.html)
 * [Notation-3][N3]
-* [N3 Primer](http://www.w3.org/2000/10/swap/Primer.html)
-* [N3 Reification](http://www.w3.org/DesignIssues/Reify.html)
+* [N3 Primer](https://www.w3.org/2000/10/swap/Primer.html)
+* [N3 Reification](https://www.w3.org/DesignIssues/Reify.html)
 * [Turtle][Turtle]
-* [W3C SWAP Test suite](http://www.w3.org/2000/10/swap/test/README.html)
-* [W3C Turtle Test suite](http://www.w3.org/2001/sw/DataAccess/df1/tests/README.txt)
+* [W3C SWAP Test suite](https://www.w3.org/2000/10/swap/test/README.html)
+* [W3C Turtle Test suite](https://www.w3.org/2001/sw/DataAccess/df1/tests/README.txt)
 * [N-Triples][N-Triples]
 
 ## Author
-* [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
+* [Gregg Kellogg](https://github.com/gkellogg) - <https://greggkellogg.net/>
 
 ## Contributors
-* [Nicholas Humfrey](http://github.com/njh) - <http://njh.me/>
+* [Nicholas Humfrey](https://github.com/njh) - <https://njh.me/>
 
 ## Contributing
 This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange development and release activity. All submissions _must_ be on a feature branch based on the _develop_ branch to ease staging and integration.
@@ -182,21 +182,21 @@ This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange develo
 ## License
 
 This is free and unencumbered public domain software. For more information,
-see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
+see <https://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
 ## Feedback
 * <gregg@greggkellogg.net>
-* <http://rubygems.org/gem/rdf-n3>
-* <http://github.com/ruby-rdf/rdf-n3>
-* <http://lists.w3.org/Archives/Public/public-rdf-ruby/>
+* <https://rubygems.org/gem/rdf-n3>
+* <https://github.com/ruby-rdf/rdf-n3>
+* <https://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
-[RDF.rb]:       http://ruby-rdf.github.com/rdf
-[RDF::Turtle]:  http://ruby-rdf.github.com/rdf-turtle/
-[N3]:           http://www.w3.org/DesignIssues/Notation3.html "Notation-3"
+[RDF.rb]:       https://ruby-rdf.github.com/rdf
+[RDF::Turtle]:  https://ruby-rdf.github.com/rdf-turtle/
+[N3]:           https://www.w3.org/DesignIssues/Notation3.html "Notation-3"
 [Team Submission]: https://www.w3.org/TeamSubmission/n3/
-[Turtle]:       http://www.w3.org/TR/turtle/
-[N-Triples]:    http://www.w3.org/TR/n-triples/
-[YARD]:         http://yardoc.org/
-[YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[Turtle]:       https://www.w3.org/TR/turtle/
+[N-Triples]:    https://www.w3.org/TR/n-triples/
+[YARD]:         https://yardoc.org/
+[YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [SPARQL S-Expressions]: https://jena.apache.org/documentation/notes/sse.html
