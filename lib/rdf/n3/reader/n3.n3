@@ -235,7 +235,7 @@ quickvariable 	cfg:matches  	"\\?[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff
 # Whitespace is not allowed
 
 # was: "[a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)?";
-langcode	cfg:matches  	"[a-z]+(-[a-z0-9]+)*"; # http://www.w3.org/TR/rdf-testcases/#language
+langcode	cfg:matches  	"[a-z]+(-[a-z0-9]+)*"; # https://www.w3.org/TR/rdf-testcases/#language
 		cfg:canStartWith 	"a".
 
 
