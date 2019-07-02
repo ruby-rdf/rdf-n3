@@ -59,21 +59,4 @@ module RDF
       to_sxp_bin.to_sxp
     end
   end
-
-  class Query::Variable
-
-    # Transform Statement into an SXP
-    # @return [Array]
-    def to_sxp_bin
-      [:var, name, (value.to_sxp_bin if value)].compact
-    end
-
-    ##
-    # Returns an S-Expression (SXP) representation
-    #
-    # @return [String]
-    def to_sxp
-      to_sxp_bin.to_sxp
-    end
-  end
 end
