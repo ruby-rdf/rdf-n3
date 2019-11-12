@@ -103,7 +103,7 @@ module Fixtures
         g = RDF::Repository.load(file, format:  :n3)
         JSON::LD::API.fromRDF(g) do |expanded|
           JSON::LD::API.frame(expanded, FRAME) do |framed|
-            yield Manifest.new(framed['@graph'].first)
+            yield Manifest.new(framed)
           end
         end
       end
