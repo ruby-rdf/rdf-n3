@@ -2,8 +2,7 @@ source "https://rubygems.org"
 
 gemspec
 
-gem 'rdf', path: '../rdf'
-#gem "rdf",                  git: "https://github.com/ruby-rdf/rdf", branch: "develop"
+gem "rdf",                  git: "https://github.com/ruby-rdf/rdf", branch: "develop"
 
 group :development do
   gem "ebnf",               git: "https://github.com/gkellogg/ebnf",                branch: "develop"
