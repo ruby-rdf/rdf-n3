@@ -9,7 +9,7 @@ require 'rdf/trig'
 require 'getoptlong'
 require 'open-uri'
 
-def run(input, options)
+def run(input, **options)
   require 'profiler' if options[:profile]
 
   reader_class = RDF::Reader.for(options[:input_format].to_sym)
@@ -166,10 +166,10 @@ end
 
 if ARGV.empty?
   s = input ? input : $stdin.read
-  run(StringIO.new(s), options)
+  run(StringIO.new(s), **options)
 else
   ARGV.each do |test_file|
-    run(Kernel.open(test_file), options)
+    run(Kernel.open(test_file), **options)
   end
 end
 puts

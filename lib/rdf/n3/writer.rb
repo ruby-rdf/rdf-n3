@@ -103,7 +103,7 @@ module RDF::N3
     # @yieldreturn [void]
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
-    def initialize(output = $stdout, options = {}, &block)
+    def initialize(output = $stdout, **options, &block)
       @repo = RDF::Repository.new
       @uri_to_pname = {}
       @uri_to_prefix = {}
@@ -259,7 +259,7 @@ module RDF::N3
     # @param  [RDF::Literal, String, #to_s] literal
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
-    def format_literal(literal, options = {})
+    def format_literal(literal, **options)
       literal = literal.dup.canonicalize! if @options[:canonicalize]
       case literal
       when RDF::Literal
@@ -285,7 +285,7 @@ module RDF::N3
     # @param  [RDF::URI] uri
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
-    def format_uri(uri, options = {})
+    def format_uri(uri, **options)
       md = uri.relativize(base_uri)
       log_debug("relativize") {"#{uri.to_sxp} => #{md.inspect}"} if md != uri.to_s
       md != uri.to_s ? "<#{md}>" : (get_pname(uri) || "<#{uri}>")
@@ -297,7 +297,7 @@ module RDF::N3
     # @param  [RDF::Node] node
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
-    def format_node(node, options = {})
+    def format_node(node, **options)
       options[:unique_bnodes] ? node.to_unique_base : node.to_base
     end
 
@@ -349,7 +349,7 @@ module RDF::N3
 
       # Add distinguished classes
       top_classes.each do |class_uri|
-        graph.query(predicate: RDF.type, object: class_uri).
+        graph.query({predicate: RDF.type, object: class_uri}).
           map {|st| st.subject}.
           sort.
           uniq.
@@ -504,7 +504,7 @@ module RDF::N3
       elsif resource == RDF.nil
         "()"
       else
-        format_term(resource, options)
+        format_term(resource, **options)
       end
       @output.write(l)
     end
@@ -566,7 +566,7 @@ module RDF::N3
           (properties[st.predicate.to_s] ||= []) << st.object
         end
       else
-        @graph.query(subject: subject) do |st|
+        @graph.query({subject: subject}) do |st|
           (properties[st.predicate.to_s] ||= []) << st.object
         end
       end
@@ -704,8 +704,8 @@ module RDF::N3
          select {|st| st.subject.equal?(resource) || st.object.equal?(resource)}.
          map(&:graph_name)
       else
-        graph_names = @repo.query(subject: resource).map(&:graph_name)
-        graph_names += @repo.query(object: resource).map(&:graph_name)
+        graph_names = @repo.query({subject: resource}).map(&:graph_name)
+        graph_names += @repo.query({object: resource}).map(&:graph_name)
       end
       graph_names.uniq.length <= 1
     end

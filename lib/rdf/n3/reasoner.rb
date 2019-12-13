@@ -66,7 +66,7 @@ module RDF::N3
       else RDF::Repository.new
       end
 
-      log_debug("reasoner: expression", options) {SXP::Generator.string(formula.to_sxp_bin)}
+      log_debug("reasoner: expression", **options) {SXP::Generator.string(formula.to_sxp_bin)}
 
       if block_given?
         case block.arity

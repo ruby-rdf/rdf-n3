@@ -960,19 +960,19 @@ describe "RDF::N3::Reader" do
         it "assumption graph has 2 statements" do
           tt = @repo.first(subject: RDF::URI.new("http://a/b#assumption"), predicate: RDF::OWL.sameAs)
           expect(tt.object).to be_node
-          expect(@repo.query(graph_name: tt.object).to_a.length).to eq 2
+          expect(@repo.query({graph_name: tt.object}).to_a.length).to eq 2
         end
 
         it "conclusion graph has 1 statements" do
           tt = @repo.first(subject: RDF::URI.new("http://a/b#conclusion"), predicate: RDF::OWL.sameAs)
           expect(tt.object).to be_node
-          expect(@repo.query(graph_name: tt.object).to_a.length).to eq 1
+          expect(@repo.query({graph_name: tt.object}).to_a.length).to eq 1
         end
 
         it "trivialTruth equivalent to empty graph" do
           tt = @repo.first(subject: RDF::URI.new("http://a/b#trivialTruth"), predicate: RDF::OWL.sameAs)
           expect(tt.object).to be_node
-          @repo.query(graph_name: tt.object) do |s|
+          @repo.query({graph_name: tt.object}) do |s|
             puts "statement: #{s}"
           end
         end
