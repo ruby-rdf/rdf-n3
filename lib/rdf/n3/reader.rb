@@ -50,7 +50,7 @@ module RDF::N3
     # @yieldparam  [RDF::Reader] reader
     # @yieldreturn [void] ignored
     # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
-    def initialize(input = $stdin, options = {}, &block)
+    def initialize(input = $stdin, **options, &block)
       super do
         input.rewind if input.respond_to?(:rewind)
         @input = input.respond_to?(:read) ? input : StringIO.new(input.to_s)
@@ -704,7 +704,7 @@ module RDF::N3
       value = value.join(append) if append
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
-      value = RDF::URI.intern(value, {}) if intern?
+      value = RDF::URI.intern(value) if intern?
 
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than the current formula
       var = find_var(@formulae.last, value)

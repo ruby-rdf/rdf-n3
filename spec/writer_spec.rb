@@ -143,7 +143,7 @@ describe RDF::N3::Writer do
       }
     }.each do |name, params|
       it name do
-        serialize(params[:input], params[:regexp], params)
+        serialize(params[:input], params[:regexp], **params)
       end
     end
   end
@@ -298,7 +298,7 @@ describe RDF::N3::Writer do
       },
     }.each do |name, params|
       it name do
-        serialize(params[:input], params[:regexp], params)
+        serialize(params[:input], params[:regexp], **params)
       end
     end
   end
@@ -564,7 +564,7 @@ describe RDF::N3::Writer do
       }
     }.each do |name, params|
       it name do
-        serialize(params[:input], params[:regexp], params)
+        serialize(params[:input], params[:regexp], **params)
       end
     end
   end
@@ -594,7 +594,7 @@ describe RDF::N3::Writer do
       },
     }.each do |name, params|
       it name do
-        serialize(params[:input], params[:regexp], params)
+        serialize(params[:input], params[:regexp], **params)
       end
     end
   end
@@ -651,7 +651,7 @@ describe RDF::N3::Writer do
   def parse(input, format: :n3, **options)
     repo = RDF::Repository.new
     reader = RDF::Reader.for(format)
-    repo << reader.new(input, options)
+    repo << reader.new(input, **options)
     repo
   end
 
@@ -659,7 +659,7 @@ describe RDF::N3::Writer do
   def serialize(ntstr, regexps = [], base_uri: nil, **options)
     prefixes = options[:prefixes] || {}
     g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [], format: options.fetch(:input_format, :n3))
-    result = RDF::N3::Writer.buffer(options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
+    result = RDF::N3::Writer.buffer(**options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
       writer << g
     end
     if $verbose

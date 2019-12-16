@@ -20,7 +20,7 @@ module RDF::Util
     #   HTTP Request headers.
     # @return [IO] File stream
     # @yield [IO] File stream
-    def self.open_file(filename_or_url, options = {}, &block)
+    def self.open_file(filename_or_url, **options, &block)
       case 
       when filename_or_url.to_s =~ /^file:/
         path = filename_or_url[5..-1]
@@ -103,7 +103,7 @@ module Fixtures
         g = RDF::Repository.load(file, format:  :n3)
         JSON::LD::API.fromRDF(g) do |expanded|
           JSON::LD::API.frame(expanded, FRAME) do |framed|
-            yield Manifest.new(framed['@graph'].first)
+            yield Manifest.new(framed)
           end
         end
       end
