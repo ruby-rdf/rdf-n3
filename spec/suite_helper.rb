@@ -59,7 +59,7 @@ module RDF::Util
           remote_document
         end
       else
-        original_open_file(filename_or_url, options, &block)
+        original_open_file(filename_or_url, **options, &block)
       end
     end
   end
