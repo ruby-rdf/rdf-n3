@@ -727,7 +727,7 @@ module RDF::N3
     end
 
     # Find any variable that may be defined in the formula identified by `bn`
-    # @param [RDF::Node] bn name of formula
+    # @param [RDF::Node] sym name of formula
     # @param [#to_s] name
     # @return [RDF::Query::Variable]
     def find_var(sym, name)

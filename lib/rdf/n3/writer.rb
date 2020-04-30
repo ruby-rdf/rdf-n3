@@ -410,7 +410,7 @@ module RDF::N3
     end
 
     # Perform graph-specific preprocessing
-    # @param [Statement]
+    # @param [Statement] statement
     def preprocess_graph_statement(statement)
       bump_reference(statement.object)
       # Count properties of this subject

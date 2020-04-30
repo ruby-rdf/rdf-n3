@@ -17,7 +17,7 @@ module RDF::N3
 
     # Opens a Notation-3 file, and parses it to initialize the reasoner
     #
-    # @param  [String, #to_s] filename
+    # @param  [String, #to_s] file
     # @yield  [reasoner] `self`
     # @yieldparam  [RDF::N3::Reasoner] reasoner
     # @yieldreturn [void] ignored
@@ -137,7 +137,7 @@ module RDF::N3
     ##
     # Reason with results in a duplicate datastore
     #
-    # @see {execute}
+    # @see execute
     def reason(**options, &block)
       self.dup.reason!(**options, &block)
     end

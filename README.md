@@ -52,19 +52,19 @@ Experimental N3 reasoning is supported. Instantiate a reasoner from a dataset:
 Reasoning is performed by turning a repository containing formula and predicate operators into an executable set of operators (similar to the executable SPARQL Algebra). Reasoning adds statements to the base dataset, marked with `:inferred` (e.g. `statement.inferred?`). Predicate operators are defined from the following vocabularies:
 
 * RDF List vocabulary <http://www.w3.org/2000/10/swap/list#>
-  * list:append (not implemented yet - See {RDF::N3::Algebra::ListAppend})
-  * list:in (not implemented yet - See {RDF::N3::Algebra::ListIn})
-  * list:last (not implemented yet - See {RDF::N3::Algebra::ListLast})
-  * list:member (not implemented yet - See {RDF::N3::Algebra::ListMember})
+  * list:append (not implemented yet - See {RDF::N3::Algebra::List::Append})
+  * list:in (not implemented yet - See {RDF::N3::Algebra::List::In})
+  * list:last (not implemented yet - See {RDF::N3::Algebra::List::Last})
+  * list:member (not implemented yet - See {RDF::N3::Algebra::List::Member})
 * RDF Log vocabulary <http://www.w3.org/2000/10/swap/log#>
-  * log:conclusion (not implemented yet - See {RDF::N3::Algebra::LogConclusion})
-  * log:conjunction (not implemented yet - See {RDF::N3::Algebra::LogConjunction})
-  * log:equalTo (See {not implemented yet - RDF::N3::Algebra::LogEqualTo})
-  * log:implies (See {RDF::N3::Algebra::LogImplies})
-  * log:includes (not implemented yet - See {RDF::N3::Algebra::LogIncludes})
-  * log:notEqualTo (not implemented yet - See {RDF::N3::Algebra::LogNotEqualTo})
-  * log:notIncludes (not implemented yet - See {RDF::N3::Algebra::LogNotIncludes})
-  * log:outputString (not implemented yet - See {RDF::N3::Algebra::LogOutputString})
+  * log:conclusion (not implemented yet - See {RDF::N3::Algebra::Log::Conclusion})
+  * log:conjunction (not implemented yet - See {RDF::N3::Algebra::Log::Conjunction})
+  * log:equalTo (See {RDF::N3::Algebra::Log::EqualTo})
+  * log:implies (See {RDF::N3::Algebra::Log::Implies})
+  * log:includes (See {RDF::N3::Algebra::Log::Includes})
+  * log:notEqualTo (not implemented yet - See {RDF::N3::Algebra::Log::NotEqualTo})
+  * log:notIncludes (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
+  * log:outputString (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
 
 N3 Formulae are introduced with the { statement-list } syntax. A given formula is assigned an RDF::Node instance, which is also used as the graph_name for RDF::Statement instances provided to RDF::N3::Reader#each_statement. For example, the following N3 generates the associated statements:
 
@@ -81,7 +81,7 @@ when turned into an RDF Repository results in the following quads
     _:ora <http://purl.org/dc/elements/1.1/#wrote> _:moby _:form .
     _:ora <http://example.org/x-ns/#firstname> "Ora" _:form .
 
-Reasoning uses a Notation3 Algebra, similar to [SPARQL S-Expressions](). This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
+Reasoning uses a Notation3 Algebra, similar to [SPARQL S-Expressions][]. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
 
 ### Variables
 N3 Variables are introduced with @forAll, @forSome, or ?x. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., ":x"). Existential variables are replaced with an allocated RDF::Node instance. Universal variables are replaced with a RDF::Query::Variable instance. For example, the following N3 generates the associated statements:
@@ -123,18 +123,18 @@ Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-
 * {RDF::N3::Writer}
 * {RDF::N3::Algebra}
   * {RDF::N3::Algebra::Formula}
-  * {RDF::N3::Algebra::ListAppend}
-  * {RDF::N3::Algebra::ListIn}
-  * {RDF::N3::Algebra::ListLast}
-  * {RDF::N3::Algebra::ListMember}
-  * {RDF::N3::Algebra::LogConclusion}
-  * {RDF::N3::Algebra::LogConjunction}
-  * {RDF::N3::Algebra::LogEqualTo}
-  * {RDF::N3::Algebra::LogImplies}
-  * {RDF::N3::Algebra::LogIncludes}
-  * {RDF::N3::Algebra::LogNotEqualTo}
-  * {RDF::N3::Algebra::LogNotIncludes}
-  * {RDF::N3::Algebra::LogOutputString}
+  * {RDF::N3::Algebra::List::Append}
+  * {RDF::N3::Algebra::List::In}
+  * {RDF::N3::Algebra::List::Last}
+  * {RDF::N3::Algebra::List::Member}
+  * {RDF::N3::Algebra::Log::Conclusion}
+  * {RDF::N3::Algebra::Log::Conjunction}
+  * {RDF::N3::Algebra::Log::EqualTo}
+  * {RDF::N3::Algebra::Log::Implies}
+  * {RDF::N3::Algebra::Log::Includes}
+  * {RDF::N3::Algebra::Log::NotEqualTo}
+  * {RDF::N3::Algebra::Log::NotIncludes}
+  * {RDF::N3::Algebra::Log::OutputString}
 
 ### Additional vocabularies
 * {RDF::N3::Log}
