@@ -1,4 +1,3 @@
-$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '..')))
 require 'rdf'
 
 module RDF
@@ -24,11 +23,12 @@ module RDF
     require 'rdf/n3/format'
     require 'rdf/n3/vocab'
     require 'rdf/n3/extensions'
-    autoload :Meta,       'rdf/n3/meta'
-    autoload :Reader,     'rdf/n3/reader'
-    autoload :Reasoner,   'rdf/n3/reasoner'
-    autoload :Terminals,  'rdf/n3/terminals'
-    autoload :VERSION,    'rdf/n3/version'
-    autoload :Writer,     'rdf/n3/writer'
+    require 'rdf/n3/refinements'
+    autoload :Meta,      'rdf/n3/meta'
+    autoload :Reader,    'rdf/n3/reader'
+    autoload :Reasoner,  'rdf/n3/reasoner'
+    autoload :Terminals, 'rdf/n3/terminals'
+    autoload :VERSION,   'rdf/n3/version'
+    autoload :Writer,    'rdf/n3/writer'
   end
 end

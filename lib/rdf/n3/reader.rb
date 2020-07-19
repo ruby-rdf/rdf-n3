@@ -21,6 +21,7 @@ module RDF::N3
   # @author [Gregg Kellogg](http://greggkellogg.net/)
   class Reader < RDF::Reader
     format Format
+    using Refinements
 
     include RDF::Util::Logger
     include EBNF::PEG::Parser

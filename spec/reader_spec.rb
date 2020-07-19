@@ -1190,6 +1190,17 @@ describe "RDF::N3::Reader" do
         }.to raise_error(RDF::ReaderError)
       end
     end
+
+    [
+      %(:y _:p1 "z" .),
+      %("y" :p1 "z" .),
+    ].each do |n3|
+      it "'#{n3}' is valid" do
+        expect {
+          parse("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . #{n3}", base_uri: "http://a/b", validate: true)
+        }.not_to raise_error
+      end
+    end
   end
 
   it "should parse rdf_core testcase" do

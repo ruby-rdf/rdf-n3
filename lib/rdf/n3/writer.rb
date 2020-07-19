@@ -50,6 +50,7 @@ module RDF::N3
     format RDF::N3::Format
     include RDF::Util::Logger
     include Terminals
+    using Refinements
 
     # @return [RDF::Repository] Repository of statements serialized
     attr_accessor :repo

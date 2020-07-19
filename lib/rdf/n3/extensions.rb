@@ -22,12 +22,7 @@ module RDF
     end
   end
 
-  class Statement
-    # Override variable?
-    def variable?
-      to_a.any? {|term| !term.is_a?(RDF::Term) || term.variable?} || graph_name && graph_name.variable?
-    end
-
+  class RDF::Statement
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
@@ -43,8 +38,7 @@ module RDF
     end
   end
 
-  class Query::Solution
-
+  class RDF::Query::Solution
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin

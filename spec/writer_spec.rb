@@ -38,7 +38,7 @@ describe RDF::N3::Writer do
         regexp: [ %r(^@base <http://a/> \.$), %r(^<b> <c> <d> \.$)],
         base_uri: "http://a/"
       },
-      "qname URIs with prefix" => {
+      "pname URIs with prefix" => {
         input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
         regexp: [
           %r(^@prefix ex: <http://example.com/> \.$),
@@ -46,7 +46,7 @@ describe RDF::N3::Writer do
         ],
         prefixes: {ex: "http://example.com/"}
       },
-      "qname URIs with empty prefix" => {
+      "pname URIs with empty prefix" => {
         input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
         regexp:  [
           %r(^@prefix : <http://example.com/> \.$),
@@ -55,7 +55,7 @@ describe RDF::N3::Writer do
         prefixes: {"" => "http://example.com/"}
       },
       # see example-files/arnau-registered-vocab.rb
-      "qname URIs with empty suffix" => {
+      "pname URIs with empty suffix" => {
         input: %(<http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> .),
         regexp:  [
           %r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
@@ -127,7 +127,7 @@ describe RDF::N3::Writer do
         ],
         standard_prefixes: true, prefixes: {}
       },
-      "should not use qname with illegal local part" => {
+      "should not use pname with illegal local part" => {
         input: %(
           @prefix db: <http://dbpedia.org/resource/> .
           @prefix dbo: <http://dbpedia.org/ontology/> .
