@@ -4,6 +4,14 @@ require 'rdf/trig'  # For formatting error descriptions
 describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c n3 tests" do
+    let(:logger) {RDF::Spec.logger}
+
+    after(:each) do |example|
+      puts logger.to_s if
+        example.exception &&
+        !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+    end
+
     require_relative 'suite_helper'
 
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
@@ -17,9 +25,13 @@ describe RDF::N3::Reader do
               pending("numeric representation")
             when *%w(n3_10003 n3_10006)
               pending("Verified test results are incorrect")
+            when *%w(n3_10009 n3_10018 n3_20002)
+              pending("Not allowed with new grammar")
+            when *%w(n3_10021)
+              pending("stack overflow")
             end
 
-            t.logger = RDF::Spec.logger
+            t.logger = logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
 
@@ -55,7 +67,7 @@ describe RDF::N3::Reader do
             elsif t.syntax?
               expect {
                 repo << reader
-                repo.dump(:nquads).should produce("not this", t.logger)
+                repo.dump(:nquads).to produce("not this", t.logger)
               }.to raise_error(RDF::ReaderError)
             else
               expect(repo).not_to be_equivalent_graph(output_repo, t)

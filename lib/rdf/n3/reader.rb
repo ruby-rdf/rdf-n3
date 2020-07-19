@@ -33,6 +33,11 @@ module RDF::N3
     # @return [Array<RDF::Node>]
     attr_reader :formulae
 
+    # All nodes allocated to formulae
+    #
+    # @return [Hash{RDF::Node => RDF::Graph}]
+    attr_reader :formula_nodes
+
     # Allocated variables by formula
     #
     # @return [Hash{Symbol => RDF::Node}]
@@ -72,6 +77,7 @@ module RDF::N3
         @prod_data = []
 
         @formulae = []
+        @formula_nodes = {}
         @label_uniquifier ||= "#{Random.new_seed}_000000"
         @bnodes = {}  # allocated bnodes by formula
         @variables = {}
@@ -297,6 +303,11 @@ module RDF::N3
           value[1][:expression]
         end
       end
+
+      error("Literal may not be used as a predicate") if prod_data[:verb].is_a?(RDF::Literal)
+      error("Formula may not be used as a peredicate") if formula_nodes.has_key?(prod_data[:verb])
+
+      prod_data[:verb]
     end
 
     #  (rule subject "13" (seq expression))
@@ -381,6 +392,7 @@ module RDF::N3
     start_production(:_formula_1) do |data|
       node = RDF::Node.new(".form_#{unique_label}")
       formulae.push(node)
+      formula_nodes[node] = true
       debug(:formula) {"id: #{node}, depth: #{formulae.length}"}
 
       # Promote variables defined on the earlier formula to this formula
