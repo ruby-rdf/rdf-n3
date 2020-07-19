@@ -1,5 +1,5 @@
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-@keywords.
+# @keywords.
 @forAll x, y, z. {x parent y. y sister z} log:implies {x aunt z}.
 
 # This N3 formula has three universally quantified variables and one statement.  The subject of the statement, 

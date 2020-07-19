@@ -25,11 +25,11 @@ module RDF
     require 'rdf/n3/vocab'
     require 'rdf/n3/extensions'
     require 'rdf/n3/patches/array_hacks'
-    autoload :Meta,     'rdf/n3/reader/meta'
-    autoload :Parser,   'rdf/n3/reader/parser'
-    autoload :Reader,   'rdf/n3/reader'
-    autoload :Reasoner, 'rdf/n3/reasoner'
-    autoload :VERSION,  'rdf/n3/version'
-    autoload :Writer,   'rdf/n3/writer'
+    autoload :Meta,       'rdf/n3/meta'
+    autoload :Reader,     'rdf/n3/reader'
+    autoload :Reasoner,   'rdf/n3/reasoner'
+    autoload :Terminals,  'rdf/n3/terminals'
+    autoload :VERSION,    'rdf/n3/version'
+    autoload :Writer,     'rdf/n3/writer'
   end
 end

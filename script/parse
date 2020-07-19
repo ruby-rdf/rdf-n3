@@ -20,7 +20,7 @@ def run(input, **options)
   Profiler__::start_profile if options[:profile]
   if options[:think]
     # Parse into a new reasoner and evaluate
-    reader_class.new(input, options[:parser_options].merge(logger: nil)) do |reader|
+    reader_class.new(input, **options[:parser_options].merge(logger: nil)) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader, options[:parser_options])
       reasoner.reason!(options)
       repo = RDF::Repository.new
@@ -35,7 +35,7 @@ def run(input, **options)
       options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
-    reader_class.new(input, options[:parser_options]).each do |statement|
+    reader_class.new(input, **options[:parser_options]).each do |statement|
       num += 1
       if options[:errors] && statement.invalid?
         $stderr.puts "Invalid statement at #{r.lineno}: #{statement.inspect}"
@@ -46,17 +46,17 @@ def run(input, **options)
       end
     end
   elsif options[:output_format] == :sxp
-    reader_class.new(input, options[:parser_options]) do |reader|
+    reader_class.new(input, **options[:parser_options]) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader)
       SXP::Generator.print(reasoner.to_sxp_bin)
     end
   elsif options[:output_format] == :inspect
-    reader_class.new(input, options[:parser_options]).each do |statement|
+    reader_class.new(input, **options[:parser_options]).each do |statement|
       num += 1
       options[:output].puts statement.inspect
     end
   else
-    reader = reader_class.new(input, options[:parser_options])
+    reader = reader_class.new(input, **options[:parser_options])
     repo = RDF::Repository.new << reader
     num = repo.count
     options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
@@ -68,16 +68,18 @@ def run(input, **options)
   puts
   secs = Time.new - start
   puts "Parsed #{num} statements in #{secs} seconds @ #{num/secs} statements/second."
+rescue RDF::ReaderError => e
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  exit(1)
 rescue Exception => e
-  fname = input.respond_to?(:path) ? input.path : "-stdin-"
-  STDERR.puts("Error in #{fname}: #{e.message}")
-  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ")
-  raise e
+  STDERR.puts "Error: #{e.message}"
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  exit(1)
 end
 
 logger = Logger.new(STDERR)
 logger.level = Logger::WARN
-logger.formatter = lambda {|severity, datetime, progname, msg| "#{severity}: #{msg}\n"}
+logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
 
 parser_options = {
   base_uri: "http://example.com",
@@ -113,7 +115,7 @@ OPT_ARGS = [
   ["--think", GetoptLong::NO_ARGUMENT, "Run rules until until no more triples generated"],
   ["--uri", GetoptLong::REQUIRED_ARGUMENT, "Default base URI"],
   ["--validate", GetoptLong::NO_ARGUMENT, "Run parser in strict validation mode"],
-  #["--verbose", GetoptLong::NO_ARGUMENT, "Verbose output"],
+  ["--verbose", GetoptLong::NO_ARGUMENT, "Verbose output"],
 ]
 
 def usage
@@ -159,7 +161,7 @@ opts.each do |opt, arg|
   when '--rules'        then options[:rules] = true
   when '--think'        then options[:think] = true
   when '--uri'          then parser_options[:base_uri] = arg
-  when '--validate'     then parser_options[:debug] ||= 1
+  when '--validate'     then parser_options[:validate] = true
   when '--verbose'      then $verbose = true
   end
 end

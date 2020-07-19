@@ -9,8 +9,14 @@ describe "RDF::N3::Reader" do
   let!(:doap_count) {File.open(doap_nt).each_line.to_a.length}
   let(:logger) {RDF::Spec.logger}
 
+  after(:each) do |example|
+    puts logger.to_s if
+      example.exception &&
+      !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  end
+
   it_behaves_like 'an RDF::Reader' do
-    let(:reader) {RDF::N3::Reader.new(reader_input)}
+    let(:reader) {RDF::N3::Reader.new(reader_input, logger: logger)}
     let(:reader_input) {File.read(doap)}
     let(:reader_count) {doap_count}
   end
@@ -82,7 +88,7 @@ describe "RDF::N3::Reader" do
     it "should yield statements" do
       inner = double("inner")
       expect(inner).to receive(:called).with(RDF::Statement).exactly(15)
-      RDF::N3::Reader.new(@sampledoc).each_statement do |statement|
+      RDF::N3::Reader.new(@sampledoc, logger: logger).each_statement do |statement|
         inner.called(statement.class)
       end
     end
@@ -169,7 +175,13 @@ describe "RDF::N3::Reader" do
       end
 
       it "should parse long literal with escape" do
-        n3 = %(@prefix : <http://example.org/foo#> . :a :b "\\U00015678another" .)
+        n3 = %(@prefix : <http://example.org/foo#> . :a :b """\\U00015678another""" .)
+        statement = parse(n3).statements.first
+        expect(statement.object.value).to eq "\u{15678}another"
+      end
+
+      it "should parse long literal single quote with escape" do
+        n3 = %(@prefix : <http://example.org/foo#> . :a :b '''\\U00015678another''' .)
         statement = parse(n3).statements.first
         expect(statement.object.value).to eq "\u{15678}another"
       end
@@ -191,11 +203,11 @@ describe "RDF::N3::Reader" do
               baz
               <html:i xmlns:html="http://www.w3.org/1999/xhtml">more</html:i>
             ),
-          "trailing escaped double-quote" => %q( "),
+          "trailing escaped double-quote" => %q( " ),
           "regression.n3" => %q(sameDan.n3 sameThing.n3 --think --apply=forgetDups.n3 --purge --n3="/" )
         }.each do |test, string|
           it "parses #{test}" do
-            graph = parse(%(:a :b """#{string}"""))
+            graph = parse(%(:a :b """#{string}""" .))
             expect(graph.size).to eq 1
             expect(graph.statements.first.object.value).to eq string
           end
@@ -312,7 +324,7 @@ describe "RDF::N3::Reader" do
 
       {
         %(<#Dürst>       a  "URI straight in UTF8".) => %(<http://a/b#D\\u00FCrst> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "URI straight in UTF8" .),
-        #%(:a :related :ひらがな .) => %(<http://a/b#a> <http://a/b#related> <http://a/b#\\u3072\\u3089\\u304C\\u306A> .),
+        %(:a :related :ひらがな .) => %(<http://a/b#a> <http://a/b#related> <http://a/b#\\u3072\\u3089\\u304C\\u306A> .),
       }.each_pair do |n3, nt|
         it "for '#{n3}'" do
           expect(parse(n3, base_uri: "http://a/b", logger: false)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
@@ -336,7 +348,7 @@ describe "RDF::N3::Reader" do
 
   describe "with n3 grammar" do
     describe "syntactic expressions" do
-      it "should create typed literals with qname" do
+      it "should create typed literals with pname" do
         n3doc = %(
           @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
           @prefix foaf: <http://xmlns.com/foaf/0.1/> .
@@ -387,6 +399,12 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
+      it "should generate inverse predicate for '^xxx'", pending: "grammar confusion" do
+        n3 = %("value" ^:prop :b . :b :prop "value" .)
+        nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
+        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+      end
+
       it "should generate inverse predicate for 'is xxx of' with object list" do
         n3 = %("value" is :prop of :b, :c . )
         nt = %(
@@ -397,7 +415,7 @@ describe "RDF::N3::Reader" do
       end
 
       it "should generate inverse predicate for 'is xxx of' with blankNodePropertyList" do
-        n3 = %([ is :prop of :George])
+        n3 = %([ is :prop of :George] .)
         nt = %(
         <http://a/b#George> <http://a/b#prop> _:bn .
         )
@@ -456,7 +474,7 @@ describe "RDF::N3::Reader" do
       }.each_pair do |n3, nt|
         it "should create typed literal for '#{n3}'" do
           expected = RDF::NTriples::Reader.new(nt)
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
+          expect(parse("#{n3} .", base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
         end
       end
 
@@ -495,6 +513,17 @@ describe "RDF::N3::Reader" do
         expect(statement.predicate).not_to equal statement.object
       end
 
+      it "creates variable for quickVar" do
+        n3 = %(?x :y :z .)
+        g = parse(n3, base_uri: "http://a/b")
+        statement = g.statements.first
+        expect(statement.subject).to be_variable
+        expect(statement.predicate).not_to be_variable
+        expect(statement.object).not_to be_variable
+        expect(statement.subject).not_to equal statement.predicate
+        expect(statement.subject).not_to equal statement.object
+      end
+
       it "substitutes node for URI with @forSome" do
         n3 = %(@forSome :x . :x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
@@ -526,6 +555,14 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
+      it "should not append # for http://foo/bar (sparqlPrefix)" do
+        n3 = %(PrEfIx : <http://foo/bar> :a : :b .)
+        nt = %(
+        <http://foo/bara> <http://foo/bar> <http://foo/barb> .
+        )
+        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+      end
+
       it "should not append # for http://foo/bar/" do
         n3 = %(@prefix : <http://foo/bar/> . :a : :b .)
         nt = %(
@@ -544,6 +581,15 @@ describe "RDF::N3::Reader" do
 
       it "should set absolute base" do
         n3 = %(@base <http://foo/bar> . <> :a <b> . <#c> :d </e>.)
+        nt = %(
+        <http://foo/bar> <http://foo/bar#a> <http://foo/b> .
+        <http://foo/bar#c> <http://foo/bar#d> <http://foo/e> .
+        )
+        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+      end
+
+      it "should set absolute base (sparqlBase)" do
+        n3 = %(BaSe <http://foo/bar> <> :a <b> . <#c> :d </e>.)
         nt = %(
         <http://foo/bar> <http://foo/bar#a> <http://foo/b> .
         <http://foo/bar#c> <http://foo/bar#d> <http://foo/e> .
@@ -608,80 +654,7 @@ describe "RDF::N3::Reader" do
       end
     end
 
-    describe "keywords" do
-      [
-        %(base <>.),
-        %(keywords a.),
-        %(:a is :b of :c.),
-        %(:a @is :b of :c.),
-        %(:a is :b @of :c.),
-        %(:a has :b :c.),
-      ].each do |n3|
-        it "should require @ if keywords set to empty for '#{n3}'" do
-          expect do
-            parse("@keywords . #{n3}", base_uri: "http://a/b")
-          end.to raise_error(RDF::ReaderError)
-        end
-      end
-
-      [
-        %(prefix :<>.),
-      ].each do |n3|
-        it "parses as local name if keywords set to empty for '#{n3}'" do
-          expect do
-            parse("@keywords . #{n3}", base_uri: "http://a/b")
-          end.not_to raise_error
-        end
-      end
-      {
-        %(:a a :b)  => %(<http://a/b#a> <http://a/b#a> <http://a/b#b> .),
-        %(:a :b true) => %(<http://a/b#a> <http://a/b#b> <http://a/b#true> .),
-        %(:a :b false) => %(<http://a/b#a> <http://a/b#b> <http://a/b#false> .),
-        %(c :a :t)  => %(<http://a/b#c> <http://a/b#a> <http://a/b#t> .),
-        %(:c a :t)  => %(<http://a/b#c> <http://a/b#a> <http://a/b#t> .),
-        %(:c :a t)  => %(<http://a/b#c> <http://a/b#a> <http://a/b#t> .),
-      }.each_pair do |n3, nt|
-        it "should use default_ns for '#{n3}'" do
-          expect(parse("@keywords . #{n3}", base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
-        end
-      end
-
-      {
-        %(@keywords true. :a :b true.) => %(<http://a/b#a> <http://a/b#b> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .),
-        %(@keywords false. :a :b false.) => %(<http://a/b#a> <http://a/b#b> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .),
-        %(@keywords a. :a a :b.) => %(<http://a/b#a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#b> .),
-        %(@keywords is. :a is :b @of :c.) => %(<http://a/b#c> <http://a/b#b> <http://a/b#a> .),
-        %(@keywords of. :a @is :b of :c.) => %(<http://a/b#c> <http://a/b#b> <http://a/b#a> .),
-        %(@keywords has. :a has :b :c.) => %(<http://a/b#a> <http://a/b#b> <http://a/b#c> .),
-      }  .each_pair do |n3, nt|
-          it "should use keyword for '#{n3}'" do
-            expected = RDF::NTriples::Reader.new(nt)
-            expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-          end
-        end
-
-      it "should raise error if unknown keyword set" do
-        n3 = %(@keywords foo.)
-        expect do
-          parse(n3, base_uri: "http://a/b", validate: true)
-        end.to raise_error(RDF::ReaderError, /Undefined keywords used: foo/)
-      end
-    end
-
     describe "declaration ordering" do
-      it "should process _ namespace binding after an initial use as a BNode" do
-        n3 = %(
-        _:a a :p.
-        @prefix _: <http://underscore/> .
-        _:a a :p.
-        )
-        nt = %(
-        <http://underscore/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#p> .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#p> .
-        )
-        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
-      end
-
       it "should allow a prefix to be redefined" do
         n3 = %(
         @prefix a: <http://host/A#>.
@@ -752,134 +725,112 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
-      it "should create BNode as a single object" do
-        n3 = %(@prefix a: <http://foo/a#> . a:b a:oneRef [ a:pp "1" ; a:qq "2" ] .)
-        nt = %(
-        _:bnode0 <http://foo/a#pp> "1" .
-        _:bnode0 <http://foo/a#qq> "2" .
-        <http://foo/a#b> <http://foo/a#oneRef> _:bnode0 .
-        )
-        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+      context "blankNodePropertyList" do
+        it "should create BNode as a single object" do
+          n3 = %(@prefix a: <http://foo/a#> . a:b a:oneRef [ a:pp "1" ; a:qq "2" ] .)
+          nt = %(
+          _:bnode0 <http://foo/a#pp> "1" .
+          _:bnode0 <http://foo/a#qq> "2" .
+          <http://foo/a#b> <http://foo/a#oneRef> _:bnode0 .
+          )
+          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+        end
+
+        it "should create a shared BNode" do
+          n3 = %(
+          @prefix a: <http://foo/a#> .
+
+          a:b1 a:twoRef _:a .
+          a:b2 a:twoRef _:a .
+
+          _:a :pred [ a:pp "1" ; a:qq "2" ].
+          )
+          nt = %(
+          <http://foo/a#b1> <http://foo/a#twoRef> _:a .
+          <http://foo/a#b2> <http://foo/a#twoRef> _:a .
+          _:bnode0 <http://foo/a#pp> "1" .
+          _:bnode0 <http://foo/a#qq> "2" .
+          _:a :pred _:bnode0 .
+          )
+          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
+          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
+        end
+
+        it "should create nested BNodes" do
+          n3 = %(
+          @prefix a: <http://foo/a#> .
+
+          a:a a:p [ a:p2 [ a:p3 "v1" , "v2" ; a:p4 "v3" ] ; a:p5 "v4" ] .
+          )
+          nt = %(
+          _:bnode0 <http://foo/a#p3> "v1" .
+          _:bnode0 <http://foo/a#p3> "v2" .
+          _:bnode0 <http://foo/a#p4> "v3" .
+          _:bnode1 <http://foo/a#p2> _:bnode0 .
+          _:bnode1 <http://foo/a#p5> "v4" .
+          <http://foo/a#a> <http://foo/a#p> _:bnode1 .
+          )
+          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+        end
       end
 
-      it "should create a shared BNode" do
-        n3 = %(
-        @prefix a: <http://foo/a#> .
-
-        a:b1 a:twoRef _:a .
-        a:b2 a:twoRef _:a .
-
-        _:a :pred [ a:pp "1" ; a:qq "2" ].
-        )
-        nt = %(
-        <http://foo/a#b1> <http://foo/a#twoRef> _:a .
-        <http://foo/a#b2> <http://foo/a#twoRef> _:a .
-        _:bnode0 <http://foo/a#pp> "1" .
-        _:bnode0 <http://foo/a#qq> "2" .
-        _:a :pred _:bnode0 .
-        )
-        expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-      end
-
-      it "should create nested BNodes" do
-        n3 = %(
-        @prefix a: <http://foo/a#> .
-
-        a:a a:p [ a:p2 [ a:p3 "v1" , "v2" ; a:p4 "v3" ] ; a:p5 "v4" ] .
-        )
-        nt = %(
-        _:bnode0 <http://foo/a#p3> "v1" .
-        _:bnode0 <http://foo/a#p3> "v2" .
-        _:bnode0 <http://foo/a#p4> "v3" .
-        _:bnode1 <http://foo/a#p2> _:bnode0 .
-        _:bnode1 <http://foo/a#p5> "v4" .
-        <http://foo/a#a> <http://foo/a#p> _:bnode1 .
-        )
-        expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
-      end
-
-      describe "from paths" do
-        it "should create bnode for path x!p" do
-          n3 = %(:x2!:y2 :p2 "3" .)
-          nt = %(:x2 :y2 _:bnode0 ._:bnode0 :p2 "3" .)
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should create bnode for path x^p" do
-          n3 = %(:x2^:y2 :p2 "3" .)
-          nt = %(_:bnode0 :y2 :x2 . _:bnode0 :p2 "3" .)
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should decode :joe!fam:mother!loc:office!loc:zip as Joe's mother's office's zipcode" do
-          n3 = %(
-          @prefix fam: <http://foo/fam#> .
-          @prefix loc: <http://foo/loc#> .
-
-          :joe!fam:mother!loc:office!loc:zip .
-          )
-          nt = %(
-          :joe <http://foo/fam#mother> _:bnode0 .
-          _:bnode0 <http://foo/loc#office> _:bnode1 .
-          _:bnode1 <http://foo/loc#zip> _:bnode2 .
-          )
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should decode :joe!fam:mother^fam:mother Anyone whose mother is Joe's mother." do
-          n3 = %(
-          @prefix fam: <http://foo/fam#> .
-          @prefix loc: <http://foo/loc#> .
-
-          :joe!fam:mother^fam:mother .
-          )
-          nt = %(
-          :joe <http://foo/fam#mother> _:bnode0 .
-          _:bnode1 <http://foo/fam#mother> _:bnode0 .
-          )
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should decode path with property list." do
-          n3 = %(
-          @prefix a: <http://a/ns#>.
-          :a2!a:b2!a:c2 :q1 "3" ; :q2 "4" , "5" .
-          )
-          nt = %(
-          :a2 <http://a/ns#b2> _:bnode0 .
-          _:bnode0 <http://a/ns#c2> _:bnode1 .
-          _:bnode1 :q1 "3" .
-          _:bnode1 :q2 "4" .
-          _:bnode1 :q2 "5" .
-          )
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should decode path as object(1)" do
-          n3 = %(:a  :b "lit"^:c.)
-          nt = %(
-            :a :b _:bnode .
-            _:bnode :c "lit" .
-          )
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
-        end
-
-        it "should decode path as object(2)" do
-          n3 = %(@prefix a: <http://a/ns#>. :r :p :o!a:p1!a:p2 .)
-          nt = %(
-          :o <http://a/ns#p1> _:bnode0 .
-          _:bnode0 <http://a/ns#p2> _:bnode1 .
-          :r :p _:bnode1 .
-          )
-          expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
-          expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
+      context "property paths" do
+        {
+          "subject x!p": [
+            %(:x2!:y2 :p2 "3" .),
+            %(:x2 :y2 _:bnode0 . _:bnode0 :p2 "3" .)
+          ],
+          "subject x^p": [
+            %(:x2^:y2 :p2 "3" .),
+            %(_:bnode0 :y2 :x2 . _:bnode0 :p2 "3" .)
+          ],
+          "alberts mother inverse of metor to auntieAnne": [
+            %(:albert!fam:mother :mentor!:inverse :auntieAnne .),
+            %(
+              :albert :mother _:bnode0 .
+              _:bnode0 _:pred0 :auntieAnne .
+              :mentor :inverse _:pred0 . 
+            )
+          ],
+          "albert doesnt admire grumpy": [
+            %(:albert :admires!:converse :grumpy .),
+            %(:albert _:pred0 :grumpy . :admires :converse _:pred0 .)
+          ],
+          "1+2=3": [
+            %{("1" "2")!:sum a :THREE.},
+            %{("1" "2") :sum _:bnode0 . _:bnode0 a :THREE .}
+          ],
+          "relatedTo": [
+            %{(:a!:b :c^:d) :relatedTo (:e!:f!:g ) .},
+            %{
+              :a :b _:bnode0 .
+              _:bnode1 :d :c .
+              :e :f _:bnode2 .
+              _:bnode2 :g _:bnode3 .
+              (_:bnode0 _:bnode1) :relatedTo (_:bnode3) .
+            }
+          ],
+          "joes mothers offices zip": [
+            %{:joe!:mother!:office!:zip .},
+            %{:joe :mother [:office [:zip []]] .}
+          ],
+          "Anyone whose mother is Joe's mother": [
+            %{:joe!:mother^:mother .},
+            %{:joe :mother _:bnode0 . [:mother _:bnode0] .}
+          ],
+          "path as object(1)": [
+            %{:a  :b "lit"^:c.},
+            %{:a :b [:c "lit"] .}
+          ],
+          "path as object(2)": [
+            %(:r :p :o!:p1!:p2 .),
+            %{:o :p1 [:p2 _:bnode1] . :r :p _:bnode1 .}
+          ]
+        }.each do |title, (n3, res)|
+          it title do
+            expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(res, base_uri: "http://a/b")}
+            expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected,slogger: logger, format: :n3)
+          end
         end
       end
     end
@@ -888,7 +839,7 @@ describe "RDF::N3::Reader" do
       before(:each) { @repo = RDF::Repository.new }
 
       it "creates an RDF::Node instance for formula" do
-        n3 = %(:a :b {})
+        n3 = %(:a :b {} .)
         nq = %(:a :b _:c .)
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
         expected = parse(nq, repo: @repo, base_uri: "http://a/b")
@@ -896,7 +847,7 @@ describe "RDF::N3::Reader" do
       end
 
       it "adds statements with graph_name" do
-        n3 = %(:a :b {[:c :d]})
+        n3 = %(:a :b {[:c :d]} .)
         trig = %(<#a> <#b> _:c . _:c {[<#c> <#d>] .})
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
         expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
@@ -927,7 +878,7 @@ describe "RDF::N3::Reader" do
       it "creates unique bnodes within different formula" do
         n3 = %(
           _:a a :Thing .
-          {_:a a :Thing} => {_:a a :Thing}
+          {_:a a :Thing} => {_:a a :Thing} .
         )
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
         expect(result.statements.uniq.length).to eq 4
@@ -982,7 +933,7 @@ describe "RDF::N3::Reader" do
 
     describe "object lists" do
       it "should create 2 statements for simple list" do
-        n3 = %(:a :b :c, :d)
+        n3 = %(:a :b :c, :d .)
         nt = %(<http://a/b#a> <http://a/b#b> <http://a/b#c> . <http://a/b#a> <http://a/b#b> <http://a/b#d> .)
         expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(nt, base_uri: "http://a/b")}
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger, format: :n3)
@@ -1074,21 +1025,6 @@ describe "RDF::N3::Reader" do
             ("inner list")
           ) .
           <http://resource1> a:p "value" .
-        )
-        nt = %(
-        <http://foo/a#a> <http://foo/a#p> _:bnode3 .
-        <http://resource1> <http://foo/a#p> "value" .
-        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode5 .
-        _:bnode3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode2 .
-        _:bnode5 <http://foo/a#p2> "v1" .
-        _:bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://resource1> .
-        _:bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode1 .
-        _:bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://resource2> .
-        _:bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:bnode0 .
-        _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:bnode4 .
-        _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:bnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "inner list" .
-        _:bnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
         )
         g = parse(n3, base_uri: "http://a/b")
         expect(g.subjects.to_a.length).to eq 8
@@ -1239,20 +1175,19 @@ describe "RDF::N3::Reader" do
   end
 
   describe "validation" do
-    {
-      %(:y :p1 "xyz"^^xsd:integer .) => %r("xyz" is not a valid .*),
-      %(:y :p1 "12xyz"^^xsd:integer .) => %r("12xyz" is not a valid .*),
-      %(:y :p1 "xy.z"^^xsd:double .) => %r("xy\.z" is not a valid .*),
-      %(:y :p1 "+1.0z"^^xsd:double .) => %r("\+1.0z" is not a valid .*),
-      %(:a :b .) =>RDF::ReaderError,
-      %(:a :b 'single quote' .) => RDF::ReaderError,
-      %(:a "literal value" :b .) => RDF::ReaderError,
-      %(@keywords prefix. :e prefix :f .) => RDF::ReaderError
-    }.each_pair do |n3, error|
-      it "should raise '#{error}' for '#{n3}'" do
+    [
+      %(:y :p1 "xyz"^^xsd:integer .),
+      %(:y :p1 "12xyz"^^xsd:integer .),
+      %(:y :p1 "xy.z"^^xsd:double .),
+      %(:y :p1 "+1.0z"^^xsd:double .),
+      %(:a :b .),
+      %(:a "literal value" :b .),
+      %(@keywords prefix. :e prefix :f .),
+    ].each do |n3|
+      it "should raise ReaderError for '#{n3}'" do
         expect {
           parse("@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . #{n3}", base_uri: "http://a/b", validate: true)
-        }.to raise_error(error)
+        }.to raise_error(RDF::ReaderError)
       end
     end
   end

@@ -49,7 +49,7 @@ module RDF::N3
   class Writer < RDF::Writer
     format RDF::N3::Format
     include RDF::Util::Logger
-    QNAME = Meta::REGEXPS[:"http://www.w3.org/2000/10/swap/grammar/n3#qname"]
+    include Terminals
 
     # @return [RDF::Repository] Repository of statements serialized
     attr_accessor :repo
@@ -222,7 +222,7 @@ module RDF::N3
 
       # Make sure pname is a valid pname
       if pname
-        md = QNAME.match(pname)
+        md = PNAME_LN.match(pname)
         pname = nil unless md.to_s.length == pname.length
       end
 

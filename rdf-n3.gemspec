@@ -15,12 +15,13 @@ Gem::Specification.new do |gem|
   gem.email                 = 'public-rdf-ruby@w3.org'
 
   gem.platform              = Gem::Platform::RUBY
-  gem.files                 = %w(README.md History.markdown AUTHORS VERSION UNLICENSE) + Dir.glob('lib/**/*.rb')
+  gem.files                 = %w(README.md VERSION UNLICENSE) + Dir.glob('lib/**/*.rb')
   gem.require_paths         = %w(lib)
 
   gem.required_ruby_version = '>= 2.4'
   gem.requirements          = []
 
+  gem.add_dependency             'ebnf',            '~> 2.1'
   gem.add_dependency             'rdf',             '~> 3.1'
   gem.add_dependency             'sparql',          '~> 3.1'
   gem.add_runtime_dependency     'sxp',             '~> 1.1'

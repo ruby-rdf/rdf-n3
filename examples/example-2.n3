@@ -1,4 +1,4 @@
-@keywords.
+# @keywords.
 @forAll x, y, z.
 { x wrote y.
   y log:includes {z weather w}.

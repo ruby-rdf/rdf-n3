@@ -18,6 +18,12 @@ group :development do
   gem 'sxp',                git: "https://github.com/dryruby/sxp.rb",               branch: "develop"
 end
 
+group :development, :test do
+  gem 'simplecov',      platforms: :mri, require: false
+  gem 'coveralls',      platforms: :mri, require: false
+end
+
 group :debug do
+  gem 'awesome_print',  github: 'MatthiasWinkelmann/awesome_print'
   gem "byebug", platform: :mri
 end
