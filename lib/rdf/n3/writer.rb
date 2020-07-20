@@ -223,7 +223,7 @@ module RDF::N3
 
       # Make sure pname is a valid pname
       if pname
-        md = PNAME_LN.match(pname)
+        md = PNAME_LN.match(pname) || PNAME_NS.match(pname)
         pname = nil unless md.to_s.length == pname.length
       end
 

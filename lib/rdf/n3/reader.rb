@@ -78,7 +78,7 @@ module RDF::N3
 
         @formulae = []
         @formula_nodes = {}
-        @label_uniquifier ||= "#{Random.new_seed}_000000"
+        @label_uniquifier = "#{Random.new_seed}_000000"
         @bnodes = {}  # allocated bnodes by formula
         @variables = {}
 
@@ -206,7 +206,7 @@ module RDF::N3
       RDF::NTriples.unescape(value[3..-4])
     end
     terminal(:ANON,                             ANON) {bnode}
-    terminal(:QUICK_VAR_NAME,                   QUICK_VAR_NAME) {|value| univar(value[1..-1])}
+    terminal(:QUICK_VAR_NAME,                   QUICK_VAR_NAME)
     terminal(:BASE,                             BASE)
     terminal(:PREFIX,                           PREFIX)
 
@@ -438,10 +438,11 @@ module RDF::N3
     #
     # (rule quickVar "30" (seq QUICK_VAR_NAME))
     production(:quickVar) do |value|
-      var = value.first[:QUICK_VAR_NAME]
-      add_var_to_formula(formulae[-2], var, var)
+      uri = process_pname(value.first[:QUICK_VAR_NAME].sub('?', ':'))
+      var = univar(uri)
+      add_var_to_formula(formulae[-2], uri, var)
       # Also add var to this formula
-      add_var_to_formula(formulae.last, var, var)
+      add_var_to_formula(formulae.last, uri, var)
       var
     end
 

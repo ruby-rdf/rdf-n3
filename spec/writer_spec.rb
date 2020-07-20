@@ -131,11 +131,11 @@ describe RDF::N3::Writer do
         input: %(
           @prefix db: <http://dbpedia.org/resource/> .
           @prefix dbo: <http://dbpedia.org/ontology/> .
-          db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> .
+          db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/(I_Can%27t_Make_It)_Another_Day> .
         ),
         regexp: [
           %r(^@prefix db: <http://dbpedia.org/resource/> \.$),
-          %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> \.$)
+          %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/\(I_Can%27t_Make_It\)_Another_Day> \.$)
         ],
         prefixes: {
           "db" => RDF::URI("http://dbpedia.org/resource/"),
@@ -615,6 +615,10 @@ describe RDF::N3::Writer do
               pending "Investigate"
             when *%w(n3_10013)
               pending "Number syntax"
+            when *%w(n3_10009 n3_10018 n3_20002)
+              pending("Not allowed with new grammar")
+            when *%w(n3_10021)
+              pending("stack overflow")
             end
             logger.info t.inspect
             logger.info "source: #{t.input}"
@@ -633,6 +637,10 @@ describe RDF::N3::Writer do
               pending "Investigate"
             when *%w(n3_10013)
               pending "Number syntax"
+            when *%w(n3_10009 n3_20002)
+              pending("Not allowed with new grammar")
+            when *%w(n3_10021)
+              pending("stack overflow")
             end
             logger.info t.inspect
             logger.info "source: #{t.expected}"
