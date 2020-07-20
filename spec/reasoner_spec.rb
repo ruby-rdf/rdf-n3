@@ -44,10 +44,9 @@ describe "RDF::N3::Reasoner" do
         },
         "double" => {
           input: %(
-            @keywords is, of, a.
-            dan a Man; home [].
-            { ?WHO home ?WHERE. ?WHERE in ?REGION } => { ?WHO homeRegion ?REGION }.
-            { dan home ?WHERE} => {?WHERE in Texas} . 
+            :dan a :Man; :home [].
+            { ?WHO :home ?WHERE. ?WHERE :in ?REGION } => { ?WHO :homeRegion ?REGION }.
+            { :dan :home ?WHERE} => {?WHERE :in :Texas} . 
           ),
           expect: %(
             :dan a :Man;
@@ -62,7 +61,7 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             :a :b "A noun", 3.14159265359 .
-            [ a :Thing]
+            [ a :Thing] .
           )
         },
         "uses variables bound in parent" => {
@@ -77,8 +76,9 @@ describe "RDF::N3::Reasoner" do
         }
       }.each do |name, options|
         it name do
-          result = parse(options[:expect])
-          expect(reason(options[:input])).to be_equivalent_graph(result, logger: logger)
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input])).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -100,8 +100,9 @@ describe "RDF::N3::Reasoner" do
         }
       }.each do |name, options|
         it name do
-          result = parse(options[:expect])
-          expect(reason(options[:input])).to be_equivalent_graph(result, logger: logger)
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input])).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end

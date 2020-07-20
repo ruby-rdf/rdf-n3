@@ -5,6 +5,13 @@ describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c n3 tests" do
     require_relative 'suite_helper'
+    let(:logger) {RDF::Spec.logger}
+
+    after(:each) do |example|
+      puts logger.to_s if
+        example.exception &&
+        !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+    end
 
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-reasoner.n3") do |m|
       describe m.label do
@@ -27,16 +34,19 @@ describe RDF::N3::Reader do
               pending "support for inference over quoted graphs"
             when *%w{t2005}
               pending "something else"
+            when *%w{t2004u5 t2007 t12}
+              skip("Not allowed with new grammar")
             end
 
-            t.logger = RDF::Spec.logger
+            t.logger = logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
 
             reader = RDF::N3::Reader.new(t.input,
                 base_uri: t.base,
                 canonicalize: false,
-                validate: false)
+                validate: false,
+                logger: t.logger)
 
             reasoner = RDF::N3::Reasoner.new(reader,
                 base_uri:  t.base,
