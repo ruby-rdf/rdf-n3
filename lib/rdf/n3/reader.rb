@@ -177,6 +177,8 @@ module RDF::N3
     ##
     # Parser terminals and productions
     ##
+
+    # @!parse none
     terminal(:BOOLEAN_LITERAL,                  %r{true|false}) do |value|
       RDF::Literal.new(value.start_with?('@') ? value[1..-1] : value,
                        datatype: RDF::XSD.boolean,

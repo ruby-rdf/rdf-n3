@@ -1,12 +1,26 @@
 # Refinements on core RDF class behavior
+# @see ::RDF::Statement#valid?
+# @see ::RDF::Statement#invalid?
+# @see ::RDF::Statement#validate!
+# @see ::RDF::Query::Pattern#valid?
 module RDF::N3::Refinements
+  # @!parse
+  #   # Refinements on RDF::Statement
+  #   class ::RDF::Statement
+  #     # Refines `valid?` to allow literal subjects and BNode predicates.
+  #     # @return [Boolean]
+  #     def valid?; end
+  #
+  #     # Refines `invalid?` to allow literal subjects and BNode predicates.
+  #     # @return [Boolean]
+  #     def invalid?; end
+  #
+  #     # Refines `validate!` to allow literal subjects and BNode predicates.
+  #     # @return [RDF::Value] `self`
+  #     # @raise  [ArgumentError] if the value is invalid
+  #     def validate!; end
+  #   end
   refine ::RDF::Statement do
-    # Transform Statement into an SXP
-    # @return [Array]
-    def to_sxp_bin
-      [(variable? ? :pattern : :triple), subject, predicate, object, graph_name].compact
-    end
-
     ##
     # Override `valid?` terms as subjects and resources as predicates.
     #
@@ -28,38 +42,20 @@ module RDF::N3::Refinements
     # Default validate! implementation, overridden in concrete classes
     # @return [RDF::Value] `self`
     # @raise  [ArgumentError] if the value is invalid
-    # @since  0.3.9
     def validate!
       raise ArgumentError, "#{self.inspect} is not valid" if invalid?
       self
     end
     alias_method :validate, :validate!
-
-    ##
-    # Returns an S-Expression (SXP) representation
-    #
-    # @return [String]
-    def to_sxp
-      to_sxp_bin.to_sxp
-    end
   end
 
-  refine ::RDF::Query::Solution do
-    # Transform Statement into an SXP
-    # @return [Array]
-    def to_sxp_bin
-      [:solution] + bindings.map {|k, v| Query::Variable.new(k, v).to_sxp_bin}
-    end
-
-    ##
-    # Returns an S-Expression (SXP) representation
-    #
-    # @return [String]
-    def to_sxp
-      to_sxp_bin.to_sxp
-    end
-  end
-
+  # @!parse
+  #   # Refinements on RDF::Query::Pattern
+  #   class ::RDF::Query::Pattern
+  #     # Refines `valid?` to allow literal subjects and BNode predicates.
+  #     # @return [Boolean]
+  #     def valid?; end
+  #   end
   refine ::RDF::Query::Pattern do
     ##
     # Is this pattern composed only of valid components?
