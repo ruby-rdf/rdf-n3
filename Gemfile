@@ -19,8 +19,8 @@ group :development do
 end
 
 group :development, :test do
-  gem 'simplecov',      platforms: :mri, require: false
-  gem 'coveralls',      platforms: :mri, require: false
+  gem 'simplecov',      platforms: :mri
+  gem 'coveralls',      platforms: :mri
 end
 
 group :debug do
