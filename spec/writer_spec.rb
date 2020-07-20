@@ -7,6 +7,12 @@ require 'rdf/trig'
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
 
+  after(:each) do |example|
+    puts logger.to_s if
+      example.exception &&
+      !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  end
+
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -561,7 +567,19 @@ describe RDF::N3::Writer do
           %r(} \.),
         ],
         input_format: :trig
-      }
+      },
+      "implication" => {
+        input: %q(
+          @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+          ("17"^^xsd:integer) a <#TestCase> .
+          { ( ?x ) a :TestCase}  => { ?x a :RESULT } .
+        ),
+        regexp: [
+          %r{\(17\) a :TestCase \.},
+          %r{\(:x_\d+_\d+\) a :TestCase \.},
+          %r{:x_\d+_\d+ a :RESULT \.},
+        ]
+      },
     }.each do |name, params|
       it name do
         serialize(params[:input], params[:regexp], **params)
@@ -623,9 +641,9 @@ describe RDF::N3::Writer do
             logger.info t.inspect
             logger.info "source: #{t.input}"
             repo = parse(t.input, base_uri: t.base)
-            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base)
+            g2 = parse(n3, base_uri: t.base, logger: logger)
             expect(g2).to be_equivalent_graph(repo, logger: logger)
           end
 
@@ -646,9 +664,9 @@ describe RDF::N3::Writer do
             logger.info "source: #{t.expected}"
             format = detect_format(t.expected)
             repo = parse(t.expected, base_uri: t.base, format: format)
-            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base)
+            g2 = parse(n3, base_uri: t.base, logger: logger)
             expect(g2).to be_equivalent_graph(repo, logger: logger)
           end
         end

@@ -172,7 +172,7 @@ module RDF::N3
         repo.graph_names.each do |graph_name|
           next if graph_done?(graph_name)
 
-          log_debug {"named graph(#{graph_name})"}
+          log_debug {"formula(#{graph_name})"}
           @output.write("\n#{indent}")
           p_term(graph_name, :subject)
           @output.write(" ")

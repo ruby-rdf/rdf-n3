@@ -873,13 +873,30 @@ describe "RDF::N3::Reader" do
         expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
       end
 
-      it "creates unique bnodes within different formula" do
+      it "creates unique bnodes within different formula (bnodes)" do
         n3 = %(
           _:a a :Thing .
           {_:a a :Thing} => {_:a a :Thing} .
         )
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
-        expect(result.statements.uniq.length).to eq 4
+        statements = result.statements
+        expect(statements.length).to produce(4, logger)
+        # All three bnodes should be distinct
+        nodes_of_a = statements.map(&:to_a).flatten.select {|r| r.node? && r.to_s.start_with?('_:a')}
+        expect(nodes_of_a.uniq.count).to produce(3, logger)
+      end
+
+      it "creates unique bnodes within different formula (quickvar)" do
+        n3 = %(
+          :a a :Thing .
+          {?a a :Thing} => {?a a :Thing} .
+        )
+        result = parse(n3, repo: @repo, base_uri: "http://a/b")
+        statements = result.statements
+        expect(statements.length).to produce(4, logger)
+        # only one variable
+        variables = statements.map(&:to_a).flatten.select {|r| r.variable?}
+        expect(variables.uniq.count).to produce(1, logger)
       end
 
       context "contexts" do

@@ -26,9 +26,9 @@ describe RDF::N3::Reader do
             when *%w(n3_10003 n3_10006)
               pending("Verified test results are incorrect")
             when *%w(n3_10009 n3_10018 n3_20002)
-              pending("Not allowed with new grammar")
+              skip("Not allowed with new grammar")
             when *%w(n3_10021)
-              pending("stack overflow")
+              skip("stack overflow")
             end
 
             t.logger = logger

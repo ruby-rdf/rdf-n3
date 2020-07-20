@@ -55,8 +55,6 @@ module RDF::N3
     #   whether to validate the parsed statements and values
     # @option options [Boolean]  :canonicalize (false)
     #   whether to canonicalize parsed literals and URIs.
-    # @option options [Boolean]  :intern       (true)
-    #   whether to intern all parsed URIs
     # @option options [Hash]     :prefixes     (Hash.new)
     #   the prefix mappings to use (not supported by all readers)
     # @return [reader]
@@ -99,7 +97,6 @@ module RDF::N3
         end
         progress("validate") {validate?.inspect}
         progress("canonicalize") {canonicalize?.inspect}
-        progress("intern") {intern?.inspect}
 
         if block_given?
           case block.arity
@@ -439,7 +436,7 @@ module RDF::N3
     # (rule quickVar "30" (seq QUICK_VAR_NAME))
     production(:quickVar) do |value|
       uri = process_pname(value.first[:QUICK_VAR_NAME].sub('?', ':'))
-      var = univar(uri)
+      var = uri.variable? ? uri : univar(uri)
       add_var_to_formula(formulae[-2], uri, var)
       # Also add var to this formula
       add_var_to_formula(formulae.last, uri, var)
@@ -577,7 +574,6 @@ module RDF::N3
       value = value.join(append) if append
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
-      value = RDF::URI.intern(value) if intern?
 
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than the current formula
       var = find_var(@formulae.last, value)
