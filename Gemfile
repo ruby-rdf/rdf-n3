@@ -19,8 +19,8 @@ group :development do
 end
 
 group :development, :test do
-  gem 'simplecov',      platforms: :mri
-  gem 'coveralls',      platforms: :mri
+  gem 'simplecov',      '~> 0.16', platforms: :mri
+  gem 'coveralls',      '~> 0.8', '>= 0.8.23',  platforms: :mri
 end
 
 group :debug do
