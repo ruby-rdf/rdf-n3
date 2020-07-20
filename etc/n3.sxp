@@ -12,13 +12,12 @@
   (seq verb objectList (star (seq ";" (opt (seq verb objectList))))))
  (rule objectList "11" (seq object (star (seq "," object))))
  (rule verb "12"
-  (alt predicate "a" "@a"
+  (alt predicate "a"
    (seq "has" expression)
-   (seq "@has" expression)
    (seq "is" expression "of")
-   (seq "@is" expression "@of") "<=" "=>" "=" ))
+   (seq "<-" expression) "<=" "=>" "=" ))
  (rule subject "13" (seq expression))
- (rule predicate "14" (alt expression (seq "^" expression)))
+ (rule predicate "14" (seq expression))
  (rule object "15" (seq expression))
  (rule expression "16" (seq path))
  (rule path "17" (seq pathItem (opt (alt (seq "!" path) (seq "^" path)))))
@@ -42,12 +41,12 @@
  (rule existential "31" (seq "@forSome" iriList))
  (rule universal "32" (seq "@forAll" iriList))
  (terminals _terminals (seq))
- (terminal BOOLEAN_LITERAL "33" (alt "true" "false" "@true" "@false"))
+ (terminal BOOLEAN_LITERAL "33" (alt "true" "false"))
  (terminal STRING "34"
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
  (terminal IRIREF "139s"
-  (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x1F"))) ">"))
+  (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))
  (terminal PNAME_LN "141s" (seq PNAME_NS PN_LOCAL))
  (terminal BLANK_NODE_LABEL "142s"

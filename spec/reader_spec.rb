@@ -381,7 +381,7 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
-      it "should generate rdf:type for '@a'" do
+      it "should generate rdf:type for '@a'", pending: 'deprecated' do
         n3 = %(@prefix a: <http://foo/a#> . a:b @a <http://www.w3.org/2000/01/rdf-schema#resource> .)
         nt = %(<http://foo/a#b> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#resource> .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
@@ -393,14 +393,14 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
-      it "should generate inverse predicate for '@is xxx @of'" do
+      it "should generate inverse predicate for '@is xxx @of'", pending: 'deprecated' do
         n3 = %("value" @is :prop @of :b . :b :prop "value" .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
-      it "should generate inverse predicate for '^xxx'", pending: "grammar confusion" do
-        n3 = %("value" ^:prop :b . :b :prop "value" .)
+      it "should generate inverse predicate for '<- xxx'" do
+        n3 = %("value" <- :prop :b . :b :prop "value" .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
@@ -436,7 +436,7 @@ describe "RDF::N3::Reader" do
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
-      it "should generate predicate for '@has xxx'" do
+      it "should generate predicate for '@has xxx'", pending: 'deprecated' do
         n3 = %(@prefix a: <http://foo/a#> . a:b @has :pred a:c .)
         nt = %(<http://foo/a#b> <http://a/b#pred> <http://foo/a#c> .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
@@ -461,8 +461,6 @@ describe "RDF::N3::Reader" do
       end
 
       {
-        %(:a :b @true)  => %(<http://a/b#a> <http://a/b#b> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .),
-        %(:a :b @false)  => %(<http://a/b#a> <http://a/b#b> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .),
         %(:a :b 1)  => %(<http://a/b#a> <http://a/b#b> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .),
         %(:a :b -1)  => %(<http://a/b#a> <http://a/b#b> "-1"^^<http://www.w3.org/2001/XMLSchema#integer> .),
         %(:a :b +1)  => %(<http://a/b#a> <http://a/b#b> "+1"^^<http://www.w3.org/2001/XMLSchema#integer> .),

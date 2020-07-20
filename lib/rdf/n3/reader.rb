@@ -180,7 +180,7 @@ module RDF::N3
     ##
     # Parser terminals and productions
     ##
-    terminal(:BOOLEAN_LITERAL,                  %r{@?(?:true|false)}) do |value|
+    terminal(:BOOLEAN_LITERAL,                  %r{true|false}) do |value|
       RDF::Literal.new(value.start_with?('@') ? value[1..-1] : value,
                        datatype: RDF::XSD.boolean,
                        canonicalize: canonicalize?)
@@ -282,23 +282,26 @@ module RDF::N3
     # (rule _objectList_2 "11.2" (seq "," object))
     production(:_objectList_2) {|value| value.last[:object]}
 
-    # (rule verb "12" (alt predicate "a" "@a" _verb_1 _verb_2 _verb_3 _verb_4 "=" "<=" "=>"))
+    # (rule verb "12" (alt predicate "a" _verb_1 _verb_2 _verb_3 "<=" "=>" "="))
     # Adds verb to prod_data for objectList
     production(:verb) do |value, data|
       prod_data[:verb] = case value
       when RDF::Term
         prod_data[:invert] = data[:invert]
         value
-      when 'a', '@a' then RDF.type
+      when 'a' then RDF.type
       when '=' then RDF::OWL.sameAs
       when '=>' then RDF::N3::Log.implies
       when '<='
         prod_data[:invert] = true
         RDF::N3::Log.implies
       when Array  # forms of has and is xxx of
-        if value.first[:has] || value.first[:@has]
+        if value.first[:has]
           value[1][:expression]
-        elsif value.first[:is] || value.first[:@is]
+        elsif value.first[:is]
+          prod_data[:invert] = true
+          value[1][:expression]
+        elsif value.first[:'<-']
           prod_data[:invert] = true
           value[1][:expression]
         end
@@ -316,10 +319,9 @@ module RDF::N3
       prod_data[:subject] = value.last[:expression]
     end
 
-    # (rule predicate "14" (alt expression _predicate_1))
+    #  (rule predicate "14" (seq expression))
     production(:predicate) do |value, data|
-      prod_data[:invert] = data[:invert]
-      value
+      value.first[:expression]
     end
     # (rule _predicate_1 "14.1" (seq "^" expression))
     production(:_predicate_1) do |value|
