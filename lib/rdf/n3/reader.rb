@@ -186,23 +186,26 @@ module RDF::N3
     end
     terminal(:IRIREF,                           IRIREF) {|value| process_uri(value[1..-2].gsub(/\s/, ''))}
     terminal(:PNAME_NS,                         PNAME_NS)
-    terminal(:PNAME_LN,                         PNAME_LN) {|value| RDF::NTriples.unescape(value)}
+    terminal(:PNAME_LN,                         PNAME_LN) {|value| unescape(value)}
     terminal(:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL) {|value| bnode(value[2..-1])}
     terminal(:LANGTAG,                          LANGTAG) {|value| value[1..-1]}
     terminal(:INTEGER,                          INTEGER) {|value| RDF::Literal::Integer.new(value, canonicalize: canonicalize?)}
-    terminal(:DECIMAL,                          DECIMAL) {|value| RDF::Literal::Decimal.new(value, canonicalize: canonicalize?)}
+    terminal(:DECIMAL,                          DECIMAL) do |value|
+      value = "0#{value}" if value.start_with?(".") # Otherwise, it's invalid
+      RDF::Literal::Decimal.new(value, canonicalize: canonicalize?)
+    end
     terminal(:DOUBLE,                           DOUBLE) {|value| RDF::Literal::Double.new(value, canonicalize: canonicalize?)}
     terminal(:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE) do |value|
-      RDF::NTriples.unescape(value[1..-2])
+      unescape(value[1..-2])
     end
     terminal(:STRING_LITERAL_SINGLE_QUOTE,      STRING_LITERAL_SINGLE_QUOTE) do |value|
-      RDF::NTriples.unescape(value[1..-2])
+      unescape(value[1..-2])
     end
     terminal(:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE) do |value|
-      RDF::NTriples.unescape(value[3..-4])
+      unescape(value[3..-4])
     end
     terminal(:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE) do |value|
-      RDF::NTriples.unescape(value[3..-4])
+      unescape(value[3..-4])
     end
     terminal(:ANON,                             ANON) {bnode}
     terminal(:QUICK_VAR_NAME,                   QUICK_VAR_NAME)
@@ -430,14 +433,14 @@ module RDF::N3
 
     # (rule prefixedName "28" (alt PNAME_LN PNAME_NS))
     production(:prefixedName) do |value|
-      process_pname(value)
+      process_pname(unescape value)
     end
 
     # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is universally quantified not in the formula but in its parent formula
     #
     # (rule quickVar "30" (seq QUICK_VAR_NAME))
     production(:quickVar) do |value|
-      uri = process_pname(value.first[:QUICK_VAR_NAME].sub('?', ':'))
+      uri = process_pname(unescape value.first[:QUICK_VAR_NAME].sub('?', ':'))
       var = uri.variable? ? uri : univar(uri)
       add_var_to_formula(formulae[-2], uri, var)
       # Also add var to this formula
@@ -507,11 +510,11 @@ module RDF::N3
     end
 
     def process_uri(uri)
-      uri(base_uri, RDF::NTriples.unescape(uri.to_s))
+      uri(base_uri, unescape(uri.to_s))
     end
 
     def process_pname(value)
-      prefix, name = value.split(":")
+      prefix, name = value.split(":", 2)
 
       uri = if prefix(prefix)
         debug('process_pname(ns)') {"#{prefix(prefix)}, #{name}"}
@@ -582,6 +585,39 @@ module RDF::N3
       value = var if var
 
       value
+    rescue ArgumentError => e
+      error("uri", e.message)
+    end
+
+
+    ESCAPE_CHARS         = {
+      '\\t'   => "\t",  # \u0009 (tab)
+      '\\n'   => "\n",  # \u000A (line feed)
+      '\\r'   => "\r",  # \u000D (carriage return)
+      '\\b'   => "\b",  # \u0008 (backspace)
+      '\\f'   => "\f",  # \u000C (form feed)
+      '\\"'  => '"',    # \u0022 (quotation mark, double quote mark)
+      "\\'"  => '\'',   # \u0027 (apostrophe-quote, single quote mark)
+      '\\\\' => '\\'    # \u005C (backslash)
+    }.freeze
+
+    # Perform string and codepoint unescaping if defined for this terminal
+    # @param [String] string
+    # @return [String]
+    def unescape(string)
+      string = string.dup.force_encoding(Encoding::ASCII_8BIT)
+
+      # Decode \uXXXX and \UXXXXXXXX code points:
+      string = string.gsub(UCHAR) do |c|
+        s = [(c[2..-1]).hex].pack('U*').force_encoding(Encoding::ASCII_8BIT)
+      end
+
+      string.force_encoding(Encoding::UTF_8)
+
+      # Decode \t escapes
+      string.gsub( /\\./u) do |escaped|
+        ESCAPE_CHARS[escaped] || escaped[1..-1]
+      end
     end
 
     # Decode a PName
