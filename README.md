@@ -11,7 +11,7 @@ RDF::N3 is an Notation-3 parser and reasoner for Ruby using the [RDF.rb][RDF.rb]
 Reader inspired from TimBL predictiveParser and Python librdf implementation.
 
 ## Uses CG Specification
-This version tracks the [W3C N3 Community Group][] [Specification][N3] which has incompatibilities with the [Design Issues][] version. Notably:
+This version tracks the [W3C N3 Community Group][] [Specification][N3] which has incompatibilities with the [Team Submission][] version. Notably:
 
 * The `@keywords` declaration is removed, and most form of `@` keywords (e.g., `@is`, `@has`, `@true`) are no longer supported.
 * Terminals adhere closely to their counterparts in [Turtle][].
@@ -57,6 +57,8 @@ Experimental N3 reasoning is supported. Instantiate a reasoner from a dataset:
     end
 
 Reasoning is performed by turning a repository containing formula and predicate operators into an executable set of operators (similar to the executable SPARQL Algebra). Reasoning adds statements to the base dataset, marked with `:inferred` (e.g. `statement.inferred?`). Predicate operators are defined from the following vocabularies:
+
+Reasoning is discussed in the [Design Issues][] document.
 
 #### RDF List vocabulary <http://www.w3.org/2000/10/swap/list#>
 
