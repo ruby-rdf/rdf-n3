@@ -280,6 +280,13 @@ describe "RDF::N3::Reader" do
       end
     end
 
+    it "whitespace in uris" do
+      n3 = %{<http: //example.org/\r\nresource3> <http://\texample.org/property> <\nhttp://example.org/resource2\n> .}
+      nt = %{<http://example.org/resource3> <http://example.org/property> <http://example.org/resource2> .}
+      graph = parse(n3, logger: logger)
+      expect(graph).to be_equivalent_graph(nt, logger: logger)
+    end
+
     it "should allow mixed-case language" do
       n3doc = %(:x2 :p "xyz"@en .)
       statement = parse(n3doc).statements.first

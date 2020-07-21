@@ -46,7 +46,7 @@
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
  (terminal IRIREF "139s"
-  (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
+  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) WS)) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))
  (terminal PNAME_LN "141s" (seq PNAME_NS PN_LOCAL))
  (terminal BLANK_NODE_LABEL "142s"

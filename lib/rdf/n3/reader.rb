@@ -184,7 +184,7 @@ module RDF::N3
                        datatype: RDF::XSD.boolean,
                        canonicalize: canonicalize?)
     end
-    terminal(:IRIREF,                           IRIREF) {|value| process_uri(value[1..-2])}
+    terminal(:IRIREF,                           IRIREF) {|value| process_uri(value[1..-2].gsub(/\s/, ''))}
     terminal(:PNAME_NS,                         PNAME_NS)
     terminal(:PNAME_LN,                         PNAME_LN) {|value| RDF::NTriples.unescape(value)}
     terminal(:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL) {|value| bnode(value[2..-1])}

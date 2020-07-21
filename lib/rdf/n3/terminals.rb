@@ -39,7 +39,7 @@ module RDF::N3
     # 159s
     ECHAR                = /\\[tbnrf\\"']/u.freeze
     # 18
-    IRIREF               = /<(?:#{IRI_RANGE}|#{UCHAR})*>/u.freeze
+    IRIREF               = /<(?:#{IRI_RANGE}|#{UCHAR}|\s)*>/mu.freeze
     # 139s
     PNAME_NS             = /#{PN_PREFIX}?:/u.freeze
     # 140s
