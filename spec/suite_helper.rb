@@ -5,10 +5,8 @@ require 'json/ld'
 # For now, override RDF::Utils::File.open_file to look for the file locally before attempting to retrieve it
 module RDF::Util
   module File
-    REMOTE_PATH = "https://w3c.github.io/n3/"
-    LOCAL_PATH = ::File.expand_path("../w3c-n3", __FILE__) + '/'
-    TURTLE_PATH = "http://w3c.github.io/rdf-tests/turtle/"
-    LOCAL_TPATH = ::File.expand_path("../w3c-rdf/turtle", __FILE__) + '/'
+    REMOTE_PATH = "https://w3c.github.io/N3/"
+    LOCAL_PATH = ::File.expand_path("../w3c-N3", __FILE__) + '/'
 
     class << self
       alias_method :original_open_file, :open_file
@@ -61,39 +59,6 @@ module RDF::Util
         else
           remote_document
         end
-      when (filename_or_url.to_s =~ %r{^#{TURTLE_PATH}} && Dir.exist?(LOCAL_TPATH))
-        #puts "attempt to open #{filename_or_url} locally"
-        localpath = filename_or_url.to_s.sub(TURTLE_PATH, LOCAL_TPATH)
-        response = begin
-          ::File.open(localpath)
-        rescue Errno::ENOENT => e
-          raise IOError, e.message
-        end
-        document_options = {
-          base_uri:     RDF::URI(filename_or_url),
-          charset:      Encoding::UTF_8,
-          code:         200,
-          headers:      {}
-        }
-        #puts "use #{filename_or_url} locally"
-        document_options[:headers][:content_type] = case filename_or_url.to_s
-        when /\.ttl$/    then 'text/turtle'
-        when /\.n3$/      then 'text/n3'
-        when /\.nt$/     then 'application/n-triples'
-        when /\.jsonld$/ then 'application/ld+json'
-        else                  'unknown'
-        end
-
-        document_options[:headers][:content_type] = response.content_type if response.respond_to?(:content_type)
-        # For overriding content type from test data
-        document_options[:headers][:content_type] = options[:contentType] if options[:contentType]
-
-        remote_document = RDF::Util::File::RemoteDocument.new(response.read, document_options)
-        if block_given?
-          yield remote_document
-        else
-          remote_document
-        end
       else
         original_open_file(filename_or_url, **options, &block)
       end
@@ -110,17 +75,18 @@ module Fixtures
         "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
         "mq": "http://www.w3.org/2001/sw/DataAccess/tests/test-query#",
         "rdft": "http://www.w3.org/ns/rdftest#",
-        "test": "https://w3c.github.io/n3/tests/test.n3#",
-        "comment": "rdfs:comment",
-        "entries": {"@id": "mf:entries", "@container": "@list"},
-        "name": "mf:name",
+        "test": "https://w3c.github.io/N3/tests/test.n3#",
         "action": {"@id": "mf:action", "@type": "@id"},
-        "result": {"@id": "mf:result", "@type": "@id"},
-        "options": {"@id": "test:options", "@type": "@id"},
+        "approval": {"@id": "rdft:approval", "@type": "@vocab"},
+        "comment": "rdfs:comment",
         "data": {"@id": "test:data", "@type": "xsd:boolean"},
-        "think": {"@id": "test:think", "@type": "xsd:boolean"},
+        "entries": {"@id": "mf:entries", "@container": "@list"},
         "filter": {"@id": "test:filter", "@type": "xsd:boolean"},
-        "rules": {"@id": "test:rules", "@type": "xsd:boolean"}
+        "name": "mf:name",
+        "options": {"@id": "test:options", "@type": "@id"},
+        "result": {"@id": "mf:result", "@type": "@id"},
+        "rules": {"@id": "test:rules", "@type": "xsd:boolean"},
+        "think": {"@id": "test:think", "@type": "xsd:boolean"}
       },
       "@type": "mf:Manifest",
       "entries": {
@@ -128,7 +94,13 @@ module Fixtures
           "test:TestN3Reason",
           "test:TestN3Eval",
           "test:TestN3PositiveSyntax",
-          "test:TestN3NegativeSyntax"
+          "test:TestN3NegativeSyntax",
+          "rdft:TestTurtlePositiveSyntax",
+          "rdft:TestTurtleNegativeSyntax",
+          "rdft:TestNTriplesPositiveSyntax",
+          "rdft:TestNTriplesNegativeSyntax",
+          "rdft:TestTurtleEval",
+          "rdft:TestTurtleNegativeEval"
         ]
       }
     }))
@@ -136,7 +108,7 @@ module Fixtures
     class Manifest < JSON::LD::Resource
       def self.open(file)
         #puts "open: #{file}"
-        g = RDF::Repository.load(file, format:  :n3)
+        g = RDF::Repository.load(file)
         JSON::LD::API.fromRDF(g) do |expanded|
           JSON::LD::API.frame(expanded, FRAME) do |framed|
             yield Manifest.new(framed)
@@ -155,6 +127,9 @@ module Fixtures
 
       # For debug output formatting
       def format; :n3; end
+
+      # For debug output formatting
+      def format; :ttl; end
 
       def base
         action
@@ -203,105 +178,6 @@ module Fixtures
         "  syntax?: #{syntax?.inspect}\n" +
         "  eval?: #{evaluate?.inspect}\n" +
         "  reason?: #{reason?.inspect}\n" +
-        ">"
-      )
-      end
-    end
-  end
-
-  module TurtleTest
-    BASE = "http://w3c.github.io/rdf-tests/turtle/"
-    FRAME = JSON.parse(%q({
-      "@context": {
-        "xsd": "http://www.w3.org/2001/XMLSchema#",
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-        "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
-        "mq": "http://www.w3.org/2001/sw/DataAccess/tests/test-query#",
-        "rdft": "http://www.w3.org/ns/rdftest#",
-    
-        "approval": {"@id": "rdft:approval", "@type": "@vocab"},
-        "comment": "rdfs:comment",
-        "entries": {"@id": "mf:entries", "@container": "@list"},
-        "name": "mf:name",
-        "action": {"@id": "mf:action", "@type": "@id"},
-        "result": {"@id": "mf:result", "@type": "@id"}
-      },
-      "@type": "mf:Manifest",
-      "entries": {
-        "@type": [
-          "rdft:TestTurtlePositiveSyntax",
-          "rdft:TestTurtleNegativeSyntax",
-          "rdft:TestNTriplesPositiveSyntax",
-          "rdft:TestNTriplesNegativeSyntax",
-          "rdft:TestTurtleEval",
-          "rdft:TestTurtleNegativeEval"
-        ]
-      }
-    }))
- 
-    class Manifest < JSON::LD::Resource
-      def self.open(file)
-        #puts "open: #{file}"
-        g = RDF::Repository.load(file, format:  :ttl)
-        JSON::LD::API.fromRDF(g) do |expanded|
-          JSON::LD::API.frame(expanded, FRAME) do |framed|
-            yield Manifest.new(framed)
-          end
-        end
-      end
-
-      # @param [Hash] json framed JSON-LD
-      # @return [Array<Manifest>]
-      def self.from_jsonld(json)
-        json['@graph'].map {|e| Manifest.new(e)}
-      end
-
-      def entries
-        # Map entries to resources
-        attributes['entries'].map {|e| Entry.new(e)}
-      end
-    end
- 
-    class Entry < JSON::LD::Resource
-      attr_accessor :logger
-
-      # For debug output formatting
-      def format; :ttl; end
-
-      def base
-        BASE + action.split('/').last
-      end
-
-      # Alias data and query
-      def input
-        @input ||= RDF::Util::File.open_file(action) {|f| f.read}
-      end
-
-      def expected
-        @expected ||= RDF::Util::File.open_file(result) {|f| f.read}
-      end
-      
-      def evaluate?
-        Array(attributes['@type']).join(" ").match?(/Eval/)
-      end
-
-      def syntax?
-        Array(attributes['@type']).join(" ").match?(/Syntax/)
-      end
-
-      def positive_test?
-        !Array(attributes['@type']).join(" ").match?(/Negative/)
-      end
-      
-      def negative_test?
-        !positive_test?
-      end
-      
-      def inspect
-        super.sub('>', "\n" +
-        "  syntax?: #{syntax?.inspect}\n" +
-        "  positive?: #{positive_test?.inspect}\n" +
-        "  evaluate?: #{evaluate?.inspect}\n" +
         ">"
       )
       end

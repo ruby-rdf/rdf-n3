@@ -14,22 +14,22 @@ describe RDF::N3::Reader do
 
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
           specify "#{t.name}: #{t.comment}" do
-            case t.name
-            when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
-              pending("Reification not supported")
-            when *%w(n3_10013)
-              pending("numeric representation")
-            when *%w(n3_10003 n3_10006)
-              pending("Verified test results are incorrect")
-            when *%w(n3_10009 n3_10018 n3_20002)
-              skip("Not allowed with new grammar")
-            when *%w(n3_10021)
-              skip("stack overflow")
-            end
+            #case t.name
+            #when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
+            #  pending("Reification not supported")
+            #when *%w(n3_10013)
+            #  pending("numeric representation")
+            #when *%w(n3_10003 n3_10006)
+            #  pending("Verified test results are incorrect")
+            #when *%w(n3_10009 n3_10018 n3_20002)
+            #  skip("Not allowed with new grammar")
+            #when *%w(n3_10021)
+            #  skip("stack overflow")
+            #end
 
             t.logger = logger
             t.logger.info t.inspect

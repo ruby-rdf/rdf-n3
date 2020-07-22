@@ -1,0 +1,198 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+$:.unshift(File.expand_path("../../lib", __FILE__))
+require "bundler/setup"
+require 'logger'
+require 'rdf/turtle'
+require 'rdf/isomorphic'
+require File.expand_path("../../spec/spec_helper", __FILE__)
+require File.expand_path("../../spec/suite_helper", __FILE__)
+require 'getoptlong'
+
+ASSERTOR = "https://greggkellogg.net/foaf#me"
+RUN_TIME = Time.now
+
+def earl_preamble(**options)
+  options[:output].write File.read(File.expand_path("../../etc/doap#{'-ntriples' if options[:ntriples]}.ttl", __FILE__))
+  options[:output].puts %(
+<> foaf:primaryTopic <https://rubygems.org/gems/rdf#{'-turtle' unless options[:ntriples]}> ;
+  dc:issued "#{RUN_TIME.xmlschema}"^^xsd:dateTime ;
+  foaf:maker <#{ASSERTOR}> .
+
+<#{ASSERTOR}> a foaf:Person, earl:Assertor;
+  foaf:name "Gregg Kellogg";
+  foaf:title "Implementor";
+  foaf:homepage <https://greggkellogg.net/> .
+)
+
+  options[:output].puts %(
+<https://rubygems.org/gems/rdf-n3>
+  doap:release <https://github.com/ruby-rdf/rdf-n3/tree/#{RDF::N3::VERSION}> .
+
+<https://github.com/ruby-rdf/rdf-n3/tree/#{RDF::N3::VERSION}> a doap:Version;
+  doap:name "rdf-n3-#{RDF::N3::VERSION}";
+  doap:created "#{File.mtime(File.expand_path('../../VERSION', __FILE__)).strftime('%Y-%m-%d')}"^^xsd:date;
+  doap:revision "#{RDF::N3::VERSION}" .
+)
+end
+
+def run_tc(man, tc, **options)
+  STDERR.write "run #{tc.name}"
+
+  if options[:verbose]
+    STDERR.puts "\nTestCase: #{tc.inspect}"
+    STDERR.puts "\nInput:\n" + tc.input 
+    STDERR.puts "\nExpected:\n" + tc.result if tc.result && tc.positiveTest?
+  end
+
+  logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
+  logger.level = options[:level]
+  logger.formatter = lambda {|severity, datetime, progname, msg| "#{severity}: #{msg}\n"}
+
+  start = Time.now
+
+  begin
+    STDERR.puts "open #{tc.action}" if options[:verbose]
+    options = {
+      base_uri:  tc.base,
+      validate:  true,
+      logger: logger
+    }.merge(options)
+
+    reader = RDF::Reader.for(tc.action).new(tc.input, **options)
+
+    graph = RDF::Repository.new
+    result = nil
+
+    if tc.positive_test?
+      begin
+        graph << reader
+      rescue Exception => e
+        STDERR.puts "Unexpected exception: #{e.inspect}" if options[:verbose]
+        result = "failed"
+        raise
+      end
+    else
+      begin
+        graph << reader
+        STDERR.puts "Expected exception" if options[:verbose]
+        result = "failed"
+      rescue RDF::ReaderError
+        result = "passed"
+      end
+    end
+
+    secs = Time.new - start
+
+    if tc.evaluate? && result.nil?
+      output_graph = RDF::Repository.load(tc.result, format: :ntriples, base_uri:  tc.base)
+      result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
+    else
+      result ||= "passed"
+    end
+
+  rescue Interrupt
+    STDERR.puts "(interrupt)"
+    exit 1
+  rescue Exception => e
+    STDERR.puts "#{"exception:" unless options[:quiet]}: #{e}"
+    if options[:quiet]
+      return
+    else
+      raise
+    end
+  end
+
+  STDERR.puts options[:logger] if options[:verbose] && !options[:live]
+
+  if options[:earl]
+    options[:output].puts %{
+[ a earl:Assertion;
+  earl:assertedBy <#{ASSERTOR}>;
+  earl:subject <https://rubygems.org/gems/rdf-n3>;
+  earl:test <#{tc.id}>;
+  earl:result [
+    a earl:TestResult;
+    earl:outcome earl:#{result};
+    dc:date "#{RUN_TIME.xmlschema}"^^xsd:dateTime];
+  earl:mode earl:automatic ] .
+}
+  end
+
+  options[:results][result] ||= 0
+  options[:results][result] += 1
+
+  STDERR.puts "#{"test result:" unless options[:quiet]} #{result} #{"(#{secs} seconds)" unless options[:quiet] || secs < 3}."
+end
+
+options = {
+  output:  STDOUT,
+  results: {},
+  level: Logger::WARN
+}
+
+opts = GetoptLong.new(
+  ["--level",           GetoptLong::REQUIRED_ARGUMENT],
+  ["--earl",            GetoptLong::NO_ARGUMENT],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT],
+  ["--live",            GetoptLong::NO_ARGUMENT],
+  ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT],
+  ["--quiet", "-q",     GetoptLong::NO_ARGUMENT],
+  ["--skip-long", "-s", GetoptLong::NO_ARGUMENT],
+  ["--validate",        GetoptLong::NO_ARGUMENT],
+  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT],
+)
+
+def help(**options)
+  puts "Usage: #{$0} [options] [test-number ...]"
+  puts "Options:"
+  puts "      --earl:               Generate EARL report"
+  puts "      --level:              Log level 0-5"
+  puts "      --live:               Show live parsing results, not buffered"
+  puts "      --ntriples:           Run N-Triples tests"
+  puts "      --output:             Output to specified file"
+  puts "      --quiet:              Minimal output"
+  puts "      --skip-long:          Avoid files taking too much time"
+  puts "      --validate:           Validate input"
+  puts "      --verbose:            Verbose processing"
+  puts "      --help,-?:            This message"
+  exit(0)
+end
+
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'             then help(**options)
+  when '--level'            then options[:level] = arg.to_i
+  when '--earl'
+    options[:quiet] = options[:earl] = true
+    options[:level] = Logger::FATAL
+  when '--live'             then options[:live] = true
+  when '--output'           then options[:output] = File.open(arg, "w")
+  when '--quiet'
+    options[:quiet] = true
+    options[:level] = Logger::FATAL
+  when '--skip-long'        then options[:skip] = true
+  when '--validate'         then options[:validate] = true
+  when '--verbose'          then options[:verbose] = true
+  end
+end
+
+manifests = %w(
+  grammar/tests/N3Tests/manifest.ttl
+  grammar/tests/TurtleTests/manifest.ttl
+  tests/manifest-reasoner.n3
+).map {|r| "https://w3c.github.io/N3/#{r}"}
+
+earl_preamble(**options) if options[:earl]
+
+manifests.each do |man|
+  Fixtures::SuiteTest::Manifest.open(man) do |m|
+    m.entries.each do |tc|
+      next unless ARGV.empty? || ARGV.any? {|n| tc.property('@id').match?(/#{n}/) || tc.property('action').match?(/#{n}/)}
+      run_tc(man, tc, **options)
+    end
+  end
+end
+
+options[:results].each {|k, v| puts "#{k}: #{v}"}
