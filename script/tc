@@ -37,7 +37,7 @@ def earl_preamble(**options)
 end
 
 def run_tc(man, tc, **options)
-  STDERR.write "run #{tc.name}"
+  STDERR.write "run #{tc.name} "
 
   if options[:verbose]
     STDERR.puts "\nTestCase: #{tc.inspect}"
@@ -70,7 +70,6 @@ def run_tc(man, tc, **options)
       rescue Exception => e
         STDERR.puts "Unexpected exception: #{e.inspect}" if options[:verbose]
         result = "failed"
-        raise
       end
     else
       begin
@@ -85,8 +84,13 @@ def run_tc(man, tc, **options)
     secs = Time.new - start
 
     if tc.evaluate? && result.nil?
-      output_graph = RDF::Repository.load(tc.result, format: :ntriples, base_uri:  tc.base)
-      result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
+      begin
+        output_graph = RDF::Repository.load(tc.result, format: :ntriples, base_uri:  tc.base)
+        result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
+      rescue Exception => e
+        STDERR.puts "Unexpected exception reading result: #{e.inspect}"
+        result = "failed"
+      end
     else
       result ||= "passed"
     end

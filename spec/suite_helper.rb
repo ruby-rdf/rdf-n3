@@ -94,13 +94,7 @@ module Fixtures
           "test:TestN3Reason",
           "test:TestN3Eval",
           "test:TestN3PositiveSyntax",
-          "test:TestN3NegativeSyntax",
-          "rdft:TestTurtlePositiveSyntax",
-          "rdft:TestTurtleNegativeSyntax",
-          "rdft:TestNTriplesPositiveSyntax",
-          "rdft:TestNTriplesNegativeSyntax",
-          "rdft:TestTurtleEval",
-          "rdft:TestTurtleNegativeEval"
+          "test:TestN3NegativeSyntax"
         ]
       }
     }))
@@ -149,27 +143,23 @@ module Fixtures
       end
 
       def positive_test?
-        !attributes['@type'].to_s.match(/Negative/)
+        attributes['@type'].to_s.match(/N3Positive/) || attributes['@type'].to_s.match(/N3Eval/)
       end
 
       def negative_test?
-        !positive_test?
+        attributes['@type'].to_s.match(/N3Negative/)
       end
 
       def evaluate?
-        !!attributes['@type'].to_s.match?(/Eval/)
+        !!attributes['@type'].to_s.match?(/N3Eval/)
       end
 
       def reason?
-        !!attributes['@type'].to_s.match?(/Reason/)
+        !!attributes['@type'].to_s.match?(/N3Reason/)
       end
 
       def syntax?
         !!attributes['@type'].to_s.match?(/Syntax/)
-      end
-
-      def reason?
-        !!attributes['@type'].to_s.match?(/Reason/)
       end
 
       def inspect
