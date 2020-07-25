@@ -59,7 +59,7 @@ def run_tc(man, tc, **options)
       logger: logger
     }.merge(options)
 
-    reader = RDF::Reader.for(tc.action).new(tc.input, **options)
+    reader = RDF::N3::Reader.new(tc.input, **options)
 
     graph = RDF::Repository.new
     result = nil

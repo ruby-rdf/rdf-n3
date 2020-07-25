@@ -7,7 +7,7 @@
  (rule sparqlPrefix "6" (seq PREFIX PNAME_NS IRIREF))
  (rule prefixID "7" (seq "@prefix" PNAME_NS IRIREF))
  (rule base "8" (seq "@base" IRIREF))
- (rule triples "9" (seq (alt subject blankNodePropertyList) (opt predicateObjectList)))
+ (rule triples "9" (seq subject (opt predicateObjectList)))
  (rule predicateObjectList "10"
   (seq verb objectList (star (seq ";" (opt (seq verb objectList))))))
  (rule objectList "11" (seq object (star (seq "," object))))
@@ -24,7 +24,7 @@
  (rule pathItem "18"
   (alt iri blankNode quickVar collection blankNodePropertyList literal formula))
  (rule literal "19" (alt rdfLiteral numericLiteral BOOLEAN_LITERAL))
- (rule blankNodePropertyList "20" (seq "[" (opt predicateObjectList) "]"))
+ (rule blankNodePropertyList "20" (seq "[" predicateObjectList "]"))
  (rule collection "21" (seq "(" (star object) ")"))
  (rule formula "22" (seq "{" (opt formulaContent) "}"))
  (rule formulaContent "23"
@@ -46,7 +46,7 @@
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
  (terminal IRIREF "139s"
-  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) WS)) ">"))
+  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR WS)) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))
  (terminal PNAME_LN "141s" (seq PNAME_NS PN_LOCAL))
  (terminal BLANK_NODE_LABEL "142s"

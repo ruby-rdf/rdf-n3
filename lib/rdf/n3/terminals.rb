@@ -64,14 +64,17 @@ module RDF::N3
     # 25
     STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#{ECHAR}|#{UCHAR}))*"""/um.freeze
 
-    BASE                 = /base/i.freeze
-    PREFIX               = /prefix/i.freeze
+    # 28t
+    PREFIX               = /@?prefix/ui.freeze
+    # 29t
+    BASE                 = /@?base/ui.freeze
     QUICK_VAR_NAME       = /\?#{PN_LOCAL}/.freeze
 
     # 161s
     WS                   = /(?:\s|(?:#[^\n\r]*))+/um.freeze
     # 162s
     ANON                 = /\[#{WS}*\]/um.freeze
-  
+
+    FORALL               = /@forAll/u.freeze
   end
 end
