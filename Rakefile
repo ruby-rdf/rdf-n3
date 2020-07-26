@@ -13,7 +13,7 @@ namespace :gem do
 end
 
 namespace :etc do
-  ETC_FILES = %w{etc/n3.sxp etc/n3.peg.sxp}
+  ETC_FILES = %w{etc/n3.sxp}
   desc 'Remove generated files in etc'
   task :clean do
     %x(rm #{ETC_FILES.join(' ')})
@@ -25,14 +25,4 @@ end
 
 file "etc/n3.sxp" => "etc/n3.ebnf" do |t|
   %x{ebnf -o #{t.name} #{t.source}}
-end
-
-file "etc/n3.peg.sxp" => "etc/n3.ebnf" do |t|
-  %x{ebnf --peg -o #{t.name} #{t.source}}
-end
-
-task :meta => %w{lib/rdf/n3/meta.rb}
-
-file "lib/rdf/n3/meta.rb" => "etc/n3.ebnf" do
-  %x(ebnf --peg -f rb --mod-name RDF::N3::Meta -o lib/rdf/n3/meta.rb etc/n3.ebnf)
 end

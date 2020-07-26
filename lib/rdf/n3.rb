@@ -24,7 +24,6 @@ module RDF
     require 'rdf/n3/vocab'
     require 'rdf/n3/extensions'
     require 'rdf/n3/refinements'
-    autoload :Meta,      'rdf/n3/meta'
     autoload :Reader,    'rdf/n3/reader'
     autoload :Reasoner,  'rdf/n3/reasoner'
     autoload :Terminals, 'rdf/n3/terminals'
