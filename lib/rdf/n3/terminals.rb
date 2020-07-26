@@ -73,7 +73,7 @@ module RDF::N3
     # 161s
     WS                   = /(?:\s|(?:#[^\n\r]*))+/um.freeze
     # 162s
-    ANON                 = /\[#{WS}*\]/um.freeze
+    ANON                 = /\[\s*\]/u.freeze
 
     FORALL               = /@forAll/u.freeze
   end
