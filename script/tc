@@ -47,7 +47,7 @@ def run_tc(man, tc, **options)
 
   logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
   logger.level = options[:level]
-  logger.formatter = lambda {|severity, datetime, progname, msg| "#{severity}: #{msg}\n"}
+  logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
 
   start = Time.now
 

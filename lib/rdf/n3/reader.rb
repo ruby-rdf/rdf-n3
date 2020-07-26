@@ -491,7 +491,7 @@ module RDF::N3
       if token === '['
         prod(:blankNodePropertyList, %{]}) do
           @lexer.shift
-          log_info("blankNodePropertyList", depth: options[:depth]) {"token: #{token.inspect}"}
+          progress("blankNodePropertyList", depth: options[:depth], token: token)
           node = bnode
           read_predicateObjectList(node)
           error("blankNodePropertyList", "Expected closing ']'") unless @lexer.first === ']'
@@ -512,7 +512,7 @@ module RDF::N3
         prod(:collection, %{)}) do
           @lexer.shift
           token = @lexer.first
-          log_info("collection", depth: options[:depth]) {"token: #{token.inspect}"}
+          progress("collection", depth: options[:depth]) {"token: #{token.inspect}"}
           objects = []
           while @lexer.first.value != ')' && (object = read_path)
             objects << object
@@ -844,7 +844,7 @@ module RDF::N3
     def prod(production, recover_to = [])
       @prod_stack << {prod: production, recover_to: recover_to}
       @options[:depth] += 1
-      log_recover("#{production}(start)", depth: options[:depth]) {"token: #{@lexer.first.inspect}"}
+      recover("#{production}(start)", depth: options[:depth], token: @lexer.first)
       yield
     rescue EBNF::LL1::Lexer::Error, SyntaxError, Recovery =>  e
       # Lexer encountered an illegal token or the parser encountered
@@ -890,9 +890,33 @@ module RDF::N3
       # Skip that token to get something reasonable to start the next production with
       @lexer.shift
     ensure
-      log_info("#{production}(finish)", depth: options[:depth])
+      progress("#{production}(finish)", depth: options[:depth])
       @options[:depth] -= 1
       @prod_stack.pop
+    end
+
+    def progress(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 1
+      opts[:lineno] ||= lineno
+      log_info(*args, **opts, &block)
+    end
+
+    def recover(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 1
+      opts[:lineno] ||= lineno
+      log_recover(*args, **opts, &block)
+    end
+
+    def debug(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 0
+      opts[:lineno] ||= lineno
+      log_debug(*args, **opts, &block)
     end
 
     ##
@@ -909,7 +933,7 @@ module RDF::N3
       ctx = ""
       ctx += "(found #{options[:token].inspect})" if options[:token]
       ctx += ", production = #{options[:production].inspect}" if options[:production]
-      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || @lexer.lineno
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
       log_error(*args, ctx,
         lineno:     lineno,
         token:      options[:token],
