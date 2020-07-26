@@ -288,16 +288,15 @@ module RDF::N3
     def read_triples
       prod(:triples, %w{.}) do
         error("read_triples", "Unexpected end of file") unless token = @lexer.first
-        case token.type || token.value
+        subject = case token.type || token.value
         when '['
           # blankNodePropertyList predicateObjectList? 
-          subject = read_blankNodePropertyList || error("Failed to parse blankNodePropertyList", production: :triples, token: @lexer.first)
-          read_predicateObjectList(subject) || subject
+          read_blankNodePropertyList || error("Failed to parse blankNodePropertyList", production: :triples, token: @lexer.first)
         else
           # subject predicateObjectList
-          subject = read_path || error("Failed to parse subject", production: :triples, token: @lexer.first)
-          read_predicateObjectList(subject) || error("Expected predicateObjectList", production: :triples, token: @lexer.first)
+          read_path || error("Failed to parse subject", production: :triples, token: @lexer.first)
         end
+        read_predicateObjectList(subject) || subject
       end
     end
 
