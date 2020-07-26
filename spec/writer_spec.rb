@@ -621,9 +621,10 @@ describe RDF::N3::Writer do
   describe "w3c n3 parser tests" do
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
+          next unless t.name.start_with?('cwm') # no horror shows right now.
           next unless t.positive_test? && t.evaluate?
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name

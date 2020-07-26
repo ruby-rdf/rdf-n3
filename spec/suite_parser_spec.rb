@@ -17,27 +17,19 @@ describe RDF::N3::Reader do
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
+          # Skip non-cwm entries, for now
+          next unless t.name.start_with?('cwm')
           specify "#{t.name}: #{t.comment}" do
             case t.name
-            when *%w(04test_metastaticP.n3)
-              skip("it was decided not to allow this")
-            when *%w(04test_icalQ002.n3 04test_query-survey-11.n3)
-              pending("datatype (^^) tag and @language for quick-vars")
-            when *%w(07test_utf8.n3)
-              pending("invalid byte sequence in UTF-8")
-            when *%(01etc_skos-extra-rules.n3 07test_pd_hes_theory.n3)
-              pending("@ keywords")
-            when *%w(cwm_syntax_neg-literal-predicate.n3)
-              pending("should be negative test")
-            #when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
-            #  pending("Reification not supported")
-            #when *%w(n3_10013)
-            #  pending("numeric representation")
-            #when *%w(n3_10003 n3_10006)
-            #  pending("Verified test results are incorrect")
-            #when *%w(n3_10009 n3_10018 n3_20002)
-            #  skip("Not allowed with new grammar")
-            when *%w(07test_bg-test-1000)
+            #when *%w(04test_metastaticP.n3)
+            #  skip("it was decided not to allow this")
+            #when *%w(04test_icalQ002.n3 04test_query-survey-11.n3)
+            #  pending("datatype (^^) tag and @language for quick-vars")
+            when *%w(cwm_math_trigo-test.n3)
+              pending("dependency on prefixes")
+            when *%w(cwm_syntax_numbers.n3)
+              pending("number representation")
+            when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")
             end
 

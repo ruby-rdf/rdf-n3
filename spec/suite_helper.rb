@@ -143,11 +143,11 @@ module Fixtures
       end
 
       def positive_test?
-        attributes['@type'].to_s.match(/N3Positive/) || attributes['@type'].to_s.match(/N3Eval/)
+        attributes['@type'].to_s.match?(/N3Positive|N3Eval|N3Reason/)
       end
 
       def negative_test?
-        attributes['@type'].to_s.match(/N3Negative/)
+        attributes['@type'].to_s.match?(/N3Negative/)
       end
 
       def evaluate?
@@ -163,7 +163,7 @@ module Fixtures
       end
 
       def inspect
-        super.sub('>', "\n" +
+        super.sub(/>$/, "\n" +
         "  positive?: #{positive_test?.inspect}\n" +
         "  syntax?: #{syntax?.inspect}\n" +
         "  eval?: #{evaluate?.inspect}\n" +

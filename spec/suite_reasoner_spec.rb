@@ -74,8 +74,8 @@ describe RDF::N3::Reader do
               end
             else
               expect {
-                graph << reader
-                expect(graph.dump(:nquads)).to produce("not this", t)
+                repo << reader
+                expect(repo.dump(:nquads)).to produce("not this", t)
               }.to raise_error(RDF::ReaderError)
             end
           end
