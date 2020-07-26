@@ -1005,6 +1005,30 @@ describe "RDF::N3::Reader" do
         expect(variables.uniq.count).to produce(1, logger)
       end
 
+      {
+        "empty subject" => {
+          input: %({} <b> <c> .),
+          expect: %({} <http://a/b> <http://a/c> .)
+        },
+        "empty object" => {
+          input: %(<a> <b> {} .),
+          expect: %(<http://a/a> <http://a/b> {} .)
+        },
+        "as subject with constant content" => {
+          input: %({<x> <y> <z>} <b> <c> .),
+          expect: %({<http://a/x> <http://a/y> <http://a/z>} <http://a/b> <http://a/c> .),
+        },
+        "as object with constant content" => {
+          input: %(<a> <b> {<x> <y> <z>} .),
+          expect: %(<http://a/a> <http://a/b> {<http://a/x> <http://a/y> <http://a/z>} .),
+        },
+      }.each do |name, params|
+        it name do
+          result = parse(params[:expect], base_uri: "http://a/b", logger: false)
+          expect(parse(params[:input], base_uri: "http://a/b")).to be_equivalent_graph(result, logger: logger, format: :n3)
+        end
+      end
+
       context "contexts" do
         before(:each) do
           n3 = %(

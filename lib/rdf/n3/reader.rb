@@ -569,9 +569,11 @@ module RDF::N3
     #
     # @return [void]
     def read_formulaContent
+      return if @lexer.first === '}'  # Allow empty formula
       prod(:formulaContent, %w(. })) do
         loop do
-          error("read_formulaContent", "Unexpected end of file") unless token = @lexer.first
+          token = @lexer.first
+          error("read_formulaContent", "Unexpected end of file") unless token
           case token.type
           when :BASE, :PREFIX
             read_directive || error("Failed to parse directive", production: :directive, token: token)
