@@ -14,24 +14,18 @@ describe RDF::N3::Reader do
 
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
-          # Skip non-cwm entries, for now
-          next unless t.name.start_with?('cwm')
+          next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.name
-            #when *%w(04test_metastaticP.n3)
-            #  skip("it was decided not to allow this")
-            #when *%w(04test_icalQ002.n3 04test_query-survey-11.n3)
-            #  pending("datatype (^^) tag and @language for quick-vars")
-            when *%w(cwm_math_trigo-test.n3)
-              pending("dependency on prefixes")
             when *%w(cwm_syntax_numbers.n3)
               pending("number representation")
             when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")
             end
+
 
             t.logger = logger
             t.logger.info t.inspect
@@ -69,7 +63,6 @@ describe RDF::N3::Reader do
             elsif t.syntax?
               expect {
                 repo << reader
-                require 'byebug'; byebug
                 expect(repo.count).to produce("not this", t)
               }.to raise_error(RDF::ReaderError)
             else

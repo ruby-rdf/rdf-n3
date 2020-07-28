@@ -889,7 +889,7 @@ describe "RDF::N3::Reader" do
             %(_:bnode0 :y2 :x2 . _:bnode0 :p2 "3" .)
           ],
           "alberts mother inverse of metor to auntieAnne": [
-            %(:albert!fam:mother :mentor!:inverse :auntieAnne .),
+            %(:albert!:mother :mentor!:inverse :auntieAnne .),
             %(
               :albert :mother _:bnode0 .
               _:bnode0 _:pred0 :auntieAnne .

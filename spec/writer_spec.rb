@@ -624,47 +624,43 @@ describe RDF::N3::Writer do
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
-          next unless t.name.start_with?('cwm') # no horror shows right now.
-          next unless t.positive_test? && t.evaluate?
+          next if t.negative_test? || t.rejected?
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name
-            when *%w(n3_10003 n3_10004 n3_10008)
-              skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10017)
+            when *%w(cwm_syntax_path2.n3)
               pending "Investigate"
-            when *%w(n3_10013)
+            when *%w(cwm_syntax_numbers.n3)
               pending "Number syntax"
-            when *%w(n3_10009 n3_10018 n3_20002)
-              pending("Not allowed with new grammar")
-            when *%w(n3_10021)
-              pending("stack overflow")
+            when *%w(cwm_syntax_too-nested.n3)
+              skip("stack overflow")
+            when *%w(manifest.ttl)
+              skip("too long")
             end
+
             logger.info t.inspect
             logger.info "source: #{t.input}"
-            repo = parse(t.input, base_uri: t.base)
+            repo = parse(t.input, base_uri: t.base, logger: false)
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             logger.info "serialized: #{n3}"
             g2 = parse(n3, base_uri: t.base, logger: logger)
             expect(g2).to be_equivalent_graph(repo, logger: logger)
           end
 
+          next if t.syntax? || t.reason?
           specify "#{t.name}: #{t.comment} (result)" do
             case t.name
-            when *%w(n3_10003 n3_10004 n3_10008)
-              skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10017)
+            when *%w(cwm_syntax_path2.n3)
               pending "Investigate"
-            when *%w(n3_10013)
+            when *%w(cwm_syntax_numbers.n3)
               pending "Number syntax"
-            when *%w(n3_10009 n3_20002)
-              pending("Not allowed with new grammar")
-            when *%w(n3_10021)
-              pending("stack overflow")
+            when *%w(cwm_syntax_too-nested.n3)
+              skip("stack overflow")
             end
+
             logger.info t.inspect
             logger.info "source: #{t.expected}"
             format = detect_format(t.expected)
-            repo = parse(t.expected, base_uri: t.base, format: format)
+            repo = parse(t.expected, base_uri: t.base, format: format, logger: false)
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             logger.info "serialized: #{n3}"
             g2 = parse(n3, base_uri: t.base, logger: logger)
@@ -685,7 +681,7 @@ describe RDF::N3::Writer do
   # Serialize ntstr to a string and compare against regexps
   def serialize(ntstr, regexps = [], base_uri: nil, **options)
     prefixes = options[:prefixes] || {}
-    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [], format: options.fetch(:input_format, :n3))
+    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: false, format: options.fetch(:input_format, :n3))
     result = RDF::N3::Writer.buffer(**options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
       writer << g
     end

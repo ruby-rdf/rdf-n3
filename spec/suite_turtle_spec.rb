@@ -6,9 +6,10 @@ describe RDF::N3::Reader do
   describe "w3c turtle tests" do
     require 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/TurtleTests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/TurtleTests/manifest.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
+          next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             t.logger = RDF::Spec.logger
             t.logger.info t.inspect

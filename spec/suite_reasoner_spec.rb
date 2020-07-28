@@ -13,9 +13,10 @@ describe RDF::N3::Reader do
         !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
     end
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/manifest-reasoner.n3") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-reasoner.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
+          next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
             when *%w{listin bnode concat t2006}

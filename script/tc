@@ -45,6 +45,8 @@ def run_tc(man, tc, **options)
     STDERR.puts "\nExpected:\n" + tc.result if tc.result && tc.positiveTest?
   end
 
+  return if tc.approval == "rdft:Rejected"
+
   logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
   logger.level = options[:level]
   logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
@@ -183,9 +185,10 @@ opts.each do |opt, arg|
 end
 
 manifests = %w(
-  grammar/tests/N3Tests/manifest.ttl
-  grammar/tests/TurtleTests/manifest.ttl
-  tests/manifest-reasoner.n3
+  tests/N3Tests/manifest.ttl
+  tests/TurtleTests/manifest.ttl
+  tests/N3Tests/manifest-reasoner.ttl
+  tests/N3Tests/manifest-extended.ttl
 ).map {|r| "https://w3c.github.io/N3/#{r}"}
 
 earl_preamble(**options) if options[:earl]
