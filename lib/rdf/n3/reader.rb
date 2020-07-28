@@ -728,6 +728,9 @@ module RDF::N3
       iri = if prefix(prefix)
         #debug('process_pname(ns)', depth: @options[:depth]) {"#{prefix(prefix)}, #{name}"}
         ns(prefix, name)
+      elsif prefix && !prefix.empty?
+        error("process_pname", "Use of undefined prefix #{prefix.inspect}")
+        ns(nil, name)
       else
         #debug('process_pname(default_ns)', name, depth: @options[:depth])
         namespace(nil, iri("#{base_uri}#")) unless prefix(nil)
