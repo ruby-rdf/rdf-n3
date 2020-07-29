@@ -1,33 +1,33 @@
     # EBNF Notation3 Grammar based pm Antlr4.
     # From https://github.com/w3c/N3/blob/master/grammar/n3.g4
 
-    [1]  n3Doc                              ::= (n3Statement '.' | sparqlDirective)*
+    [1]  n3Doc                              ::= WS* (n3Statement WS* '.' | sparqlDirective WS*)*
 
     [2]  n3Statement                        ::= n3Directive | triples | existential | universal
 
-    [3]  n3Directive                        ::= prefixID | base
+    [3]  n3Directive                        ::= (prefixID | base) WS*
 
     [4]  sparqlDirective                    ::= sparqlBase | sparqlPrefix
 
-    [5]  sparqlBase                         ::= BASE IRIREF
+    [5]  sparqlBase                         ::= BASE WS* IRIREF
 
-    [6]  sparqlPrefix                       ::= PREFIX PNAME_NS IRIREF
+    [6]  sparqlPrefix                       ::= PREFIX WS* PNAME_NS WS* IRIREF
 
-    [7]  prefixID                           ::= '@prefix' PNAME_NS IRIREF
+    [7]  prefixID                           ::= '@prefix' WS* PNAME_NS WS* IRIREF
 
-    [8]  base                               ::= '@base' IRIREF
+    [8]  base                               ::= '@base' WS* IRIREF
 
-    [9]  triples                            ::= subject predicateObjectList?
+    [9]  triples                            ::= subject WS* predicateObjectList?
 
-    [10] predicateObjectList                ::= verb objectList (';' (verb objectList)?)*
+    [10] predicateObjectList                ::= verb WS* objectList (WS* ';' WS* (verb WS* objectList)?)*
 
-    [11] objectList                         ::= object (',' object)*
+    [11] objectList                         ::= object WS* (',' WS* object WS*)*
 
     [12] verb                               ::= predicate
                                               | 'a'
-                                              | 'has' expression
-                                              | 'is' expression 'of'
-                                              | '<-' expression # Synonym for is expression of
+                                              | 'has' WS* expression
+                                              | '^' expression
+                                              | 'is' WS* expression WS* 'of'
                                               | '<='
                                               | '=>'
                                               | '='
@@ -54,14 +54,14 @@
                                               | numericLiteral
                                               | BOOLEAN_LITERAL
 
-    [20] blankNodePropertyList              ::= '[' predicateObjectList ']'
+    [20] blankNodePropertyList              ::= '[' WS* predicateObjectList WS* ']'
 
-    [21] collection                         ::= '(' object* ')'
+    [21] collection                         ::= '(' WS* (object WS)* ')'
 
-    [22] formula                            ::= '{' formulaContent? '}'
+    [22] formula                            ::= '{' WS* formulaContent? WS* '}'
 
-    [23] formulaContent                     ::= n3Statement ('.' formulaContent?)?
-                                              | sparqlDirective formulaContent?
+    [23] formulaContent                     ::= n3Statement (WS* '.' WS* formulaContent?)?
+                                              | sparqlDirective WS* formulaContent?
 
     [24] numericLiteral                     ::= DOUBLE | DECIMAL | INTEGER
 
@@ -82,9 +82,9 @@
                                                 # only made this a parser rule for consistency
                                                 # (all other path-items are also parser rules)
 
-    [31] existential                        ::=  '@forSome' iriList
+    [31] existential                        ::=  '@forSome' WS* iriList
                                         
-    [32] universal                          ::=  '@forAll' iriList
+    [32] universal                          ::=  '@forAll' WS* iriList
 
     @terminals
 
@@ -135,7 +135,7 @@
                                             | '/' | '?' | '#' | '@' | '%' )
     [39] COMMENT   ::= ('#' - '#x') [^#xA#xC#xD]*
 
-    # Ignore all whitespace and comments between non-terminals
-    @pass           ( WS | COMMENT )*
+    # Ignore all comments between non-terminals
+    @pass           COMMENT
 
 

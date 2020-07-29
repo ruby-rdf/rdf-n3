@@ -65,7 +65,7 @@ module RDF::N3
       super do
         @options = {
           anon_base:  "b0",
-          whitespace:  WS,
+          whitespace:  COMMENT,
           depth: 0,
         }.merge(@options)
         @prod_stack = []
@@ -156,6 +156,7 @@ module RDF::N3
     # Terminals passed to lexer. Order matters!
 
     # @!parse none
+    terminal(:WS,                               WS)
     terminal(:ANON,                             ANON)
     terminal(:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL)
     terminal(:IRIREF,                           IRIREF, unescape:  true)
@@ -193,12 +194,15 @@ module RDF::N3
     # @return [void]
     def read_n3Doc
       prod(:n3Doc, %w{.}) do
-        error("read_n3Doc", "Unexpected end of file") unless token = @lexer.first
+        ws?
+        token = @lexer.first
+        return unless token
         case token.type
         when :BASE, :PREFIX
           read_directive || error("Failed to parse directive", production: :directive, token: token)
         else
           read_n3Statement
+          ws?
           if !log_recovering? || @lexer.first === '.'
             # If recovering, we will have eaten the closing '.'
             token = @lexer.shift
@@ -240,7 +244,9 @@ module RDF::N3
           prod(:base) do
             @lexer.shift
             terminated = token.value == '@base'
+            ws?
             iri = @lexer.shift
+            ws?
             error("Expected IRIREF", production: :base, token: iri) unless iri === :IRIREF
             @options[:base_uri] = process_iri(iri.value[1..-2].gsub(/\s/, ''))
             namespace(nil, base_uri.to_s.match?(%r{[#/]$}) ? base_uri : iri("#{base_uri}#"))
@@ -258,7 +264,8 @@ module RDF::N3
         when :PREFIX
           prod(:prefixID, %w{.}) do
             @lexer.shift
-            pfx, iri = @lexer.shift, @lexer.shift
+            ws?
+            pfx, _, iri = @lexer.shift, ws?, @lexer.shift
             terminated = token.value == '@prefix'
             error("Expected PNAME_NS", production: :prefix, token: pfx) unless pfx === :PNAME_NS
             error("Expected IRIREF", production: :prefix, token: iri) unless iri === :IRIREF
@@ -266,6 +273,7 @@ module RDF::N3
             namespace(pfx.value[0..-2], process_iri(iri.value[1..-2].gsub(/\s/, '')))
             error("prefixId", "#{token} should be downcased") if token.value.start_with?('@') && token.value != '@prefix'
 
+            ws?
             if terminated
               error("prefixID", "Expected #{token} to be terminated") unless @lexer.first === '.'
               @lexer.shift
@@ -291,11 +299,13 @@ module RDF::N3
         subject = case token.type || token.value
         when '['
           # blankNodePropertyList predicateObjectList? 
+          ws?
           read_blankNodePropertyList || error("Failed to parse blankNodePropertyList", production: :triples, token: @lexer.first)
         else
           # subject predicateObjectList
           read_path || error("Failed to parse subject", production: :triples, token: @lexer.first)
         end
+        ws?
         read_predicateObjectList(subject) || subject
       end
     end
@@ -313,13 +323,15 @@ module RDF::N3
         last_verb = nil
         loop do
           verb, invert = read_verb
+          ws?
           break unless verb
           last_verb = verb
           prod(:_predicateObjectList_2) do
             read_objectList(subject, verb, invert) || error("Expected objectList", production: :predicateObjectList, token: @lexer.first)
           end
+          ws?
           break unless @lexer.first === ';'
-          @lexer.shift while @lexer.first === ';'
+          @lexer.shift while @lexer.first && @lexer.first.type == :WS || @lexer.first === ';'
         end
         last_verb
       end
@@ -343,8 +355,10 @@ module RDF::N3
             add_statement(:objectList, subject, predicate, object)
           end
 
+          ws?
           break unless @lexer.first === ','
-          @lexer.shift while @lexer.first === ','
+          @lexer.shift while @lexer.first && @lexer.first.type == :WS || @lexer.first === ','
+          ws?
         end
         last_object
       end
@@ -368,21 +382,29 @@ module RDF::N3
       error("read_verb", "Unexpected end of file") unless token = @lexer.first
       verb = case token.type || token.value
       when 'a' then prod(:verb) {@lexer.shift && RDF.type}
-      when 'has' then prod(:verb) {@lexer.shift && read_path}
+      when 'has' then prod(:verb) {
+        @lexer.shift
+        ws?
+        read_path
+      }
       when 'is' then prod(:verb) {
         @lexer.shift
+        ws?
         invert, v = true, read_path
+        ws?
         error( "Expected 'of'", production: :verb, token: @lexer.first) unless @lexer.first.value == 'of'
         @lexer.shift
         v
       }
       when '<-' then prod(:verb) {
         @lexer.shift
+        ws?
         invert = true
         read_path
       }
       when '<=' then prod(:verb) {
         @lexer.shift
+        ws?
         invert = true
         RDF::N3::Log.implies
       }
@@ -492,7 +514,9 @@ module RDF::N3
           @lexer.shift
           progress("blankNodePropertyList", depth: options[:depth], token: token)
           node = bnode
+          ws?
           read_predicateObjectList(node)
+          ws?
           error("blankNodePropertyList", "Expected closing ']'") unless @lexer.first === ']'
           @lexer.shift
           node
@@ -510,16 +534,19 @@ module RDF::N3
       if @lexer.first === '('
         prod(:collection, %{)}) do
           @lexer.shift
+          ws?
           token = @lexer.first
           progress("collection", depth: options[:depth]) {"token: #{token.inspect}"}
           objects = []
           while @lexer.first.value != ')' && (object = read_path)
+            ws?
             objects << object
           end
           list = RDF::List.new(values: objects)
           list.each_statement do |statement|
             add_statement("collection", *statement.to_a)
           end
+          ws?
           error("collection", "Expected closing ')'") unless @lexer.first === ')'
           @lexer.shift
           list.subject
@@ -571,19 +598,23 @@ module RDF::N3
       return if @lexer.first === '}'  # Allow empty formula
       prod(:formulaContent, %w(. })) do
         loop do
+          ws?
           token = @lexer.first
           error("read_formulaContent", "Unexpected end of file") unless token
           case token.type
           when :BASE, :PREFIX
             read_directive || error("Failed to parse directive", production: :directive, token: token)
+            ws?
             break if @lexer.first === '}'
           else
-            read_n3Statement
+            read_n3Statement unless @lexer.first === '}'
+            ws?
             token = @lexer.first
             case token.value
             when '.'
               @lexer.shift
               # '.' optional at end of formulaContent
+              ws?
               break if @lexer.first === '}'
             when '}'
               break
@@ -654,8 +685,10 @@ module RDF::N3
       prod(:iriList, %{,}) do
         while iri = read_iri
           iris << iri
+          ws?
           break unless @lexer.first === ','
-          @lexer.shift while @lexer.first === ','
+          @lexer.shift while @lexer.first && @lexer.first.type == :WS || @lexer.first === ','
+          ws?
         end
       end
       iris
@@ -678,6 +711,7 @@ module RDF::N3
     def read_uniext
       if %w(@forSome @forAll).include?(@lexer.first.value)
         token = @lexer.shift
+        ws?
         prod(token === '@forAll' ? :universal : :existential) do
           iri_list = read_irilist 
           iri_list.each do |iri|
@@ -800,7 +834,13 @@ module RDF::N3
     rescue ArgumentError => e
       error("iri", e.message)
     end
-    
+
+    ##
+    # Eat whitespace
+    def ws?
+      @lexer.shift while @lexer.first && @lexer.first.type == :WS
+    end
+
     # Create a literal
     def literal(value, **options)
       debug("literal", depth: @options[:depth]) do

@@ -401,7 +401,7 @@ describe "RDF::N3::Reader" do
       end
 
       it "should generate inverse predicate for '@is xxx @of'", pending: 'deprecated' do
-        n3 = %("value" @is :prop @of :b . :b :prop "value" .)
+        n3 = %("value" @is :prop @of :b .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b", validate: true)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
@@ -649,13 +649,13 @@ describe "RDF::N3::Reader" do
         :bar :d :c.
         :a :d :c.
         )
-        reader = RDF::N3::Reader.new(n3, validate: true)
+        reader = RDF::N3::Reader.new(n3, validate: true, logger: logger)
         reader.each {|statement|}
-        expect(reader.prefixes).to eq({
+        expect(reader.prefixes).to produce({
           rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
           rdfs: "http://www.w3.org/2000/01/rdf-schema#",
           nil => "http://test/"
-        })
+          }, logger)
       end
     end
 
@@ -1057,7 +1057,7 @@ describe "RDF::N3::Reader" do
         it "assumption graph has 2 statements" do
           tt = subject.first(subject: RDF::URI.new("http://a/b#assumption"), predicate: RDF::OWL.sameAs)
           expect(tt.object).to be_node
-          expect(subject.query({graph_name: tt.object}).to_a.length).to eq 2
+          expect(subject.query({graph_name: tt.object}).to_a.length).to produce(2, logger)
         end
 
         it "conclusion graph has 1 statements" do

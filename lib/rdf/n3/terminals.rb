@@ -71,10 +71,12 @@ module RDF::N3
     QUICK_VAR_NAME       = /\?#{PN_LOCAL}/.freeze
 
     # 161s
-    WS                   = /(?:\s|(?:#[^\n\r]*))+/um.freeze
+    WS                   = /\s+/um.freeze
     # 162s
     ANON                 = /\[\s*\]/u.freeze
 
     FORALL               = /@forAll/u.freeze
+
+    COMMENT              = /#[^\n\r]*/um.freeze
   end
 end
