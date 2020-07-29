@@ -87,7 +87,7 @@ def run_tc(man, tc, **options)
 
     if tc.evaluate? && result.nil?
       begin
-        output_graph = RDF::Repository.load(tc.result, format: :ntriples, base_uri:  tc.base)
+        output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
         result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
       rescue Exception => e
         STDERR.puts "Unexpected exception reading result: #{e.inspect}"
