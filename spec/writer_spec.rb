@@ -621,7 +621,7 @@ describe RDF::N3::Writer do
   describe "w3c n3 parser tests" do
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/grammar/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
           next if t.negative_test? || t.rejected?
