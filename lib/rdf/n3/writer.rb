@@ -58,6 +58,9 @@ module RDF::N3
     # @return [RDF::Graph] Graph being serialized
     attr_accessor :graph
 
+    # @return [Array<RDF::Node>] formulae names
+    attr_accessor :formula_names
+
     ##
     # N3 Writer options
     # @see http://www.rubydoc.info/github/ruby-rdf/rdf/RDF/Writer#options-class_method
@@ -159,6 +162,8 @@ module RDF::N3
 
       start_document
 
+      @formula_names = repo.graph_names(unique: true)
+
       with_graph(nil) do
         count = 0
         order_subjects.each do |subject|
@@ -169,8 +174,11 @@ module RDF::N3
         end
 
         # Output any formulae not already serialized using owl:sameAs
-        repo.graph_names.each do |graph_name|
+        formula_names.each do |graph_name|
           next if graph_done?(graph_name)
+
+          # Add graph_name to @formulae
+          @formulae[graph_name] = true
 
           log_debug {"formula(#{graph_name})"}
           @output.write("\n#{indent}")
@@ -332,7 +340,17 @@ module RDF::N3
     # Defines order of predicates to to emit at begninning of a resource description. Defaults to
     # [rdf:type, rdfs:label, dc:title]
     # @return [Array<URI>]
-    def predicate_order; [RDF.type, RDF::RDFS.label, RDF::URI("http://purl.org/dc/terms/title")]; end
+    def predicate_order
+      [
+        RDF.type,
+        RDF::RDFS.label,
+        RDF::RDFS.comment,
+        RDF::URI("http://purl.org/dc/terms/title"),
+        RDF::URI("http://purl.org/dc/terms/description"),
+        RDF::OWL.sameAs,
+        RDF::N3::Log.implies
+      ]
+    end
 
     # Order subjects for output. Override this to output subjects in another order.
     #
@@ -351,14 +369,18 @@ module RDF::N3
       # Add distinguished classes
       top_classes.each do |class_uri|
         graph.query({predicate: RDF.type, object: class_uri}).
-          map {|st| st.subject}.
-          sort.
-          uniq.
-          each do |subject|
-          log_debug("order_subjects") {subject.to_sxp}
-          subjects << subject
-          seen[subject] = true
-        end
+          map {|st| st.subject}.sort.uniq.each do |subject|
+            log_debug("order_subjects") {subject.to_sxp}
+            subjects << subject
+            seen[subject] = true
+          end
+      end
+
+      # Add formulae which are subjects in this graph
+      @formulae.each_key do |bn|
+        next unless @subjects.has_key?(bn)
+        subjects << bn
+        seen[bn] = true
       end
 
       # Mark as seen lists that are part of another list
@@ -466,8 +488,8 @@ module RDF::N3
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def is_valid_list?(l)
-      #log_debug("is_valid_list?") {l.inspect}
-      return @lists[l] && @lists[l].valid?
+      log_debug("is_valid_list?") {l.inspect + ' ' + (!!@lists[l] && @lists[l].valid?).inspect}
+      return !!@lists[l] && @lists[l].valid?
     end
 
     def do_list(l, position)
@@ -516,9 +538,9 @@ module RDF::N3
       log_debug("path") do
         "#{resource.to_sxp}, " +
         "pos: #{position}, " +
-        "{}?: #{formula?(resource, position)}, " +
-        "()?: #{is_valid_list?(resource)}, " +
-        "[]?: #{blankNodePropertyList?(resource, position)}, " +
+        "{}?: #{formula?(resource, position).inspect}, " +
+        "()?: #{is_valid_list?(resource).inspect}, " +
+        "[]?: #{blankNodePropertyList?(resource, position).inspect}, " +
         "rc: #{ref_count(resource)}"
       end
       raise RDF::WriterError, "Cannot serialize resource '#{resource}'" unless
@@ -613,12 +635,7 @@ module RDF::N3
 
     # Can subject be represented as a formula?
     def formula?(resource, position)
-      (resource.node? || position == :graph_name) &&
-        repo.has_graph?(resource) &&
-        !is_valid_list?(resource) &&
-        (!is_done?(resource) || position == :subject) &&
-        ref_count(resource) == (position == :object ? 1 : 0) &&
-        resource_in_single_graph?(resource)
+      !!@formulae[resource]
     end
 
     def formula(resource, position)
@@ -653,7 +670,12 @@ module RDF::N3
     end
 
     def statement(subject, count)
-      log_debug("statement") {"#{subject.to_sxp}, bnodePL?: #{blankNodePropertyList?(subject, :subject)}"}
+      log_debug("statement") do
+        "#{subject.to_sxp}, " +
+        "{}?: #{formula?(subject, :subject).inspect}, " +
+        "()?: #{is_valid_list?(subject).inspect}, " +
+        "[]?: #{blankNodePropertyList?(subject, :subject).inspect}, "
+      end
       subject_done(subject)
       blankNodePropertyList(subject, :subject) || triples(subject)
       @output.puts if count > 0 || graph.graph_name
@@ -718,10 +740,18 @@ module RDF::N3
       old_serialized, @serialized = @serialized, {}
       old_subjects, @subjects = @subjects, {}
       old_graph, @graph = @graph, repo.project_graph(graph_name)
+      old_formulae, @formulae = @formulae, {}
 
       graph_done(graph_name)
 
-      graph.each {|statement| preprocess_graph_statement(statement)}
+      graph.each do |statement|
+        preprocess_graph_statement(statement)
+        [statement.subject, statement.object].select(&:node?).each do |resource|
+          @formulae[resource] = true if
+            formula_names.include?(resource) ||
+            resource.id.start_with?('.form_')
+        end
+      end
 
       # Remove lists that are referenced and have non-list properties;
       # these are legal, but can't be serialized as lists
@@ -730,9 +760,10 @@ module RDF::N3
         list.subjects.any? {|elt| !resource_in_single_graph?(elt)}
       end
 
+      # Record nodes in subject or object
       yield
     ensure
-      @graph, @lists, @references, @serialized, @subjects = old_graph, old_lists, old_references, old_serialized, old_subjects
+      @graph, @lists, @references, @serialized, @subjects, @formulae = old_graph, old_lists, old_references, old_serialized, old_subjects, old_formulae
     end
   end
 end

@@ -489,13 +489,13 @@ describe RDF::N3::Writer do
       "empty subject" => {
         input: %({} <b> <c> .),
         regexp: [
-          %r(\[<b> <c>\] \.)
+          %r({} <b> <c> \.)
         ]
       },
       "empty object" => {
         input: %(<a> <b> {} .),
         regexp: [
-          %r(<a> <b> \[\] \.)
+          %r(<a> <b> {} \.)
         ]
       },
       "as subject with constant content" => {
