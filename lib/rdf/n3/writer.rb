@@ -229,6 +229,13 @@ module RDF::N3
         nil
       end
 
+      # if resource is a variable (universal or extential), map to a shorter name
+      if (@universals.include?(resource) || @existentials.include?(resource)) &&
+         resource.fragment.match(/^([^_]+)_[^_]+_([^_]+)$/)
+        sn, seq = $1, $2
+        pname = @uri_to_pname.values.include?(sn) ? ":#{sn}_#{seq.to_i}" : ":#{sn}"
+      end
+
       # Make sure pname is a valid pname
       if pname
         md = PNAME_LN.match(pname) || PNAME_NS.match(pname)
@@ -236,8 +243,6 @@ module RDF::N3
       end
 
       @uri_to_pname[uri] = pname
-    rescue Addressable::URI::InvalidURIError => e
-      raise RDF::WriterError, "Invalid URI #{resource.inspect}: #{e.message}"
     end
 
     # Take a hash from predicate uris to lists of values.
