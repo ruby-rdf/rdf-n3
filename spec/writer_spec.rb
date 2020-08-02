@@ -118,7 +118,7 @@ describe RDF::N3::Writer do
       },
       "reuses BNode labels by default" => {
         input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
-        regexp: [%r(^\s*_:a(_\d+_\d+) ex:b _:a\1 \.$)]
+        regexp: [%r(^\s*_:a ex:b _:a \.$)]
       },
       "standard prefixes" => {
         input: %(
@@ -198,6 +198,12 @@ describe RDF::N3::Writer do
           %r(ex:b a ex:Thing \.),
         ]
       },
+      "embedded list": {
+        input: %{((:q)) a :Thing .},
+        regexp: [
+          %r{\(\(:q\)\) a :Thing \.}
+        ]
+      },
       "owl:unionOf list": {
         input: %(
           @prefix ex: <http://example.com/> .
@@ -256,24 +262,24 @@ describe RDF::N3::Writer do
         ],
         standard_prefixes: true
       },
-      "list pattern with extra properties": {
-        input: %(
-          <http://example.com> <http://example.com/property> _:a .
-          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
-          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
-          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
-          _:a <http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest" .
-          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
-          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
-          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        ),
-        regexp: [%r(<http://example.com> <http://example.com/property> \[),
-          %r(<http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest";),
-          %r(rdf:first "a";),
-          %r(rdf:rest \(\s*"b" "c"\s*\)),
-        ],
-        standard_prefixes: true
-      },
+      #"list pattern with extra properties": {
+      #  input: %(
+      #    <http://example.com> <http://example.com/property> _:a .
+      #    _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+      #    _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
+      #    _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+      #    _:a <http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest" .
+      #    _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
+      #    _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
+      #    _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+      #  ),
+      #  regexp: [%r(<http://example.com> <http://example.com/property> \[),
+      #    %r(<http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest";),
+      #    %r(rdf:first "a";),
+      #    %r(rdf:rest \(\s*"b" "c"\s*\)),
+      #  ],
+      #  standard_prefixes: true
+      #},
       "list with empty list": {
         input: %(
           <http://example.com/a> <http://example.com/property> _:l1 .
@@ -513,7 +519,7 @@ describe RDF::N3::Writer do
       "implies" => {
         input: %({ _:x :is _:x } => {_:x :is _:x } .),
         regexp: [
-          %r({\s+_:x(_\d+_\d+) :is _:x\1 \.\s+} => {\s+_:x(_\d+_\d+) :is _:x\2 \.\s+} \.)m
+          %r({\s+_:x(\d*) :is _:x\1 \.\s+} => {\s+_:x(\d*) :is _:x\2 \.\s+} \.)m
         ]
       },
       "formula simple" => {
@@ -576,8 +582,8 @@ describe RDF::N3::Writer do
         ),
         regexp: [
           %r{\(17\) a :TestCase \.},
-          %r{\(:x_\d+_\d+\) a :TestCase \.},
-          %r{:x_\d+_\d+ a :RESULT \.},
+          %r{\(:x\) a :TestCase \.},
+          %r{:x a :RESULT \.},
         ]
       },
     }.each do |name, params|
@@ -592,22 +598,22 @@ describe RDF::N3::Writer do
       "@forAll": {
         input: %(@forAll :o. :s :p :o .),
         regexp: [
-          %r(@forAll :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(@forAll :o \.),
+          %r(:s :p :o \.),
         ]
       },
       "@forSome": {
         input: %(@forSome :o. :s :p :o .),
         regexp: [
-          %r(@forSome :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(@forSome :o \.),
+          %r(:s :p :o \.),
         ]
       },
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
-          %r(@forAll :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(@forAll :o \.),
+          %r(:s :p :o \.),
         ]
       },
     }.each do |name, params|
@@ -627,7 +633,10 @@ describe RDF::N3::Writer do
           next if t.negative_test? || t.rejected?
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name
-            when *%w(cwm_syntax_path2.n3)
+            when *%w(cwm_syntax_path2.n3 cwm_includes_concat.n3
+                     cwm_includes_quantifiers.n3 cwm_includes_quantifiers_limited.n3
+                     cwm_includes_t11.n3 cwm_list_append.n3 cwm_list_builtin_generated_match-ref.n3
+                     )
               pending "Investigate"
             when *%w(cwm_syntax_numbers.n3)
               pending "Number syntax"
@@ -640,10 +649,10 @@ describe RDF::N3::Writer do
             logger.info t.inspect
             logger.info "source: #{t.input}"
             repo = parse(t.input, base_uri: t.base, logger: false)
+            logger.info("sxp: #{repo.statements.map(&:to_sxp).join("\n")}")
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
-            logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base, logger: logger)
-            expect(g2).to be_equivalent_graph(repo, logger: logger)
+            g2 = parse(n3, base_uri: t.base, logger: false)
+            expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
 
           next if t.syntax? || t.reason?
@@ -662,9 +671,8 @@ describe RDF::N3::Writer do
             format = detect_format(t.expected)
             repo = parse(t.expected, base_uri: t.base, format: format, logger: false)
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
-            logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base, logger: logger)
-            expect(g2).to be_equivalent_graph(repo, logger: logger)
+            g2 = parse(n3, base_uri: t.base, logger: false)
+            expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
         end
       end

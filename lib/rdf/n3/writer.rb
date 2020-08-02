@@ -403,11 +403,10 @@ module RDF::N3
       # Mark as seen lists that are part of another list
       @lists.values.map(&:statements).
         flatten.each do |st|
-          seen[st.object] = true if @lists.has_key?(st.object)
+          seen[st.object] = true if @lists.key?(st.object)
         end
 
-      # List elements which are bnodes should not be targets for top-level serialization
-      list_elements = @lists.values.map(&:to_a).flatten.select(&:node?).compact
+      list_elements = []  # Lists may be top-level elements
 
       # Sort subjects by resources over bnodes, ref_counts and the subject URI itself
       recursable = (@subjects.keys - list_elements).
@@ -461,6 +460,7 @@ module RDF::N3
       # Collect lists
       if statement.predicate == RDF.first
         l = RDF::List.new(subject: statement.subject, graph: graph)
+        log_debug("list #{l.inspect} invalid!") unless l.valid?
         @lists[statement.subject] = l if l.valid?
       end
 
@@ -504,35 +504,36 @@ module RDF::N3
     private
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
-    def is_valid_list?(l)
-      log_debug("is_valid_list?") {l.inspect + ' ' + (!!@lists[l] && @lists[l].valid?).inspect}
-      return !!@lists[l] && @lists[l].valid?
-    end
-
-    def do_list(l, position)
-      list = @lists[l]
-      log_debug("do_list") {list.inspect}
-      subject_done(RDF.nil)
-      index = 0
-      list.each_statement do |st|
-        next unless st.predicate == RDF.first
-        log_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
-        @output.write(" ") if index > 0
-        path(st.object, position)
-        subject_done(st.subject)
-        position = :object
-        index += 1
-      end
+    def collection?(l)
+      log_debug("collection?") {l.inspect + ' ' + (@lists.key?(l)).inspect}
+      return @lists.key?(l)
     end
 
     def collection(node, position)
-      return false if !is_valid_list?(node)
-      return false if position == :subject && ref_count(node) > 0
-      return false if position == :object && prop_count(node) > 0
-      #log_debug("collection") {"#{node.to_sxp}, #{position}"}
+      return false if !collection?(node)
+      log_debug("collection") do
+        "#{node.to_sxp}, " +
+        "pos: #{position}, " +
+        "rc: #{ref_count(node)}"
+      end
+      # return false if position == :subject && ref_count(node) > 0 # recursive lists
 
       @output.write("(")
-      log_depth {do_list(node, position)}
+      log_depth do
+        list = @lists[node]
+        log_debug("collection") {list.inspect}
+        subject_done(RDF.nil)
+        index = 0
+        list.each_statement do |st|
+          next unless st.predicate == RDF.first
+          log_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
+          @output.write(" ") if index > 0
+          path(st.object, position)
+          subject_done(st.subject)
+          position = :object
+          index += 1
+        end
+      end
       @output.write(')')
     end
 
@@ -556,7 +557,7 @@ module RDF::N3
         "#{resource.to_sxp}, " +
         "pos: #{position}, " +
         "{}?: #{formula?(resource, position).inspect}, " +
-        "()?: #{is_valid_list?(resource).inspect}, " +
+        "()?: #{collection?(resource).inspect}, " +
         "[]?: #{blankNodePropertyList?(resource, position).inspect}, " +
         "rc: #{ref_count(resource)}"
       end
@@ -612,7 +613,7 @@ module RDF::N3
       end
 
       prop_list = sort_properties(properties)
-      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if @lists.include?(subject)
+      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if @lists.key?(subject)
       log_debug("predicateObjectList") {prop_list.inspect}
       return 0 if prop_list.empty?
 
@@ -632,7 +633,7 @@ module RDF::N3
     def blankNodePropertyList?(resource, position)
       resource.node? &&
         !formula?(resource, position) &&
-        !is_valid_list?(resource) &&
+        !collection?(resource) &&
         (!is_done?(resource) || position == :subject) &&
         ref_count(resource) == (position == :object ? 1 : 0) &&
         resource_in_single_graph?(resource) &&
@@ -644,7 +645,7 @@ module RDF::N3
 
       log_debug("blankNodePropertyList") {resource.to_sxp}
       subject_done(resource)
-      @output.write(position == :subject ? "\n#{indent}[" : '[')
+      @output.write((position == :subject ? "\n#{indent}[" : '['))
       num_props = log_depth {predicateObjectList(resource, true)}
       @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :object ? ']' : '] .'))
       true
@@ -661,9 +662,9 @@ module RDF::N3
       log_debug("formula") {resource.to_sxp}
       subject_done(resource)
       @output.write('{')
+      count = 0
       log_depth do
         with_graph(resource) do
-          count = 0
           order_subjects.each do |subject|
             unless is_done?(subject)
               statement(subject, count)
@@ -672,7 +673,7 @@ module RDF::N3
           end
         end
       end
-      @output.write((graph.count > 1 ? "\n#{indent}" : "") + '}')
+      @output.write((count > 0 ? "#{indent}" : "") + '}')
       true
     end
 
@@ -690,20 +691,12 @@ module RDF::N3
       log_debug("statement") do
         "#{subject.to_sxp}, " +
         "{}?: #{formula?(subject, :subject).inspect}, " +
-        "()?: #{is_valid_list?(subject).inspect}, " +
+        "()?: #{collection?(subject).inspect}, " +
         "[]?: #{blankNodePropertyList?(subject, :subject).inspect}, "
       end
       subject_done(subject)
       blankNodePropertyList(subject, :subject) || triples(subject)
       @output.puts if count > 0 || graph.graph_name
-    end
-
-    # Return the number of statements having this resource as a subject other than for list properties
-    # @return [Integer]
-    def prop_count(subject)
-      @subjects.fetch(subject, {}).
-        reject {|k, v| [RDF.type, RDF.first, RDF.rest].include?(k)}.
-        values.reduce(:+) || 0
     end
 
     # Return the number of times this node has been referenced in the object position
@@ -768,13 +761,6 @@ module RDF::N3
             formula_names.include?(resource) ||
             resource.id.start_with?('.form_')
         end
-      end
-
-      # Remove lists that are referenced and have non-list properties;
-      # these are legal, but can't be serialized as lists
-      @lists.reject! do |node, list|
-        ref_count(node) > 0 && prop_count(node) > 0 ||
-        list.subjects.any? {|elt| !resource_in_single_graph?(elt)}
       end
 
       # Record nodes in subject or object
