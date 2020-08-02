@@ -233,8 +233,8 @@ module RDF::N3
       end
 
       # if resource is a variable (universal or extential), map to a shorter name
-      if (@universals.include?(resource) || @existentials.include?(resource)) &&
-         resource.fragment.match(/^([^_]+)_[^_]+_([^_]+)$/)
+      if (@universals + @existentials).include?(resource) &&
+         resource.to_s.match(/#([^_]+)_[^_]+_([^_]+)$/)
         sn, seq = $1, $2
         pname = @uri_to_pname.values.include?(sn) ? ":#{sn}_#{seq.to_i}" : ":#{sn}"
       end
@@ -315,7 +315,15 @@ module RDF::N3
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_node(node, **options)
-      options[:unique_bnodes] ? node.to_unique_base : node.to_base
+      if node.id.match(/^([^_]+)_[^_]+_([^_]+)$/)
+        sn, seq = $1, $2.to_i
+        seq = nil if seq == 0
+        "_:#{sn}#{seq}"
+      elsif options[:unique_bnodes]
+        node.to_unique_base
+      else
+        node.to_base
+      end
     end
 
     protected
@@ -328,6 +336,7 @@ module RDF::N3
         @output.write("@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
 
+      # Universals and extentials at top-level
       unless @universals.empty?
         log_debug {"start_document: universals #{@universals.inspect}"}
         terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
