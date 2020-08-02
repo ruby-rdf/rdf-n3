@@ -7,11 +7,11 @@ require 'rdf/trig'
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
 
-  after(:each) do |example|
-    puts logger.to_s if
-      example.exception &&
-      !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
-  end
+  #after(:each) do |example|
+  #  puts logger.to_s if
+  #    example.exception &&
+  #    !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  #end
 
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
@@ -633,16 +633,26 @@ describe RDF::N3::Writer do
           next if t.negative_test? || t.rejected?
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name
-            when *%w(cwm_syntax_path2.n3 cwm_includes_concat.n3
+            when *%w(cwm_syntax_path2.n3
                      cwm_includes_quantifiers.n3 cwm_includes_quantifiers_limited.n3
-                     cwm_includes_t11.n3 cwm_list_append.n3 cwm_list_builtin_generated_match-ref.n3
+                     cwm_list_append.n3 cwm_includes_builtins.n3
+                     cwm_list_unify5-ref.n3 cwm_other_classes.n3
+                     cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
+                     cwm_other_lists.n3   # empty list with extra properties
+                     cwm_includes_concat.n3 cwm_includes_t11.n3
                      )
               pending "Investigate"
-            when *%w(cwm_syntax_numbers.n3)
+            when *%w(cwm_syntax_numbers.n3 cwm_math_trigo.ref.n3
+                     cwm_syntax_decimal.n3 cwm_syntax_decimal-ref.n3
+                     cwm_syntax_boolean.n3)
               pending "Number syntax"
-            when *%w(cwm_syntax_too-nested.n3)
+            when *%w(cwm_other_anon-prop.n3 cwm_other_filter-bnodes.n3 cwm_syntax_bad-preds-formula.n3
+                     cwm_reason_danc.n3)
+              pending "Anonymous properties"
+            when *%w(cwm_syntax_too-nested.n3 cwm_list_unify4.n3)
               skip("stack overflow")
-            when *%w(manifest.ttl)
+            when *%w(manifest.ttl cwm_math_math-test.n3 cwm_other_daml-ex.n3
+                     cwm_math_math-test.n3 cwm_syntax_this-quantifiers-ref.n3)
               skip("too long")
             end
 

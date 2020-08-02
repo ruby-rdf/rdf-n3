@@ -212,7 +212,7 @@ module RDF::N3
 
       #log_debug {"get_pname(#{resource}), std?}"}
       pname = case
-      when @uri_to_pname.has_key?(uri)
+      when @uri_to_pname.key?(uri)
         return @uri_to_pname[uri]
       when u = @uri_to_prefix.keys.detect {|u| uri.index(u.to_s) == 0}
         # Use a defined prefix
@@ -395,16 +395,15 @@ module RDF::N3
 
       # Add formulae which are subjects in this graph
       @formulae.each_key do |bn|
-        next unless @subjects.has_key?(bn)
+        next unless @subjects.key?(bn)
         subjects << bn
         seen[bn] = true
       end
 
       # Mark as seen lists that are part of another list
-      @lists.values.map(&:statements).
-        flatten.each do |st|
-          seen[st.object] = true if @lists.key?(st.object)
-        end
+      @lists.values.flatten.each do |v|
+        seen[v] = true if @lists.key?(v)
+      end
 
       list_elements = []  # Lists may be top-level elements
 
@@ -456,18 +455,6 @@ module RDF::N3
       @subjects[statement.subject] ||= {}
       @subjects[statement.subject][statement.predicate] ||= 0
       @subjects[statement.subject][statement.predicate] += 1
-
-      # Collect lists
-      if statement.predicate == RDF.first
-        l = RDF::List.new(subject: statement.subject, graph: graph)
-        log_debug("list #{l.inspect} invalid!") unless l.valid?
-        @lists[statement.subject] = l if l.valid?
-      end
-
-      if statement.object == RDF.nil || statement.subject == RDF.nil
-        # Add an entry for the list tail
-        @lists[RDF.nil] ||= RDF::List[]
-      end
     end
 
     # Returns indent string multiplied by the depth
@@ -523,13 +510,13 @@ module RDF::N3
         list = @lists[node]
         log_debug("collection") {list.inspect}
         subject_done(RDF.nil)
+        subject_done(node)
         index = 0
-        list.each_statement do |st|
-          next unless st.predicate == RDF.first
-          log_debug {" list this: #{st.subject} first: #{st.object}[#{position}]"}
+        list.each do |li|
+          log_debug {" list first: #{li}[#{position}]"}
           @output.write(" ") if index > 0
-          path(st.object, position)
-          subject_done(st.subject)
+          path(li, position)
+          subject_done(li)
           position = :object
           index += 1
         end
@@ -754,6 +741,7 @@ module RDF::N3
 
       graph_done(graph_name)
 
+      lists = {}
       graph.each do |statement|
         preprocess_graph_statement(statement)
         [statement.subject, statement.object].select(&:node?).each do |resource|
@@ -761,6 +749,53 @@ module RDF::N3
             formula_names.include?(resource) ||
             resource.id.start_with?('.form_')
         end
+
+        # Collect list elements
+        if [RDF.first, RDF.rest].include?(statement.predicate) && statement.subject.node?
+          lists[statement.subject] ||= {}
+          lists[statement.subject][statement.predicate] = statement.object
+        end
+      end
+
+      # Remove list entries after head with more than two properties (other than rdf:type)
+      rests = lists.values.map {|props| props[RDF.rest]}
+
+      # Remove non-head lists that have too many properties
+      rests.select do |bn|
+        pc = 0
+        @subjects.fetch(bn, {}).each do |pred, count|
+          next if pred == RDF.type
+          pc += count
+        end
+        lists.delete(bn) if pc > 2
+      end
+
+      # Values for this list element, recursive
+      def list_values(bn, lists)
+        raise "no list" unless lists.has_key?(bn)
+        first, rest = lists[bn][RDF.first], lists[bn][RDF.rest]
+        (rest == RDF.nil ? [] : list_values(rest, lists)).unshift(first)
+      rescue
+        lists.delete(bn)
+        raise $!
+      end
+
+      # Create value arrays for each entry
+      lists.each do |bn, props|
+        begin
+          @lists[bn] = list_values(bn, lists)
+        rescue
+          # Skip this list element, if it raises an exception
+          lists.delete(bn)
+        end
+      end
+
+      # Mark all remaining rests done
+      rests.each {|bn| subject_done(bn) if lists.include?(bn)}
+
+      # Remove entries that are referenced as rdf:rest of some entry
+      lists.each do |bn, props|
+        @lists.delete(props[RDF.rest])
       end
 
       # Record nodes in subject or object
