@@ -112,6 +112,9 @@ module RDF::N3
       @uri_to_pname = {}
       @uri_to_prefix = {}
       super do
+        if base_uri
+          @uri_to_prefix[base_uri.to_s.end_with?('#', '/') ? base_uri : RDF::URI("#{base_uri}#")] = nil
+        end
         reset
         if block_given?
           case block.arity
@@ -300,7 +303,7 @@ module RDF::N3
     # @param  [Hash{Symbol => Object}] options
     # @return [String]
     def format_uri(uri, **options)
-      md = uri.relativize(base_uri)
+      md = uri == base_uri ? '' : uri.relativize(base_uri)
       log_debug("relativize") {"#{uri.to_sxp} => #{md.inspect}"} if md != uri.to_s
       md != uri.to_s ? "<#{md}>" : (get_pname(uri) || "<#{uri}>")
     end
@@ -366,7 +369,7 @@ module RDF::N3
       subjects = []
 
       # Start with base_uri
-      if base_uri && @subjects.keys.include?(base_uri)
+      if base_uri && @subjects.keys.select(&:uri?).include?(base_uri)
         subjects << base_uri
         seen[base_uri] = true
       end
