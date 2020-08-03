@@ -395,19 +395,19 @@ describe "RDF::N3::Reader" do
       end
 
       it "should generate inverse predicate for 'is xxx of'" do
-        n3 = %("value" is :prop of :b . :b :prop "value"  .)
+        n3 = %("value" is :prop of :b .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
       it "should generate inverse predicate for '@is xxx @of'", pending: 'deprecated' do
-        n3 = %("value" @is :prop @of :b . :b :prop "value" .)
+        n3 = %("value" @is :prop @of :b .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b", validate: true)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
       it "should generate inverse predicate for '<- xxx'" do
-        n3 = %("value" <- :prop :b . :b :prop "value" .)
+        n3 = %("value" <- :prop :b .)
         nt = %(<http://a/b#b> <http://a/b#prop> "value" .)
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
@@ -1275,7 +1275,7 @@ EOF
       validate: false,
       canonicalize: false,
     }.merge(options)
-    repo = options[:repo] || RDF::Repository.new
+    repo = options[:repo] || [].extend(RDF::Enumerable, RDF::Queryable)
     RDF::N3::Reader.new(input, **options).each_statement do |statement|
       repo << statement
     end

@@ -37,7 +37,7 @@ describe RDF::N3::Reader do
                 validate: true,
                 logger: t.logger)
 
-            repo = RDF::Repository.new
+            repo = [].extend(RDF::Enumerable, RDF::Queryable)
 
             output_repo = if t.evaluate?
               begin
@@ -50,7 +50,7 @@ describe RDF::N3::Reader do
 
             if t.positive_test?
               begin
-                repo << reader
+                reader.each_statement {|st| repo << st}
               rescue Exception => e
                 expect(e.message).to produce("Not exception #{e.inspect}", t)
               end
@@ -62,7 +62,7 @@ describe RDF::N3::Reader do
               end
             elsif t.syntax?
               expect {
-                repo << reader
+                reader.each_statement {|st| repo << st}
                 expect(repo.count).to produce("not this", t)
               }.to raise_error(RDF::ReaderError)
             else

@@ -21,11 +21,11 @@ describe RDF::N3::Reader do
                 validate:  true,
                 logger: t.logger)
 
-            graph = RDF::Repository.new
+            graph = [].extend(RDF::Enumerable, RDF::Queryable)
 
             if t.positive_test?
               begin
-                graph << reader
+                reader.each_statement {|st| graph << st}
               rescue Exception => e
                 expect(e.message).to produce("Not exception #{e.inspect}", t)
               end
@@ -38,7 +38,7 @@ describe RDF::N3::Reader do
               end
             else
               expect {
-                graph << reader
+                reader.each_statement {|st| graph << st}
                 expect(graph.dump(:ntriples)).to produce("not this", t)
               }.to raise_error(RDF::ReaderError)
             end

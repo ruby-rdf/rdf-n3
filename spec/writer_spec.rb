@@ -636,18 +636,17 @@ describe RDF::N3::Writer do
             when *%w(cwm_syntax_path2.n3
                      cwm_includes_quantifiers.n3 cwm_includes_quantifiers_limited.n3
                      cwm_list_append.n3 cwm_includes_builtins.n3
-                     cwm_list_unify5-ref.n3 cwm_other_classes.n3
+                     cwm_list_unify5-ref.n3
                      cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
                      cwm_other_lists.n3   # empty list with extra properties
-                     cwm_includes_concat.n3 cwm_includes_t11.n3
+                     cwm_includes_concat.n3 new_syntax_inverted_properties.n3
                      )
               pending "Investigate"
-            when *%w(cwm_syntax_numbers.n3 cwm_math_trigo.ref.n3
-                     cwm_syntax_decimal.n3 cwm_syntax_decimal-ref.n3
-                     cwm_syntax_boolean.n3)
+            when *%w(cwm_math_trigo.ref.n3
+                     cwm_syntax_decimal.n3 cwm_syntax_decimal-ref.n3)
               pending "Number syntax"
             when *%w(cwm_other_anon-prop.n3 cwm_other_filter-bnodes.n3 cwm_syntax_bad-preds-formula.n3
-                     cwm_reason_danc.n3)
+                     cwm_reason_danc.n3 cwm_syntax_path2.n3)
               pending "Anonymous properties"
             when *%w(cwm_syntax_too-nested.n3 cwm_list_unify4.n3)
               skip("stack overflow")
@@ -668,10 +667,6 @@ describe RDF::N3::Writer do
           next if t.syntax? || t.reason?
           specify "#{t.name}: #{t.comment} (result)" do
             case t.name
-            when *%w(cwm_syntax_path2.n3)
-              pending "Investigate"
-            when *%w(cwm_syntax_numbers.n3)
-              pending "Number syntax"
             when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")
             end
@@ -690,9 +685,9 @@ describe RDF::N3::Writer do
   end unless ENV['CI']
 
   def parse(input, format: :n3, **options)
-    repo = RDF::Repository.new
+    repo = [].extend(RDF::Enumerable, RDF::Queryable)
     reader = RDF::Reader.for(format)
-    repo << reader.new(input, **options)
+    reader.new(input, **options).each_statement {|st| repo << st}
     repo
   end
 
@@ -701,7 +696,7 @@ describe RDF::N3::Writer do
     prefixes = options[:prefixes] || {}
     g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: false, format: options.fetch(:input_format, :n3))
     result = RDF::N3::Writer.buffer(**options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
-      writer << g
+      g.each_statement {|st| writer << st}
     end
     if $verbose
       require 'cgi'
