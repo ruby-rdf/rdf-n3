@@ -27,7 +27,7 @@ module RDF::N3::Refinements
     # @return [Boolean]
     def valid?
       has_subject?    && subject.term? && subject.valid? &&
-      has_predicate?  && predicate.resource? && predicate.valid? &&
+      has_predicate?  && predicate.term? && predicate.valid? &&
       has_object?     && object.term? && object.valid? &&
       (has_graph?      ? (graph_name.resource? && graph_name.valid?) : true)
     end

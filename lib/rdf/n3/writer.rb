@@ -250,20 +250,20 @@ module RDF::N3
 
     # Take a hash from predicate uris to lists of values.
     # Sort the lists of values.  Return a sorted list of properties.
-    # @param [Hash{String => Array<Resource>}] properties A hash of Property to Resource mappings
-    # @return [Array<String>}] Ordered list of properties. Uses predicate_order.
+    # @param [Hash{RDF::Term => Array<RDF::Term>}] properties A hash of Property to Resource mappings
+    # @return [Array<RDF::Term>}] Ordered list of properties. Uses predicate_order.
     def sort_properties(properties)
       # Make sorted list of properties
       prop_list = []
 
       predicate_order.each do |prop|
-        next unless properties[prop.to_s]
-        prop_list << prop.to_s
+        next unless properties.key?(prop)
+        prop_list << prop
       end
 
       properties.keys.sort.each do |prop|
-        next if prop_list.include?(prop.to_s)
-        prop_list << prop.to_s
+        next if prop_list.include?(prop)
+        prop_list << prop
       end
 
       log_debug {"sort_properties: #{prop_list.join(', ')}"}
@@ -591,16 +591,16 @@ module RDF::N3
       if subject.variable?
         # Can't query on variable
         @graph.enum_statement.select {|s| s.subject.equal?(subject)}.each do |st|
-          (properties[st.predicate.to_s] ||= []) << st.object
+          (properties[st.predicate] ||= []) << st.object
         end
       else
         @graph.query({subject: subject}) do |st|
-          (properties[st.predicate.to_s] ||= []) << st.object
+          (properties[st.predicate] ||= []) << st.object
         end
       end
 
       prop_list = sort_properties(properties)
-      prop_list -= [RDF.first.to_s, RDF.rest.to_s] if @lists.key?(subject)
+      prop_list -= [RDF.first, RDF.rest] if @lists.key?(subject)
       log_debug("predicateObjectList") {prop_list.inspect}
       return 0 if prop_list.empty?
 
@@ -608,7 +608,7 @@ module RDF::N3
       prop_list.each_with_index do |prop, i|
         begin
           @output.write(";\n#{indent(2)}") if i > 0
-          predicate(RDF::URI.intern(prop))
+          predicate(prop)
           @output.write(" ")
           objectList(properties[prop])
         end
@@ -634,7 +634,7 @@ module RDF::N3
       subject_done(resource)
       @output.write((position == :subject ? "\n#{indent}[" : '['))
       num_props = log_depth {predicateObjectList(resource, true)}
-      @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :object ? ']' : '] .'))
+      @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :subject ? '] .' : ']'))
       true
     end
 

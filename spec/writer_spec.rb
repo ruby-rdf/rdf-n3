@@ -645,8 +645,8 @@ describe RDF::N3::Writer do
             when *%w(cwm_math_trigo.ref.n3
                      cwm_syntax_decimal.n3 cwm_syntax_decimal-ref.n3)
               pending "Number syntax"
-            when *%w(cwm_other_anon-prop.n3 cwm_other_filter-bnodes.n3 cwm_syntax_bad-preds-formula.n3
-                     cwm_reason_danc.n3 cwm_syntax_path2.n3)
+            when *%w(cwm_syntax_bad-preds-formula.n3
+                     cwm_syntax_path2.n3)
               pending "Anonymous properties"
             when *%w(cwm_syntax_too-nested.n3 cwm_list_unify4.n3)
               skip("stack overflow")
