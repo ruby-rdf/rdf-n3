@@ -604,7 +604,7 @@ module RDF::N3
     def read_iri
       token = @lexer.first
       case token && token.type
-      when :IRIREF then prod(:iri)  {process_iri(@lexer.shift.value[1..-2].gsub(/\s/, ''))}
+      when :IRIREF then prod(:iri)  {process_iri(@lexer.shift.value[1..-2].gsub(/\s+/m, ''))}
       when :PNAME_LN, :PNAME_NS then prod(:prefixedName) {process_pname(*@lexer.shift.value)}
       end
     end

@@ -690,6 +690,27 @@ describe "RDF::N3::Reader" do
       end
     end
 
+    describe "IRIs" do
+      {
+        "with newlines": {
+          n3: %(
+            <http://example.com/iri with
+            whitespace is
+            okay
+            > a :testcase .
+          ),
+          ttl: %(
+          <http://example.com/iriwithwhitespaceisokay> a <http://a/b#testcase> .
+          )
+        },
+      }.each do |name, params|
+        it name do
+          expected = parse(params[:ttl], base_uri: "http://a/b", logger: false)
+          expect(parse(params[:n3], base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger)
+        end
+      end
+    end
+
     describe "BNodes" do
       it "should create BNode for identifier with '_' prefix" do
         n3 = %(@prefix a: <http://foo/a#> . _:a a:p a:v .)
@@ -1227,7 +1248,7 @@ describe "RDF::N3::Reader" do
       %(:y :p1 "xy.z"^^xsd:double .),
       %(:y :p1 "+1.0z"^^xsd:double .),
       %(:a :b .),
-      %(:a "literal value" :b .),
+      #%(:a "literal value" :b .),
       %(@keywords prefix. :e prefix :f .),
     ].each do |n3|
       it "should raise ReaderError for '#{n3}'" do
