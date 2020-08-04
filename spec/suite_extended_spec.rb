@@ -13,19 +13,28 @@ describe RDF::N3::Reader do
     end
 
     require_relative 'suite_helper'
-
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-extended.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}" do
+          specify "#{t.name}: #{t.comment}", slow: t.slow? do
             case t.name
-            when *%w(cwm_syntax_numbers.n3)
-              pending("number representation")
-            when *%w(space-in-uri)
-              pending("space in URIs")
-            when *%w(cwm_syntax_too-nested.n3)
-              skip("stack overflow")
+            when *%w(07test_utf8.n3)
+              pending("invalid byte sequence in UTF-8")
+            when *%w(01etc_skos-extra-rules.n3 01etc_skos-rules.n3 07test_pd_hes_theory.n3)
+              pending("@keywords")
+            when *%w(01etc_train_model.n3 04test_icalQ002.n3 04test_icalR.n3 04test_LanguageQ.n3
+                     04test_LanguageQ.n3 04test_query-survey-11.n3 04test_query-survey-13.n3
+                     04test_icalQ001.n3)
+              pending("variable filter syntax")
+            when *%w(04test_ontology-for-data-model.n3)
+              pending("invalid literal")
+            #when *%w(cwm_syntax_numbers.n3)
+            #  pending("number representation")
+            #when *%w(space-in-uri)
+            #  pending("space in URIs")
+            #when *%w(cwm_syntax_too-nested.n3)
+            #  skip("stack overflow")
             end
 
 

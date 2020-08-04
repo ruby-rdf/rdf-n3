@@ -117,6 +117,62 @@ module Fixtures
     end
 
     class Entry < JSON::LD::Resource
+      # Slow tests, skipped by default
+      SLOW = %w(
+      01etc_10tt_proof.n3
+      01etc_4color_proof.n3
+      01etc_bankSW.n3
+      01etc_biE.n3
+      01etc_bmi_proof.n3
+      01etc_data.n3
+      01etc_easter-proof.n3
+      01etc_easterE.n3
+      01etc_fcm_proof.n3
+      01etc_fgcm_proof.n3
+      01etc_fibE.n3
+      01etc_gedcom-proof.n3
+      01etc_gps-proof2.n3
+      01etc_graph-1000.n3
+      01etc_graph-10000.n3
+      01etc_mmln-gv-mln.n3
+      01etc_mmln-gv-proof.n3
+      01etc_mq_proof.n3
+      01etc_palindrome-proof.n3
+      01etc_palindrome2-proof.n3
+      01etc_pi-proof.n3
+      01etc_polynomial.n3
+      01etc_proof-1000.n3
+      01etc_proof-10000.n3
+      01etc_proof-2-1000.n3
+      01etc_proof-2-10000.n3
+      01etc_randomsample-proof.n3
+      01etc_result.n3
+      01etc_rifE.n3
+      01etc_swet_proof.n3
+      01etc_takE.n3
+      01etc_test-dl-1000.n3
+      01etc_test-dt-1000.n3
+      01etc_test-proof-1000.n3
+      01etc_test_proof.n3
+      01etc_train_model.n3
+      04test_not-galen.n3
+      04test_radlex.n3
+      05smml_FACTSboxgeometrydetection.n3
+      05smml_FACTShousewallsmeshed.n3
+      05smml_FACTSlinkfaceedgestoobjects.n3
+      05smml_FACTSlinkfacestoobjects.n3
+      05smml_FACTStriangleedges.n3
+      07test_bd-result-1000.n3
+      07test_biR.n3
+      07test_fgcm_proof.n3
+      07test_graph-10000.n3
+      07test_gv-mln.n3
+      07test_path-1024-3.n3
+      07test_path-256-3.n3
+      07test_pd_hes_result.n3
+      07test_test-strela-1000.n3
+      )
+
       attr_accessor :logger
 
       # For debug output formatting
@@ -131,6 +187,10 @@ module Fixtures
 
       def name
         id.to_s.split('#').last
+      end
+
+      def slow?
+        SLOW.include?(name)
       end
 
       # Alias data and query

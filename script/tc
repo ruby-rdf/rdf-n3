@@ -37,14 +37,14 @@ def earl_preamble(**options)
 end
 
 def run_tc(man, tc, **options)
-  STDERR.write "run #{tc.name} "
+  STDERR.write "test #{tc.name} "
 
   if options[:verbose]
     STDERR.puts "\nTestCase: #{tc.inspect}"
     STDERR.puts "\nInput:\n" + tc.input 
     STDERR.puts "\nExpected:\n" + tc.result if tc.result && tc.positiveTest?
   end
-
+  
   return if tc.approval == "rdft:Rejected"
 
   logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
@@ -66,7 +66,9 @@ def run_tc(man, tc, **options)
     graph = RDF::Repository.new
     result = nil
 
-    if tc.positive_test?
+    if !options[:slow] && tc.slow?
+      result = "untested"
+    elsif tc.positive_test?
       begin
         graph << reader
       rescue Exception => e
@@ -128,13 +130,14 @@ def run_tc(man, tc, **options)
   options[:results][result] ||= 0
   options[:results][result] += 1
 
-  STDERR.puts "#{"test result:" unless options[:quiet]} #{result} #{"(#{secs} seconds)" unless options[:quiet] || secs < 3}."
+  STDERR.puts "#{"test result:" unless options[:quiet]} #{result} #{"(#{secs} seconds)" unless options[:quiet] || secs < 1}."
 end
 
 options = {
   output:  STDOUT,
   results: {},
-  level: Logger::WARN
+  level: Logger::WARN,
+  slow: true  # Run slow tests by default
 }
 
 opts = GetoptLong.new(
@@ -144,7 +147,7 @@ opts = GetoptLong.new(
   ["--live",            GetoptLong::NO_ARGUMENT],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT],
   ["--quiet", "-q",     GetoptLong::NO_ARGUMENT],
-  ["--skip-long", "-s", GetoptLong::NO_ARGUMENT],
+  ["--skip-slow", "-s", GetoptLong::NO_ARGUMENT],
   ["--validate",        GetoptLong::NO_ARGUMENT],
   ["--verbose", "-v",   GetoptLong::NO_ARGUMENT],
 )
@@ -158,7 +161,7 @@ def help(**options)
   puts "      --ntriples:           Run N-Triples tests"
   puts "      --output:             Output to specified file"
   puts "      --quiet:              Minimal output"
-  puts "      --skip-long:          Avoid files taking too much time"
+  puts "      --skip-slow:          Avoid files taking too much time"
   puts "      --validate:           Validate input"
   puts "      --verbose:            Verbose processing"
   puts "      --help,-?:            This message"
@@ -178,7 +181,7 @@ opts.each do |opt, arg|
   when '--quiet'
     options[:quiet] = true
     options[:level] = Logger::FATAL
-  when '--skip-long'        then options[:skip] = true
+  when '--skip-slow'        then options[:slow] = false
   when '--validate'         then options[:validate] = true
   when '--verbose'          then options[:verbose] = true
   end
