@@ -1188,43 +1188,45 @@ describe "RDF::N3::Reader" do
   end
 
   describe "canonicalization" do
-#    {
-#      "<http://foo>"                 =>  "<http://foo>",
-#      "<http://foo/a>"               => "<http://foo/a>",
-#      "<http://foo#a>"               => "<http://foo#a>",
-#
-#      "<http://foo/>"                =>  "<http://foo/>",
-#      "<http://foo/#a>"              => "<http://foo/#a>",
-#
-#      "<http://foo#>"                =>  "<http://foo#>",
-#      "<http://foo#a>"               => "<http://foo/a>",
-#      "<http://foo#/a>"              => "<http://foo/a>",
-#      "<http://foo##a>"              => "<http://foo#a>",
-#
-#      "<http://foo/bar>"             =>  "<http://foo/bar>",
-#      "<http://foo/bar>"             => "<http://foo/a>",
-#      "<http://foo/bar/a>"           => "<http://foo/a>",
-#      "<http://foo/bar#a>"           => "<http://foo/bar#a>",
-#
-#      "<http://foo/bar/>"            =>  "<http://foo/bar/>",
-#      "<http://foo/bar/a>"           => "<http://foo/bar/a>",
-#      "<http://foo/bar//a>"          => "<http://foo/a>",
-#      "<http://foo/bar/#a>"          => "<http://foo/bar/#a>",
-#
-#      "<http://foo/bar#>"            =>  "<http://foo/bar#>",
-#      "<http://foo/bar#a>"           => "<http://foo/a>",
-#      "<http://foo/bar#/a>"          => "<http://foo/a>",
-#      "<http://foo/bar##a>"          => "<http://foo/bar#a>",
-#
-#      "<http://foo/bar##D%C3%BCrst>" => "<http://foo/bar#D%C3%BCrst>",
-#      "<http://foo/bar##Dürst>"      => "<http://foo/bar#D\\u00FCrst>",
-#    }.each_pair do |input, result|
-#      it "returns subject #{result} given #{input}" do
-#        n3 = %(#{input} a :b)
-#        nt = %(#{result} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://a/b#b> .)
-#        parse(n3, base_uri: "http://a/b", canonicalize: true).should be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
-#      end
-#    end
+    {
+      "<http://foo>"                 => "<http://foo/>",
+      "<http://foo/a>"               => "<http://foo/a>",
+      "<http://foo#a>"               => "<http://foo/#a>",
+
+      "<http://foo/>"                =>  "<http://foo/>",
+      "<http://foo/#a>"              => "<http://foo/#a>",
+
+      "<http://foo#>"                => "<http://foo/#>",
+      "<http://foo#/a>"              => "<http://foo/#/a>",
+      "<http://foo##a>"              => "<http://foo/#%23a>",
+
+      "<http://foo/bar/>"            => "<http://foo/bar/>",
+      "<http://foo/bar/a>"           => "<http://foo/bar/a>",
+      "<http://foo/bar//a>"          => "<http://foo/bar/a>",
+      "<http://foo/bar/#a>"          => "<http://foo/bar/#a>",
+
+      "<http://foo/bar#>"            => "<http://foo/bar#>",
+      "<http://foo/bar#a>"           => "<http://foo/bar#a>",
+      "<http://foo/bar#/a>"          => "<http://foo/bar#/a>",
+      "<http://foo/bar##a>"          => "<http://foo/bar#%23a>",
+
+      "<Dürst>"                      => "<http://a/Dürst>",
+
+      %("+1"^^xsd:integer)  => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(+1)                 => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+      %(.1)                 => %("0.1"^^<http://www.w3.org/2001/XMLSchema#decimal>),
+      %(123.E+1)            => %("1.23E3"^^<http://www.w3.org/2001/XMLSchema#double>),
+      %(true)               => %("true"^^<http://www.w3.org/2001/XMLSchema#boolean>),
+      %("lang"@EN)          => %("lang"@en),
+      %("""lang"""@EN)      => %("lang"@en),
+      %("""+1"""^^xsd:integer)  => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
+    }.each_pair do |input, result|
+      it "returns #{result} given #{input}" do
+        n3 = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://example/a> <http://example/b> #{input} .)
+        nt = %(<http://example/a> <http://example/b> #{result} .)
+        expect(parse(n3, base_uri: "http://a/b", canonicalize: true)).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
+      end
+    end
 
     {
       %("+1"^^xsd:integer) => %("1"^^<http://www.w3.org/2001/XMLSchema#integer>),
