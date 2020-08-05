@@ -22,12 +22,11 @@ describe RDF::N3::Reader do
             case t.name
             when *%w(cwm_syntax_numbers.n3)
               pending("number representation")
-            when *%w(space-in-uri)
+            when *%w(cwm_syntax_space-in-uri.n3)
               pending("space in URIs")
             when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")
             end
-
 
             t.logger = logger
             t.logger.info t.inspect

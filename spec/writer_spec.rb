@@ -640,6 +640,7 @@ describe RDF::N3::Writer do
                      cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
                      cwm_other_lists.n3   # empty list with extra properties
                      cwm_includes_concat.n3 new_syntax_inverted_properties.n3
+                     cwm_other_dec-div.n3 cwm_syntax_sep-term.n3
                      )
               pending "Investigate"
             when *%w(cwm_math_trigo.ref.n3
@@ -658,7 +659,7 @@ describe RDF::N3::Writer do
             logger.info t.inspect
             logger.info "source: #{t.input}"
             repo = parse(t.input, base_uri: t.base, logger: false)
-            logger.info("sxp: #{repo.statements.map(&:to_sxp).join("\n")}")
+            logger.info("sxp: #{SXP::Generator.string(repo.to_sxp_bin)}")
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             g2 = parse(n3, base_uri: t.base, logger: false)
             expect(g2.isomorphic?(repo)).to produce(true, logger)
@@ -667,6 +668,8 @@ describe RDF::N3::Writer do
           next if t.syntax? || t.reason?
           specify "#{t.name}: #{t.comment} (result)" do
             case t.name
+            when *%w(cwm_syntax_path2.n3)
+              pending "Investigate"
             when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")
             end

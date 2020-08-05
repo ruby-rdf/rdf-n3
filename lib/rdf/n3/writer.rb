@@ -266,7 +266,6 @@ module RDF::N3
         prop_list << prop
       end
 
-      log_debug {"sort_properties: #{prop_list.join(', ')}"}
       prop_list
     end
 
@@ -304,7 +303,7 @@ module RDF::N3
     # @return [String]
     def format_uri(uri, **options)
       md = uri == base_uri ? '' : uri.relativize(base_uri)
-      log_debug("relativize") {"#{uri.to_sxp} => #{md.inspect}"} if md != uri.to_s
+      log_debug("relativize") {"#{uri.to_sxp} => <#{md.inspect}>"} if md != uri.to_s
       md != uri.to_s ? "<#{md}>" : (get_pname(uri) || "<#{uri}>")
     end
 
@@ -492,7 +491,6 @@ module RDF::N3
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def collection?(l)
-      log_debug("collection?") {l.inspect + ' ' + (@lists.key?(l)).inspect}
       return @lists.key?(l)
     end
 
@@ -588,20 +586,13 @@ module RDF::N3
     # @return [Integer] the number of properties serialized
     def predicateObjectList(subject, from_bpl = false)
       properties = {}
-      if subject.variable?
-        # Can't query on variable
-        @graph.enum_statement.select {|s| s.subject.equal?(subject)}.each do |st|
-          (properties[st.predicate] ||= []) << st.object
-        end
-      else
-        @graph.query({subject: subject}) do |st|
-          (properties[st.predicate] ||= []) << st.object
-        end
+      @graph.enum_statement.select {|s| s.subject.sameTerm?(subject)}.each do |st|
+        (properties[st.predicate] ||= []) << st.object
       end
 
       prop_list = sort_properties(properties)
       prop_list -= [RDF.first, RDF.rest] if @lists.key?(subject)
-      log_debug("predicateObjectList") {prop_list.inspect}
+      log_debug("predicateObjectList") { "subject: #{subject.to_sxp}, properties: #{prop_list.join(', ')}" }
       return 0 if prop_list.empty?
 
       @output.write("\n#{indent(2)}") if properties.keys.length > 1 && from_bpl
@@ -721,7 +712,7 @@ module RDF::N3
       if resource.variable?
        graph_names = @repo.
          enum_statement.
-         select {|st| st.subject.equal?(resource) || st.object.equal?(resource)}.
+         select {|st| st.subject.sameTerm?(resource) || st.object.sameTerm?(resource)}.
          map(&:graph_name)
       else
         graph_names = @repo.query({subject: resource}).map(&:graph_name)
