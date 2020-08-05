@@ -29,12 +29,6 @@ describe RDF::N3::Reader do
               pending("variable filter syntax")
             when *%w(04test_ontology-for-data-model.n3)
               pending("invalid literal")
-            #when *%w(cwm_syntax_numbers.n3)
-            #  pending("number representation")
-            #when *%w(space-in-uri)
-            #  pending("space in URIs")
-            #when *%w(cwm_syntax_too-nested.n3)
-            #  skip("stack overflow")
             end
 
 
