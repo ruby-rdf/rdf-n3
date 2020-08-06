@@ -439,15 +439,15 @@ module RDF::N3
     def read_literal
       error("Unexpected end of file", production: :literal) unless token = @lexer.first
       case token.type || token.value
-      when :INTEGER then prod(:literal) {literal(@lexer.shift.value, datatype:  RDF::XSD.integer)}
+      when :INTEGER then prod(:literal) {literal(@lexer.shift.value, datatype:  RDF::XSD.integer, canonicalize: canonicalize?)}
       when :DECIMAL
         prod(:literal) do
           value = @lexer.shift.value
           value = "0#{value}" if value.start_with?(".")
-          literal(value, datatype:  RDF::XSD.decimal)
+          literal(value, datatype:  RDF::XSD.decimal, canonicalize: canonicalize?)
         end
-      when :DOUBLE then prod(:literal) {literal(@lexer.shift.value.sub(/\.([eE])/, '.0\1'), datatype:  RDF::XSD.double)}
-      when "true", "false" then prod(:literal) {literal(@lexer.shift.value, datatype: RDF::XSD.boolean)}
+      when :DOUBLE then prod(:literal) {literal(@lexer.shift.value.sub(/\.([eE])/, '.0\1'), datatype:  RDF::XSD.double, canonicalize: canonicalize?)}
+      when "true", "false" then prod(:literal) {literal(@lexer.shift.value, datatype: RDF::XSD.boolean, canonicalize: canonicalize?)}
       when :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE
         prod(:literal) do
           value = @lexer.shift.value[1..-2]
@@ -809,7 +809,7 @@ module RDF::N3
         "validate: #{validate?.inspect}, " +
         "c14n?: #{canonicalize?.inspect}"
       end
-      RDF::Literal.new(value, validate:  validate?, canonicalize:  canonicalize?, **options)
+      RDF::Literal.new(value, validate:  validate?, canonicalize: canonicalize?, **options)
     rescue ArgumentError => e
       error("Argument Error #{e.message}", production: :literal, token: @lexer.first)
     end
