@@ -614,7 +614,6 @@ module RDF::N3
         !collection?(resource) &&
         (!is_done?(resource) || position == :subject) &&
         ref_count(resource) == (position == :object ? 1 : 0) &&
-        resource_in_single_graph?(resource) &&
         !repo.has_graph?(resource)
     end
 
@@ -706,19 +705,6 @@ module RDF::N3
     # Mark a graph as done.
     def graph_done(graph_name)
       @graphs[graph_name] = true
-    end
-
-    def resource_in_single_graph?(resource)
-      if resource.variable?
-       graph_names = @repo.
-         enum_statement.
-         select {|st| st.subject.sameTerm?(resource) || st.object.sameTerm?(resource)}.
-         map(&:graph_name)
-      else
-        graph_names = @repo.query({subject: resource}).map(&:graph_name)
-        graph_names += @repo.query({object: resource}).map(&:graph_name)
-      end
-      graph_names.uniq.length <= 1
     end
 
     # Process a graph projection
