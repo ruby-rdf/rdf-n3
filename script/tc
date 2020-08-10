@@ -42,7 +42,7 @@ def run_tc(man, tc, **options)
   if options[:verbose]
     STDERR.puts "\nTestCase: #{tc.inspect}"
     STDERR.puts "\nInput:\n" + tc.input 
-    STDERR.puts "\nExpected:\n" + tc.result if tc.result && tc.positiveTest?
+    STDERR.puts "\nExpected:\n" + tc.expected if tc.result && tc.positive_test?
   end
   
   return if tc.approval == "rdft:Rejected"
@@ -95,6 +95,27 @@ def run_tc(man, tc, **options)
         STDERR.puts "Unexpected exception reading result: #{e.inspect}"
         result = "failed"
       end
+    elsif tc.reason? && result.nil?
+      reasoner = RDF::N3::Reasoner.new(graph, **options)
+
+      repo = RDF::Repository.new
+
+      begin
+        reasoner.execute(logger: logger, think: !!tc.options['think'])
+        if tc.options["filter"]
+          repo << reasoner.conclusions
+        elsif tc.options["data"]
+          repo << reasoner.data
+        else
+          repo << reasoner
+        end
+      rescue Exception => e
+        STDERR.puts "Unexpected exception reasoning: #{e.inspect}"
+        result = "failed"
+      end
+
+      output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
+      result = repo.isomorphic_with?(output_graph) ? "passed" : "failed"
     else
       result ||= "passed"
     end

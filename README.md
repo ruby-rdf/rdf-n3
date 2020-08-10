@@ -62,21 +62,42 @@ Reasoning is discussed in the [Design Issues][] document.
 
 #### RDF List vocabulary <http://www.w3.org/2000/10/swap/list#>
 
-  * list:append (not implemented yet - See {RDF::N3::Algebra::List::Append})
-  * list:in (not implemented yet - See {RDF::N3::Algebra::List::In})
-  * list:last (not implemented yet - See {RDF::N3::Algebra::List::Last})
-  * list:member (not implemented yet - See {RDF::N3::Algebra::List::Member})
+  * `list:append` (not implemented yet - See {RDF::N3::Algebra::List::Append})
+  * `list:in` (not implemented yet - See {RDF::N3::Algebra::List::In})
+  * `list:last` (not implemented yet - See {RDF::N3::Algebra::List::Last})
+  * `list:member` (not implemented yet - See {RDF::N3::Algebra::List::Member})
 
 #### RDF Log vocabulary <http://www.w3.org/2000/10/swap/log#>
 
-  * log:conclusion (not implemented yet - See {RDF::N3::Algebra::Log::Conclusion})
-  * log:conjunction (not implemented yet - See {RDF::N3::Algebra::Log::Conjunction})
-  * log:equalTo (See {RDF::N3::Algebra::Log::EqualTo})
-  * log:implies (See {RDF::N3::Algebra::Log::Implies})
-  * log:includes (See {RDF::N3::Algebra::Log::Includes})
-  * log:notEqualTo (not implemented yet - See {RDF::N3::Algebra::Log::NotEqualTo})
-  * log:notIncludes (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
-  * log:outputString (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
+  * `log:conclusion` (not implemented yet - See {RDF::N3::Algebra::Log::Conclusion})
+  * `log:conjunction` (not implemented yet - See {RDF::N3::Algebra::Log::Conjunction})
+  * `log:equalTo` (See {RDF::N3::Algebra::Log::EqualTo})
+  * `log:implies` (See {RDF::N3::Algebra::Log::Implies})
+  * `log:includes` (See {RDF::N3::Algebra::Log::Includes})
+  * `log:notEqualTo` (not implemented yet - See {RDF::N3::Algebra::Log::NotEqualTo})
+  * `log:notIncludes` (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
+  * `log:outputString` (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
+
+#### RDF String vocabulary <http://www.w3.org/2000/10/swap/str#>
+
+  * `string:concatenation` (See {RDF::N3::Algebra::Str::Concatenation})
+  * `string:contains` (See {SPARQL::Algebra::Operator::Contains})
+  * `string:containsIgnoringCase` (See {RDF::N3::Algebra::Str::ContainsIgnoringCase})
+  * `string:endsWith` (See {SPARQL::Algebra::Operator::StrEnds})
+  * `string:equalIgnoringCase` (See {RDF::N3::Algebra::Str::EqualIgnoringCase})
+  * `string:format` (See {RDF::N3::Algebra::Str::Format})
+  * `string:greaterThan` (See {SPARQL::Algebra::Operator::GreaterThan})
+  * `string:lessThan` (See {SPARQL::Algebra::Operator::LessThan})
+  * `string:matches` (See {SPARQL::Algebra::Operator::Regex})
+  * `string:notEqualIgnoringCase` (See {RDF::N3::Algebra::Str::NotEqualIgnoringCase})
+  * `string:notGreaterThan` (See {SPARQL::Algebra::Operator::LessThanOrEqual})
+  * `string:notLessThan` (See {SPARQL::Algebra::Operator::GreaterThanOrEqual})
+  * `string:notMatches` (See {RDF::N3::Algebra::Str::NotMatches})
+  * `string:replace` (See {RDF::N3::Algebra::Str::Replace})
+  * `string:scrape` (See {RDF::N3::Algebra::Str::Scrape})
+  * `string:startsWith` (See {SPARQL::Algebra::Operator::StrStarts})
+
+### Formulae
 
 N3 Formulae are introduced with the `{ statement-list }` syntax. A given formula is assigned an `RDF::Node` instance, which is also used as the graph_name for `RDF::Statement` instances provided to `RDF::N3::Reader#each_statement`. For example, the following N3 generates the associated statements:
 
@@ -108,11 +129,6 @@ results in:
 
 Note that the behavior of both existential and universal variables is not entirely in keeping with the [Team Submission][], and neither work quite like SPARQL variables. When used in the antecedent part of an implication, universal variables should behave much like SPARQL variables. This area is subject to a fair amount of change.
 
-## Implementation Notes
-The parser is driven through a rules table contained in lib/rdf/n3/reader/meta.rb. These rules are processed through a [Parsing Expression Grammar][PEG] parser implemented in the [EBNF gem][].
-
-The [meta.rb][file:lib/rdf/n3/reader/meta.rb] file is generated from {file:etc/n3.ebnf N3 EBNF grammar} using a rake task.
-
 ## Dependencies
 * [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.1, >= 3.1.4)
 * [EBNF][EBNF gem] (~> 2.1)
@@ -128,26 +144,11 @@ Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-
 * {RDF::N3::Writer}
 * {RDF::N3::Algebra}
   * {RDF::N3::Algebra::Formula}
-  * {RDF::N3::Algebra::List::Append}
-  * {RDF::N3::Algebra::List::In}
-  * {RDF::N3::Algebra::List::Last}
-  * {RDF::N3::Algebra::List::Member}
-  * {RDF::N3::Algebra::Log::Conclusion}
-  * {RDF::N3::Algebra::Log::Conjunction}
-  * {RDF::N3::Algebra::Log::EqualTo}
-  * {RDF::N3::Algebra::Log::Implies}
-  * {RDF::N3::Algebra::Log::Includes}
-  * {RDF::N3::Algebra::Log::NotEqualTo}
-  * {RDF::N3::Algebra::Log::NotIncludes}
-  * {RDF::N3::Algebra::Log::OutputString}
 
 ### Additional vocabularies
-* {RDF::N3::Log}
 * {RDF::N3::Rei}
 * {RDF::N3::Crypto}
-* {RDF::N3::List}
 * {RDF::N3::Math}
-* {RDF::N3::Str}
 * {RDF::N3::Time}
 
 ## Resources

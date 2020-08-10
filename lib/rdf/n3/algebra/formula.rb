@@ -27,26 +27,29 @@ module RDF::N3::Algebra
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
       log_debug {"formula #{graph_name} #{operands.to_sxp}"}
-
-      # If we were passed solutions in options, extract bindings to use for query
-      bindings = solutions.bindings
-      log_debug {"(formula bindings) #{bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
+      log_debug {"(formula bindings) #{solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
-      @solutions = @query.patterns.empty? ? solutions : queryable.query(@query, solutions: solutions, bindings: bindings, **options)
 
-      # Merge solution sets
+      @solutions = if @query.patterns.empty?
+        solutions
+      else
+        solutions.merge(queryable.query(@query, solutions: solutions, **options))
+      end
+
       # Reject solutions which include variables as values
-      @solutions = @solutions
-        .merge(options[:solutions])
-        .filter {|s| s.enum_value.none?(&:variable?)}
+      @solutions = @solutions.filter {|s| s.enum_value.none?(&:variable?)}
 
       # Use our solutions for sub-ops
       # Join solutions from other operands
       log_depth do
         sub_ops.each do |op|
-          @solutions = op.execute(queryable, solutions: @solutions)
+          @solutions = if op.executable?
+            op.execute(queryable, solutions: @solutions)
+          else
+            op.evaluate(@solutions.bindings) == RDF::Literal::TRUE ? @solutions : RDF::Query::Solutions.new
+          end
         end
       end
       log_debug {"(formula solutions) #{@solutions.to_sxp}"}
@@ -172,12 +175,19 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Universal vars in this formula and sub-formulae
+    def universal_vars
+      @universals ||= (patterns.vars + sub_ops.vars).reject(&:existential?).uniq
+    end
+
+    ##
     # Existential vars in this formula
     def existential_vars
       @existentials ||= patterns.vars.select(&:existential?)
     end
 
     def to_sxp_bin
+      raise "a formula can't contain itself" if operands.include?(self)
       [:formula, graph_name].compact +
       operands.map(&:to_sxp_bin)
     end

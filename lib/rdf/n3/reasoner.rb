@@ -66,7 +66,7 @@ module RDF::N3
       else RDF::Repository.new
       end
 
-      log_debug("reasoner: expression", **options) {SXP::Generator.string(formula.to_sxp_bin)}
+      log_debug("reasoner: expression") {SXP::Generator.string(formula.to_sxp_bin)}
 
       if block_given?
         case block.arity
@@ -260,7 +260,7 @@ module RDF::N3
           if klass = Algebra.for(pattern.predicate)
             fs = formulae.fetch(pattern.subject, pattern.subject)
             fo = formulae.fetch(pattern.object, pattern.object)
-            form.operands << klass.new(fs, fo, parent: form, **@options)
+            form.operands << klass.new(fs, fo, parent: form, predicate: pattern.predicate, **@options)
           else
             # Add formulae as direct operators
             if formulae.has_key?(pattern.subject)
@@ -271,6 +271,26 @@ module RDF::N3
             end
             pattern.graph_name = nil
             form.operands << pattern
+          end
+        end
+
+        # Bind formula operands which are lists to RDF::List
+        formulae.each do |gn, form|
+          form_graph = RDF::Graph.new do |g|
+            form.operands.each do |op|
+              g << op if op.is_a?(RDF::Statement)
+            end
+          end
+          form.operands.each do |op|
+            next unless op.is_a?(SPARQL::Algebra::Operator)
+            op.operands.map! do |operand|
+              if operand.is_a?(RDF::Node)
+                ln = RDF::List.new(subject: operand, graph: form_graph)
+                ln.valid? ? ln : operand
+              else
+                operand
+              end
+            end
           end
         end
 

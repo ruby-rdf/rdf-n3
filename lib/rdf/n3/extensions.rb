@@ -22,6 +22,22 @@ module RDF
     end
   end
 
+  class RDF::List
+    # Transform Statement into an SXP
+    # @return [Array]
+    def to_sxp_bin
+      to_a.to_sxp_bin
+    end
+
+    ##
+    # Returns an S-Expression (SXP) representation
+    #
+    # @return [String]
+    def to_sxp
+      to_sxp_bin.to_sxp
+    end
+  end
+
   class RDF::Statement
     # Transform Statement into an SXP
     # @return [Array]
