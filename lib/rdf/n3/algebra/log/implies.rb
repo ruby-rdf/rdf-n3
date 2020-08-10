@@ -26,6 +26,13 @@ module RDF::N3::Algebra::Log
       @queryable = queryable
       log_debug {"logImplies"}
       @solutions = log_depth {operands.first.execute(queryable, solutions: solutions, **options)}
+      log_debug {"(logImplies solutions pre-filter) #{@solutions.to_sxp}"}
+
+      # filter solutions where not all variables in antecedant are bound.
+      vars = operands.first.universal_vars
+      @solutions = @solutions.filter do |solution|
+        vars.all? {|v| solution.bound?(v)}
+      end
       log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
 
       # Return original solutions, without bindings
@@ -50,23 +57,16 @@ module RDF::N3::Algebra::Log
         return
       end
 
-      # Graph based on solutions from subject
-      subject_graph = log_depth {RDF::Graph.new {|g| g << subject}}
-
       # Use solutions from subject for object
       object.solutions = @solutions
 
       # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
-      if @queryable.contain?(subject_graph)
-        log_debug("(logImplies implication true)")
-        # Yield statements into the default graph
-        log_depth do
-          object.each do |statement|
-            block.call(RDF::Statement.from(statement.to_triple, inferred: true, graph_name: graph_name))
-          end
+      log_debug("(logImplies implication true; solutions: #{solutions.to_sxp})")
+      # Yield statements into the default graph
+      log_depth do
+        object.each do |statement|
+          block.call(RDF::Statement.from(statement.to_triple, inferred: true, graph_name: graph_name))
         end
-      else
-        log_debug("(logImplies implication false)")
       end
     end
 
