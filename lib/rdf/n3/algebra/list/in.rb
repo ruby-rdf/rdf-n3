@@ -1,4 +1,9 @@
 module RDF::N3::Algebra::List
+  ##
+  # Iff the object is a list and the subject is in that list, then this is true.
+  #
+  # @example
+  #     { 1 list:in  (  1 2 3 4 5 ) } => { :test4a a :SUCCESS }.
   class In < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
@@ -7,7 +12,6 @@ module RDF::N3::Algebra::List
 
     NAME = :listIn
 
-    ##
     ##
     # Evaluates this operator using the given variable `bindings`.
     # If the first operand is a variable, it creates a solution for each element in the list.
@@ -23,7 +27,7 @@ module RDF::N3::Algebra::List
 
         case list
         when RDF::Node, RDF::Query::Variable
-          # Attempt to bind a node to a list
+          # Attempt to bind a node or variable to a list
           list = list.evaluate(solution.bindings)
         when RDF::List
           # Attempt to bind list elements
@@ -31,7 +35,7 @@ module RDF::N3::Algebra::List
         end
         log_debug(NAME) {"subject: #{subject.to_sxp}, list: #{list.to_sxp}"}
 
-        if list.any? {|op| op.variable? && op.unbound?}
+        if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
           solution
         else

@@ -63,9 +63,9 @@ Reasoning is discussed in the [Design Issues][] document.
 #### RDF List vocabulary <http://www.w3.org/2000/10/swap/list#>
 
   * `list:append` (not implemented yet - See {RDF::N3::Algebra::List::Append})
-  * `list:in` (not implemented yet - See {RDF::N3::Algebra::List::In})
-  * `list:last` (not implemented yet - See {RDF::N3::Algebra::List::Last})
-  * `list:member` (not implemented yet - See {RDF::N3::Algebra::List::Member})
+  * `list:in` (See {RDF::N3::Algebra::List::In})
+  * `list:last` (See {RDF::N3::Algebra::List::Last})
+  * `list:member` (See {RDF::N3::Algebra::List::Member})
 
 #### RDF Log vocabulary <http://www.w3.org/2000/10/swap/log#>
 

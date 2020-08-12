@@ -21,7 +21,7 @@ describe RDF::N3::Reader do
             case t.id.split('#').last
             when *%w{cwm_includes_listin cwm_includes_bnode cwm_includes_concat
                      cwm_includes_conjunction cwm_includes_conclusion_simple
-                     cwm_list_append cwm_list_last}
+                     cwm_list_append}
               pending "support for lists"
             when *%w{cwm_unify_unify1 cwm_unify_unify2}
               pending "reason over formulae"
