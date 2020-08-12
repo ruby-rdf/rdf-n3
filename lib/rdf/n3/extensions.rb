@@ -23,6 +23,19 @@ module RDF
   end
 
   class RDF::List
+    ##
+    # Evaluates the list using the given variable `bindings`.
+    #
+    # @param  [RDF::Query::Solution] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::List]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, **options)
+      RDF::List[*to_a.map {|o| o.evaluate(bindings, **options)}]
+    end
+
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
@@ -51,6 +64,20 @@ module RDF
     # @return [String]
     def to_sxp
       to_sxp_bin.to_sxp
+    end
+  end
+
+  class RDF::Node
+    # Either binds to variable, or returns itself.
+    #
+    # @param  [RDF::Query::Solution] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Term]
+    #     def evaluate(bindings, **options); end
+    def evaluate(bindings, **options)
+      bindings.fetch(self.id.to_sym, self)
     end
   end
 

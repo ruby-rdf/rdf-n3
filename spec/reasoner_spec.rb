@@ -84,6 +84,71 @@ describe "RDF::N3::Reasoner" do
     end
   end
 
+  context "n3:list" do
+    context "list:in" do
+      {
+        "1 in (1)": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            { 1 list:in  (1) } => { :test4a a :SUCCESS }.
+          ),
+          expect: %(
+            :test4a a :SUCCESS.
+          )
+        },
+        "1 in ( 1 2 3 4 5)": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            { 1 list:in  (  1 2 3 4 5 ) } => { :test4a a :SUCCESS }.
+          ),
+          expect: %(
+            :test4a a :SUCCESS.
+          )
+        },
+        "1 in ()": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            { 1 list:in () } => { :trap1 a :FAILURE }.
+          ),
+          expect: %(
+          )
+        },
+        "2 in ( 1 2 3 4 5)": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            { 2 list:in  (  1 2 3 4 5 ) } => { :test4b a :SUCCESS }.
+          ),
+          expect: %(
+            :test4b a :SUCCESS.
+          )
+        },
+        "thing1 :prop1": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            :thing1 :prop1 ( :test5a :test5b :test5c ) .
+            { ?item list:in [ is :prop1 of :thing1 ] } => { ?item a :SUCCESS } .
+          ),
+          expect: %(
+            :test5a a :SUCCESS.
+            :test5b a :SUCCESS.
+            :test5c a :SUCCESS.
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+  end
+
   context "n3:string" do
     context "string:startsWith" do
       {

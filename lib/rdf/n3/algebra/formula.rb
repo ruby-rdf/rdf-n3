@@ -26,8 +26,8 @@ module RDF::N3::Algebra
     #   optional initial solutions for chained queries
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
-      log_debug {"formula #{graph_name} #{operands.to_sxp}"}
-      log_debug {"(formula bindings) #{solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}"}
+      log_debug("formula #{graph_name}") {operands.to_sxp}
+      log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
@@ -35,7 +35,16 @@ module RDF::N3::Algebra
       @solutions = if @query.patterns.empty?
         solutions
       else
-        solutions.merge(queryable.query(@query, solutions: solutions, **options))
+        these_solutions = queryable.query(@query, solutions: solutions, **options)
+        # Replace blank node bindings with lists, where those blank nodes are associated with lists
+        these_solutions.map! do |solution|
+          RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
+            l = RDF::List.new(subject: value, graph: queryable) unless value.list?
+            value = l if l && l.valid?
+            memo.merge(name => value)
+          end)
+        end
+        solutions.merge(these_solutions)
       end
 
       # Reject solutions which include variables as values
@@ -52,7 +61,7 @@ module RDF::N3::Algebra
           end
         end
       end
-      log_debug {"(formula solutions) #{@solutions.to_sxp}"}
+      log_debug("(formula solutions)") {@solutions.to_sxp}
 
       # Only return solutions with distinguished variables
       variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
@@ -71,11 +80,11 @@ module RDF::N3::Algebra
         # If there are no solutions, create a single solution
         RDF::Query::Solutions(RDF::Query::Solution.new)
       end
-      log_debug {"formula #{graph_name} each #{@solutions.to_sxp}"}
+      log_debug("formula #{graph_name} each") {@solutions.to_sxp}
 
       # Yield constant statements/patterns
       constants.each do |pattern|
-        log_debug {"(formula constant) #{pattern.to_sxp}"}
+        #log_debug {"(formula constant) #{pattern.to_sxp}"}
         block.call(RDF::Statement.from(pattern, graph_name: graph_name))
       end
 
@@ -87,7 +96,7 @@ module RDF::N3::Algebra
           solution[var.name] ||= RDF::Node.intern(var.name.to_s.sub(/^\$+/, ''))
         end
 
-        log_debug {"(formula apply) #{solution.to_sxp} to BGP"}
+        log_debug("(formula apply)") {solution.to_sxp}
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
           terms = {}
@@ -105,11 +114,11 @@ module RDF::N3::Algebra
              statement.predicate.literal? ||
              statement.subject.is_a?(SPARQL::Algebra::Operator) ||
              statement.object.is_a?(SPARQL::Algebra::Operator)
-            log_debug {"(formula skip) #{statement.to_sxp}"}
+            log_debug("(formula skip)") {statement.to_sxp}
             next
           end
 
-          log_debug {"(formula add) #{statement.to_sxp}"}
+          #log_debug {"(formula add) #{statement.to_sxp}"}
           block.call(statement)
         end
       end

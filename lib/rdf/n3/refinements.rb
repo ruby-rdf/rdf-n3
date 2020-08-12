@@ -86,6 +86,13 @@ module RDF::N3::Refinements
     end
   end
 
+  # @!parse
+  #   # Refinements on RDF::Query::Variable
+  #   class ::RDF::Query::Variable
+  #     # Adds `#sameTerm?` which is the same as `#eql?`, except for variables.
+  #     # @return [Boolean]
+  #     def sameTerm?; end
+  #   end
   refine ::RDF::Query::Variable do
     ##
     # True if the other is the same variable

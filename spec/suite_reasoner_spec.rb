@@ -62,6 +62,8 @@ describe RDF::N3::Reader do
               rescue Exception => e
                 expect(e.message).to produce("Not exception #{e.inspect}: #{e.backtrace.join("\n")}", t)
               end
+
+              t.logger.info "result:\n#{repo.dump(:n3)}"
               if t.evaluate? || t.reason?
                 output_repo = RDF::Repository.load(t.result, format: :n3, base_uri:  t.base)
                 expect(repo).to be_equivalent_graph(output_repo, t)

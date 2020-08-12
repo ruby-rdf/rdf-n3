@@ -48,14 +48,11 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      log_debug {"logImplies each #{@solutions.to_sxp}"}
       subject, object = operands
 
-      if @solutions.empty?
-        # Some evalaluatable operand evaluated to false
-        log_debug("(logImplies implication false - no solutions)")
-        return
-      end
+      return if @solutions.empty?
+
+      log_debug {"logImplies each #{@solutions.to_sxp}"}
 
       # Use solutions from subject for object
       object.solutions = @solutions

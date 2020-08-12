@@ -113,6 +113,7 @@ def run_tc(man, tc, **options)
         STDERR.puts "Unexpected exception reasoning: #{e.inspect}"
         result = "failed"
       end
+      STDERR.puts  "\nResult: #{repo.dump(:n3)}" if options[:verbose]
 
       output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
       result = repo.isomorphic_with?(output_graph) ? "passed" : "failed"

@@ -287,6 +287,8 @@ module RDF::N3
               if operand.is_a?(RDF::Node)
                 ln = RDF::List.new(subject: operand, graph: form_graph)
                 ln.valid? ? ln : operand
+              elsif operand.is_a?(RDF::URI) && operand == RDF.nil
+                RDF::List::NIL
               else
                 operand
               end
