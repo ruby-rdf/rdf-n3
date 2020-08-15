@@ -71,33 +71,38 @@ module RDF::N3::Refinements
     end
   end
 
-  # @!parse
-  #   # Refinements on RDF::Term
-  #   class ::RDF::Term
-  #     # Adds `#sameTerm?` which is the same as `#eql?`, except for variables.
-  #     # @return [Boolean]
-  #     def sameTerm?; end
-  #   end
-  refine ::RDF::Term do
+  refine ::RDF::List do
+    # Allow a list to be treated as a term in a statement.
+    include ::RDF::Term
+
     ##
-    # Is this the same term? Like `#eql?`, but no variable matching
-    def sameTerm?(other)
-      eql?(other)
+    # Refine each_statement to recursively emit statements from embedded lists.
+    #
+    # @example
+    #   RDF::List[1, 2, 3].each_statement do |statement|
+    #     puts statement.inspect
+    #   end
+    #
+    # @return [Enumerator]
+    # @see    RDF::Enumerable#each_statement
+    def each_statement(&block)
+      return enum_statement unless block_given?
+
+      each_subject do |subject|
+        graph.query({subject: subject}) do |statement|
+          if statement.object.list?
+            block.call(RDF::Statement.from(statement.subject, statement.predicate, statement.object.subject))
+            statement.object.each_statement(&block)
+          else
+            block.call(statement)
+          end
+        end
+      end
     end
   end
 
-  # @!parse
-  #   # Refinements on RDF::Query::Variable
-  #   class ::RDF::Query::Variable
-  #     # Adds `#sameTerm?` which is the same as `#eql?`, except for variables.
-  #     # @return [Boolean]
-  #     def sameTerm?; end
-  #   end
-  refine ::RDF::Query::Variable do
-    ##
-    # True if the other is the same variable
-    def sameTerm?(other)
-      other.is_a?(::RDF::Query::Variable) && name.eql?(other.name)
-    end
+  refine ::RDF::Graph do
+    # Allow a graph to be treated as a term in a statement.
+    include ::RDF::Term
   end
 end

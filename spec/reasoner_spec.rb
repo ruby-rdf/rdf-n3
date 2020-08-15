@@ -10,7 +10,7 @@ describe "RDF::N3::Reasoner" do
       {
         "r1" => {
           input: %(
-            @forAll :a, :b, :c, :x, :y, :z.
+            @forAll :a, :b.
             ( "one"  "two" ) a :whatever.
             { (:a :b) a :whatever } log:implies { :a a :SUCCESS. :b a :SUCCESS }.
           ),
