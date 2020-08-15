@@ -159,7 +159,7 @@ module RDF::N3
 
       self.reset
 
-      log_debug {"\nserialize: repo: #{repo.size}"}
+      log_debug("\nserialize: repo:") {repo.size}
 
       preprocess
 
@@ -330,20 +330,20 @@ module RDF::N3
     def start_document
       @output.write("@base <#{base_uri}> .\n") unless base_uri.to_s.empty?
 
-      log_debug {"start_document: prefixes #{prefixes.inspect}"}
+      log_debug("start_document: prefixes") { prefixes.inspect}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
         @output.write("@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
       end
 
       # Universals and extentials at top-level
       unless @universals.empty?
-        log_debug {"start_document: universals #{@universals.inspect}"}
+        log_debug("start_document: universals") { @universals.inspect}
         terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
         @output.write("@forAll #{terms.join(', ')} .\n") 
       end
 
       unless @existentials.empty?
-        log_debug {"start_document: universals #{@existentials.inspect}"}
+        log_debug("start_document: existentials") { @existentials.inspect}
         terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s))}
         @output.write("@forSome #{terms.join(', ')} .\n") 
       end
@@ -437,7 +437,7 @@ module RDF::N3
     # prefixes.
     # @param [Statement] statement
     def preprocess_statement(statement)
-      #log_debug {"preprocess: #{statement.inspect}"}
+      #log_debug("preprocess") {statement.inspect}
 
       # Pre-fetch pnames, to fill prefixes
       get_pname(statement.subject)
@@ -511,7 +511,7 @@ module RDF::N3
         subject_done(node)
         index = 0
         list.each do |li|
-          log_debug {" list first: #{li}[#{position}]"}
+          log_debug("(list first)") {"#{li}[#{position}]"}
           @output.write(" ") if index > 0
           path(li, position)
           subject_done(li)

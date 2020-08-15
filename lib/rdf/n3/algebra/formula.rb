@@ -36,11 +36,11 @@ module RDF::N3::Algebra
         solutions
       else
         these_solutions = queryable.query(@query, solutions: solutions, **options)
-        # Replace blank node bindings with lists, where those blank nodes are associated with lists
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
-            l = RDF::List.new(subject: value, graph: queryable) unless value.list?
-            value = l if l && l.valid?
+            # Replace blank node bindings with lists, where those blank nodes are associated with lists
+            l = queryable.as_list(value) unless value.list?
+            value = l if l
             memo.merge(name => value)
           end)
         end
@@ -100,8 +100,8 @@ module RDF::N3::Algebra
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
           terms = {}
-          [:subject, :predicate, :object].each do |r|
-            terms[r] = case o = pattern.send(r)
+          [:subject, :predicate, :object].each do |part|
+            terms[part] = case o = pattern.send(part)
             when RDF::Query::Variable then solution[o]
             else                           o
             end
@@ -110,15 +110,12 @@ module RDF::N3::Algebra
           statement = RDF::Statement.from(terms)
 
           # Sanity checking on statement
-          if statement.variable? ||
-             statement.predicate.literal? ||
-             statement.subject.is_a?(SPARQL::Algebra::Operator) ||
-             statement.object.is_a?(SPARQL::Algebra::Operator)
+          if statement.variable?
             log_debug("(formula skip)") {statement.to_sxp}
             next
           end
 
-          #log_debug {"(formula add) #{statement.to_sxp}"}
+          #log_debug("(formula add)") {statement.to_sxp}
           block.call(statement)
         end
       end

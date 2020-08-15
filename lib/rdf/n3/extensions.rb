@@ -22,7 +22,23 @@ module RDF
     end
   end
 
-  class RDF::List
+  module Queryable
+    ##
+    # Return the RDF::List representation of the resource from self, with any recursive lists represented as RDF::List.
+    #
+    # @param [RDF::Resource] subject
+    # @return [RDF::List, RDF::Resource] returns either the original resource, or a list based on that resource
+    def as_list(subject)
+      return subject unless subject.node? || subject.uri? && subject == RDF.nil
+      ln = RDF::List.new(subject: subject, graph: self)
+      return subject unless ln.valid?
+
+      # Return a new list, outside of this queryable, with any embedded lists also expanded
+      RDF::List.new(subject: subject, values: ln.to_a.map {|li| self.as_list(li)})
+    end
+  end
+
+  class List
     ##
     # Evaluates the list using the given variable `bindings`.
     #
@@ -34,6 +50,14 @@ module RDF
     # @see SPARQL::Algebra::Expression.evaluate
     def evaluate(bindings, **options)
       RDF::List[*to_a.map {|o| o.evaluate(bindings, **options)}]
+    end
+
+    ##
+    # A list is variable if any of its members are variable?
+    #
+    # @return [Boolean]
+    def variable?
+      to_a.any?(&:variable?)
     end
 
     # Transform Statement into an SXP
@@ -51,7 +75,7 @@ module RDF
     end
   end
 
-  class RDF::Statement
+  class Statement
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
@@ -67,7 +91,15 @@ module RDF
     end
   end
 
-  class RDF::Node
+  module Term
+    ##
+    # Is this the same term? Like `#eql?`, but no variable matching
+    def sameTerm?(other)
+      eql?(other)
+    end
+  end
+
+  class Node
     # Either binds to variable, or returns itself.
     #
     # @param  [RDF::Query::Solution] bindings
@@ -81,7 +113,7 @@ module RDF
     end
   end
 
-  class RDF::Query::Solution
+  class Query::Solution
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
@@ -94,6 +126,14 @@ module RDF
     # @return [String]
     def to_sxp
       to_sxp_bin.to_sxp
+    end
+  end
+
+  class Query::Variable
+    ##
+    # True if the other is the same variable
+    def sameTerm?(other)
+      other.is_a?(::RDF::Query::Variable) && name.eql?(other.name)
     end
   end
 end

@@ -26,14 +26,14 @@ module RDF::N3::Algebra::Log
       @queryable = queryable
       log_debug {"logImplies"}
       @solutions = log_depth {operands.first.execute(queryable, solutions: solutions, **options)}
-      log_debug {"(logImplies solutions pre-filter) #{@solutions.to_sxp}"}
+      log_debug("(logImplies solutions pre-filter)") {@solutions.to_sxp}
 
       # filter solutions where not all variables in antecedant are bound.
       vars = operands.first.universal_vars
       @solutions = @solutions.filter do |solution|
         vars.all? {|v| solution.bound?(v)}
       end
-      log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
+      log_debug("(logImplies solutions)") {@solutions.to_sxp}
 
       # Return original solutions, without bindings
       solutions
