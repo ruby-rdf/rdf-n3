@@ -128,8 +128,6 @@ describe "RDF::N3::Reasoner" do
         },
         "thing1 :prop1": {
           input: %(
-            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
-
             :thing1 :prop1 ( :test5a :test5b :test5c ) .
             { ?item list:in [ is :prop1 of :thing1 ] } => { ?item a :SUCCESS } .
           ),
@@ -137,6 +135,64 @@ describe "RDF::N3::Reasoner" do
             :test5a a :SUCCESS.
             :test5b a :SUCCESS.
             :test5c a :SUCCESS.
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "list:append" do
+      {
+        "(1 2 3 4 5) (6) const": {
+          input: %(
+            { ((1 2 3 4 5) (6)) list:append (1 2 3 4 5 6)} => {:test1 a :success}.
+          ),
+          expect: %(
+            :test1 a :success.
+          )
+        },
+        "(1 2 3 4 5) (6) var": {
+          input: %(
+            { ((1 2 3 4 5) (6)) list:append ?item} => {:test2 :is ?item}.
+          ),
+          expect: %(
+            :test2 :is (1 2 3 4 5 6).
+          )
+        },
+        "() (1) const": {
+          input: %(
+            { (() (1)) list:append (1)} => {:test3 a :success}.
+          ),
+          expect: %(
+            :test3 a :success.
+          )
+        },
+        "() (1) var": {
+          input: %(
+            { (() (1)) list:append ?item} => {:test4 :is ?item}.
+          ),
+          expect: %(
+            :test4 :is (1).
+          )
+        },
+        "thing1 :prop1": {
+          input: %(
+            :thing1 :prop1 ( 1 2 3 ) .
+            :thing2 :prop1 ( 4 ) .
+            {
+              ([is :prop1 of :thing1]
+               [is :prop1 of :thing2]) list:append ?item
+            } => {
+              :test5 :is ?item
+            } .
+          ),
+          expect: %(
+            :test5 :is (1 2 3 4).
           )
         }
       }.each do |name, options|
@@ -155,19 +211,31 @@ describe "RDF::N3::Reasoner" do
         "literal starts with literal" => {
           input: %(
             @prefix string: <http://www.w3.org/2000/10/swap/string#>.
-            :a :b :c .
             {"abc" string:startsWith "a"} => {:test a :Success}.
           ),
-          expect: %(
-            :a :b :c .
-            :test a :Success.
-          )
-        }
+          expect: %(:test a :Success.)
+        },
+        "ext starts with literal" => {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            :abc :value "abc" .
+            {[ is :value of :abc] string:startsWith "a"} => {:test a :Success}.
+          ),
+          expect: %(:test a :Success.)
+        },
+        "literal starts with ext" => {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            :a :value "a" .
+            {"abc" string:startsWith [is :value of :a]} => {:test a :Success}.
+          ),
+          expect: %(:test a :Success.)
+        },
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
-          expect(reason(options[:input])).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
