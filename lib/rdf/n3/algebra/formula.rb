@@ -31,20 +31,21 @@ module RDF::N3::Algebra
       log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
-      @query ||= RDF::Query.new(patterns).optimize!
+      @query ||= RDF::Query.new(patterns)
 
       @solutions = if @query.patterns.empty?
         solutions
       else
-        these_solutions = queryable.query(@query, solutions: solutions, **options)
+        these_solutions = queryable.query(@query, solutions: solutions, optimize: true, **options)
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
-            # Replace blank node bindings with lists, where those blank nodes are associated with lists
-            l = queryable.as_list(value) unless value.list?
-            value = l if l
+            # Replace blank node bindings with lists, where those blank nodes are associated with lists.
+            l = RDF::N3::List.try_list(value, queryable)
+            value = l if l.constant?
             memo.merge(name => value)
           end)
         end
+        log_debug("(formula solutions)") { these_solutions.to_sxp}
         solutions.merge(these_solutions)
       end
 
@@ -57,15 +58,17 @@ module RDF::N3::Algebra
         sub_ops.each do |op|
           @solutions = if op.executable?
             op.execute(queryable, solutions: @solutions)
-          else
-            op.evaluate(@solutions.bindings) == RDF::Literal::TRUE ? @solutions : RDF::Query::Solutions.new
+          else # Evaluatable
+            @solutions.all? {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE} ?
+              @solutions :
+              RDF::Query::Solutions.new
           end
         end
       end
       log_debug("(formula solutions)") {@solutions.to_sxp}
 
-      # Only return solutions with distinguished variables
-      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
+      # Only return solutions with universal variables
+      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$')}
       variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
     end
 
@@ -91,14 +94,13 @@ module RDF::N3::Algebra
       end
       log_debug("formula #{graph_name} each") {@solutions.to_sxp}
 
-      # Yield constant statements/patterns
-      constants.each do |pattern|
-        #log_debug {"(formula constant) #{pattern.to_sxp}"}
-        block.call(RDF::Statement.from(pattern, graph_name: graph_name))
+      # Yield constant statements
+      constants.each do |statement|
+        #log_debug {"(formula constant) #{statement.to_sxp}"}
+        block.call(RDF::Statement.from(statement, graph_name: graph_name))
       end
 
       # Yield patterns by binding variables
-      # FIXME: do we need to do something with non-bound non-distinguished extistential variables?
       @solutions.each do |solution|
         # Bind blank nodes to the solution when it doesn't contain a solution for an existential variable
         existential_vars.each do |var|
@@ -111,7 +113,14 @@ module RDF::N3::Algebra
           terms = {}
           [:subject, :predicate, :object].each do |part|
             terms[part] = case o = pattern.send(part)
-            when RDF::Query::Variable then solution[o]
+            when RDF::Query::Variable
+              if solution[o] && solution[o].list?
+                solution[o].each_statement(&block)
+                # Bind the list subject, and emit list statements
+                solution[o].subject
+              else
+                solution[o]
+              end
             else                           o
             end
           end
@@ -146,24 +155,33 @@ module RDF::N3::Algebra
     ##
     # Statements memoizer
     def statements
-      # BNodes in statements are non-distinguished existential variables
-      @statements ||= operands.
-        select {|op| op.is_a?(RDF::Statement)}.
-        map do |pattern|
+      # BNodes in statements are existential variables. If part of a built-in, they become non-distinguished, creating optional patterns, and may become bound to themselves.
+      @statements ||= begin
+        statements = operands.select {|op| op.is_a?(RDF::Statement)}
 
-        # Map nodes to non-distinguished existential variables (except when in top-level formula)
-        if graph_name
-          terms = {}
-          [:subject, :predicate, :object].each do |r|
-            terms[r] = case o = pattern.send(r)
-            when RDF::Node then RDF::Query::Variable.new(o.id, existential: true, distinguished: false)
-            else                o
+        # Find statements associated with lists referenced from a built-in. Blank nodes which are related to these operands are marked non-distinguished, so they become optional patterns.
+        op_lists = sub_ops.map(&:operands).flatten.select(&:list?)
+        op_list_subjects = op_lists.map(&:subjects).flatten
+
+        statements.map do |pattern|
+          # Map nodes to existential variables (except when in top-level formula). They are non-distinguished if associated with a built-in.
+          if graph_name
+            terms = {}
+            has_nd_var = op_list_subjects.include?(pattern.subject)
+            [:subject, :predicate, :object].each do |r|
+              terms[r] = case o = pattern.send(r)
+              when RDF::Node
+                RDF::Query::Variable.new(o.id, existential: true)
+              else
+                o
+              end
             end
-          end
 
-          RDF::Query::Pattern.from(terms)
-        else
-          RDF::Query::Pattern.from(pattern)
+            # A pattern with a non-destinguished variable becomes optional, so that it will bind to itself, if not matched in queryable.
+            RDF::Query::Pattern.from(terms, optional: has_nd_var)
+          else
+            RDF::Query::Pattern.from(pattern)
+          end
         end
       end
     end
