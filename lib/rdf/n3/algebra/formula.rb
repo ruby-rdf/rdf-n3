@@ -4,6 +4,7 @@ module RDF::N3::Algebra
   #
   # A Notation3 Formula combines a graph with a BGP query.
   class Formula < SPARQL::Algebra::Operator
+    include RDF::Term
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::Enumerable
@@ -66,6 +67,14 @@ module RDF::N3::Algebra
       # Only return solutions with distinguished variables
       variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$$')}
       variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
+    end
+
+    ##
+    # Returns `true` if `self` is a {RDF::N3::Formula}.
+    #
+    # @return [Boolean]
+    def formula?
+      true
     end
 
     ##
