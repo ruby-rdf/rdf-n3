@@ -491,7 +491,7 @@ module RDF::N3
 
     # Checks if l is a valid RDF list, i.e. no nodes have other properties.
     def collection?(l)
-      return @lists.key?(l)
+      return @lists.key?(l) || l.list?
     end
 
     def collection(node, position)
@@ -505,7 +505,7 @@ module RDF::N3
 
       @output.write("(")
       log_depth do
-        list = @lists[node]
+        list = node.list? ? node : @lists[node]
         log_debug("collection") {list.inspect}
         subject_done(RDF.nil)
         subject_done(node)

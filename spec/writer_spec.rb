@@ -154,41 +154,49 @@ describe RDF::N3::Writer do
     end
   end
 
-  describe "lists" do
+  describe "collections" do
     {
       "bare list": {
         input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) .),
-        regexp: [%r(^\(\s*ex:a ex:b\s*\) \.$)]
+        regexp: [%r(^\(\s*ex:a ex:b\s*\) \.$)],
+        list_terms: true
       },
       "literal list": {
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b ( "apple" "banana" ) .),
-        regexp: [%r(^ex:a ex:b \(\s*"apple" "banana"\s*\) \.$)]
+        regexp: [%r(^ex:a ex:b \(\s*"apple" "banana"\s*\) \.$)],
+        list_terms: true
       },
       "empty list": {
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b () .),
         regexp: [%r(^ex:a ex:b \(\s*\) \.$)],
-        prefixes: { "" => RDF::Vocab::FOAF}
+        prefixes: { "" => RDF::Vocab::FOAF},
+        list_terms: true
       },
       "should generate empty list(2)" => {
         input: %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .),
         regexp: [%r(^:emptyList (<.*sameAs>|owl:sameAs|=) \(\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
+        prefixes: { "" => "http://xmlns.com/foaf/0.1/"},
+        list_terms: true
       },
       "empty list as subject": {
         input: %(@prefix ex: <http://example.com/> . () ex:a ex:b .),
-        regexp: [%r(^\(\s*\) ex:a ex:b \.$)]
+        regexp: [%r(^\(\s*\) ex:a ex:b \.$)],
+        list_terms: true
       },
       "list as subject": {
         input: %(@prefix ex: <http://example.com/> . (ex:a) ex:b ex:c .),
-        regexp: [%r(^\(\s*ex:a\s*\) ex:b ex:c \.$)]
+        regexp: [%r(^\(\s*ex:a\s*\) ex:b ex:c \.$)],
+        list_terms: true
       },
       "list of empties": {
         input: %(@prefix ex: <http://example.com/> . [ex:listOf2Empties (() ())] .),
-        regexp: [%r(\[\s*ex:listOf2Empties \(\s*\(\s*\) \(\s*\)\s*\)\s*\] \.$)]
+        regexp: [%r(\[\s*ex:listOf2Empties \(\s*\(\s*\) \(\s*\)\s*\)\s*\] \.$)],
+        list_terms: true
       },
       "list anon": {
         input: %(@prefix ex: <http://example.com/> . [ex:twoAnons ([a ex:mother] [a ex:father])] .),
-        regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)]
+        regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)],
+        list_terms: true
       },
       "list subjects": {
         input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) . ex:a a ex:Thing . ex:b a ex:Thing .),
@@ -196,13 +204,15 @@ describe RDF::N3::Writer do
           %r(\(ex:a ex:b\) \.),
           %r(ex:a a ex:Thing \.),
           %r(ex:b a ex:Thing \.),
-        ]
+        ],
+        list_terms: true
       },
       "embedded list": {
         input: %{((:q)) a :Thing .},
         regexp: [
           %r{\(\(:q\)\) a :Thing \.}
-        ]
+        ],
+        list_terms: true
       },
       "owl:unionOf list": {
         input: %(
