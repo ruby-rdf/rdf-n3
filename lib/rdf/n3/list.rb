@@ -4,6 +4,9 @@ module RDF::N3
   #
   # Also serves as the vocabulary URI for expanding other methods
   class List < RDF::List
+    # Allow a list to be treated as a term in a statement.
+    include ::RDF::Term
+
     URI = RDF::URI("http://www.w3.org/2000/10/swap/list#")
 
     # Returns a vocubulary term

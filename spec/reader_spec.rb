@@ -818,7 +818,7 @@ describe "RDF::N3::Reader" do
         end
       end
 
-      describe "lists" do
+      describe "collections" do
         it "should parse empty list" do
           n3 = %(@prefix :<http://example.com/>. :empty :set ().)
           nt = %(
@@ -827,11 +827,11 @@ describe "RDF::N3::Reader" do
         end
 
         it "should parse list with single element" do
-          n3 = %(@prefix :<http://example.com/>. :gregg :wrote ("RdfContext").)
+          n3 = %(@prefix :<http://example.com/>. :gregg :edited ("JSON-LD").)
           nt = %(
-          _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "RdfContext" .
+          _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "JSON-LD" .
           _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-          <http://example.com/gregg> <http://example.com/wrote> _:bnode0 .
+          <http://example.com/gregg> <http://example.com/edited> _:bnode0 .
           )
           expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
         end
@@ -869,7 +869,7 @@ describe "RDF::N3::Reader" do
           expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
         end
 
-        it "should add property to nil list" do
+        it "should add property to empty list" do
           n3 = %(@prefix a: <http://foo/a#> . () a:prop "nilProp" .)
           nt = %(<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> <http://foo/a#prop> "nilProp" .)
           expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
@@ -904,6 +904,80 @@ describe "RDF::N3::Reader" do
           n1 = g.first_object(predicate: RDF::URI("#prop"))
           n2 = g.first_subject(predicate: RDF.first)
           expect(n1.object_id).to eq n2.object_id
+        end
+
+        context "as terms" do
+          it "should parse list with single element" do
+            n3 = %(:gregg :edited ("JSON-LD").)
+            nt = %(
+            _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "JSON-LD" .
+            _:bnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+            <http://example.com/gregg> <http://example.com/wrote> _:bnode0 .
+            )
+            g = parse(n3, list_terms: true)
+            expect(g.count).to eql 1
+
+            statement = g.statements.first
+            expect(statement.object).to be_list
+
+            list = statement.object
+            expect(list.subject).to be_node
+            expect(list.length).to eql 1
+            expect(list.first).to eql RDF::Literal("JSON-LD")
+          end
+        end
+
+        it "should parse list with multiple elements" do
+          n3 = %(:gregg :name ("Gregg" "Barnum" "Kellogg").)
+          g = parse(n3, list_terms: true)
+          expect(g.count).to eql 1
+
+          statement = g.statements.first
+          expect(statement.object).to be_list
+
+          list = statement.object
+          expect(list.subject).to be_node
+          expect(list.length).to eql 3
+          expect(list.to_a).to include(RDF::Literal("Gregg"), RDF::Literal("Barnum"), RDF::Literal("Kellogg"))
+        end
+
+        it "should add property to empty list" do
+          n3 = %(@prefix a: <http://foo/a#> . () a:prop "nilProp" .)
+          g = parse(n3, list_terms: true)
+          expect(g.count).to eql 1
+
+          statement = g.statements.first
+          expect(statement.subject).to be_list
+          expect(statement.subject).to be_empty
+        end
+
+        it "should parse with compound items" do
+          n3 = %(
+            @prefix a: <http://foo/a#> .
+            a:a a:p (
+              [ a:p2 "v1" ]
+              <http://resource1>
+              <http://resource2>
+              ("inner list")
+            ) .
+            <http://resource1> a:p "value" .
+          )
+          g = parse(n3, list_terms: true)
+          expect(g.subjects.to_a.length).to eq 3
+          list = g.first_object(subject: RDF::URI.new("http://foo/a#a"), predicate: RDF::URI.new("http://foo/a#p"))
+          expect(list).to be_list
+          expect(list.count).to eq 4
+          l1, l2, l3, l4 = list.to_a
+          expect(l1).to be_node
+          expect(l2).to eq RDF::URI.new("http://resource1")
+          expect(l3).to eq RDF::URI.new("http://resource2")
+          expect(l4).to be_list
+
+          n = g.first_object(subject: l1, predicate: RDF::URI.new("http://foo/a#p2"))
+          expect(n).to eq RDF::Literal("v1")
+
+          expect(l4.count).to be 1
+          expect(l4.first).to eq RDF::Literal("inner list")
         end
       end
 

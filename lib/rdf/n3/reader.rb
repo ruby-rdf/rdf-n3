@@ -56,6 +56,8 @@ module RDF::N3
     #   whether to canonicalize parsed literals and URIs.
     # @option options [Hash]     :prefixes     (Hash.new)
     #   the prefix mappings to use (not supported by all readers)
+    # @option options [Hash]     :list_terms   (false)
+    #   represent collections as an `RDF::Term`, rather than an rdf:first/rest ladder.
     # @return [reader]
     # @yield  [reader] `self`
     # @yieldparam  [RDF::Reader] reader
@@ -505,6 +507,7 @@ module RDF::N3
     #
     #     [21] collection ::= '(' object* ')'
     #
+    # If the `list_terms` option is given, the resulting resource is a list, otherwise, it is the list subject, and the first/rest entries are also emitted.
     # @return [RDF::Node]
     def read_collection
       if @lexer.first === '('
@@ -516,13 +519,17 @@ module RDF::N3
           while @lexer.first.value != ')' && (object = read_path)
             objects << object
           end
-          list = RDF::List.new(values: objects)
-          list.each_statement do |statement|
-            add_statement("collection", *statement.to_a)
-          end
           error("collection", "Expected closing ')'") unless @lexer.first === ')'
           @lexer.shift
-          list.subject
+          list = RDF::N3::List.new(values: objects)
+          if options[:list_terms]
+            list
+          else
+            list.each_statement do |statement|
+              add_statement("collection", *statement.to_a)
+            end
+            list.subject
+          end
         end
       end
     end
