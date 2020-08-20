@@ -23,17 +23,13 @@ module RDF::N3::Algebra::List
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         subject = operand(0)
-        list = operand(1)
+        # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
+        list = operand(1).evaluate(solution.bindings)
+        # If it evaluated to a BNode, re-expand as a list
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
-        case list
-        when RDF::Node, RDF::Query::Variable
-          # Attempt to bind a node or variable to a list
-          list = list.evaluate(solution.bindings)
-        when RDF::List
-          # Attempt to bind list elements
-          list = list.to_a.map {|op| op.evaluate(solution.bindings)}
-        end
         log_debug(NAME) {"subject: #{subject.to_sxp}, list: #{list.to_sxp}"}
+        raise TypeError, "operand is not a list" unless list.list? && list.valid?
 
         if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements

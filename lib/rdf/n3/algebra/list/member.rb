@@ -19,18 +19,12 @@ module RDF::N3::Algebra::List
     # @raise  [TypeError] if operands are not compatible
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        list = operand(0)
+        list = operand(0).evaluate(solution.bindings)
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
         result = operand(1)
 
-        case list
-        when RDF::Node, RDF::Query::Variable
-          # Attempt to bind a node or variable to a list
-          list = list.evaluate(solution.bindings)
-        when RDF::List
-          # Attempt to bind list elements
-          list = list.to_a.map {|op| op.evaluate(solution.bindings)}
-        end
         log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+        raise TypeError, "operand is not a list" unless list.list? && list.valid?
 
         if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements

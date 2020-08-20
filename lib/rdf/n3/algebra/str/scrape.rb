@@ -18,22 +18,22 @@ module RDF::N3::Algebra::Str
     # @return [RDF::Query::Solutions]
     # @raise  [TypeError] if operands are not compatible
     def execute(queryable, solutions:, **options)
-      list = operand(0)
       result = operand(1)
 
-      log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-
-      raise TypeError, "operand is not a list" unless list.list? && list.valid?
-      raise TypeError, "list must have exactly two entries" unless list.length == 2
-
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        bound_entries = list.to_a.map {|op| op.evaluate(solution.bindings)}
+        list = operand(0).evaluate(solution.bindings)
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
-        if bound_entries.any? {|op| op.variable? && op.unbound?}
+        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+
+        raise TypeError, "operand is not a list" unless list.list? && list.valid?
+        raise TypeError, "list must have exactly two entries" unless list.length == 2
+
+        if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
           solution
         else
-          input, regex = bound_entries
+          input, regex = list.to_a
           md = Regexp.new(regex.to_s).match(input.to_s)
 
           if result.variable? && md && md[1]

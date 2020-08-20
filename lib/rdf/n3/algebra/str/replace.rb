@@ -18,22 +18,23 @@ module RDF::N3::Algebra::Str
     # @return [RDF::Query::Solutions]
     # @raise  [TypeError] if operands are not compatible
     def execute(queryable, solutions:, **options)
-      list = operand(0)
       result = operand(1)
-
-      log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-
-      raise TypeError, "operand is not a list" unless list.list? && list.valid?
-      raise TypeError, "list must have exactly three entries" unless list.length == 3
-
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        bound_entries = list.to_a.map {|op| op.evaluate(solution.bindings)}
+        # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
+        list = operand(0).evaluate(solution.bindings)
+        # If it evaluated to a BNode, re-expand as a list
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
-        if bound_entries.any? {|op| op.variable? && op.unbound?}
+        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+
+        raise TypeError, "operand is not a list" unless list.list? && list.valid?
+        raise TypeError, "list must have exactly three entries" unless list.length == 3
+
+        if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
           solution
         else
-          input, old_str, new_str = bound_entries
+          input, old_str, new_str = list.to_a
           output = input.to_s.gsub(old_str.to_s, new_str.to_s)
 
           if result.variable?

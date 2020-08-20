@@ -18,18 +18,19 @@ module RDF::N3::Algebra::Str
       list = operand(0)
       result = operand(1)
 
-      log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-
-      raise TypeError, "operand is not a list" unless list.list? && list.valid?
-
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        bound_entries = list.to_a.map {|op| op.evaluate(solution.bindings)}
+        list = operand(0).evaluate(solution.bindings)
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
-        if bound_entries.any? {|op| op.variable? && op.unbound?}
+        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+
+        raise TypeError, "operand is not a list" unless list.list? && list.valid?
+
+        if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
           solution
         else
-          format, *args = bound_entries.map(&:value)
+          format, *args = list.to_a.map(&:value)
           str = format % args
 
           if result.variable?
