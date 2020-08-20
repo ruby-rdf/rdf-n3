@@ -129,6 +129,11 @@ results in:
 
 Note that the behavior of both existential and universal variables is not entirely in keeping with the [Team Submission][], and neither work quite like SPARQL variables. When used in the antecedent part of an implication, universal variables should behave much like SPARQL variables. This area is subject to a fair amount of change.
 
+### Query
+Formulae are typically used to query the knowledge-base, which is set from the base-formula/default graph. A formula is composed of both constant statements, and variable statements. When running as a query, such as for the antecedent formula in `log:implies`, statements including either explicit variables or blank nodes are treated as query patterns and are used to query the knowledge base to create a solution set, which is used either prove the formula correct, or create bindings passed to the consequent formula.
+
+Blank nodes associated with rdf:List statements used as part of a built-in are made _non-distinguished_ existential variables, and patters containing these variables become optional. If they are not bound as part of the query, the implicitly are bound as the original blank nodes defined within the formula, which allows for both constant list arguments, list arguments that contain variables, or arguments which are variables expanding to lists.
+
 ## Dependencies
 * [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.1, >= 3.1.4)
 * [EBNF][EBNF gem] (~> 2.1)

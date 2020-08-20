@@ -12,7 +12,7 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
-  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are tracked using `$`, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are tracked using `$` or `?`, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
   #
   # @todo
   # * Formulae as RDF::Query representations
@@ -83,13 +83,13 @@ module RDF::N3
 
         # Prepopulate operator namespaces unless validating
         unless validate?
-          namespace(:crypto, RDF::N3::Crypto)
-          namespace(:list, RDF::N3::List)
-          namespace(:log, RDF::N3::Log)
-          namespace(:math, RDF::N3::Math)
-          namespace(:rei, RDF::N3::Rei)
-          #namespace(:string, RDF::N3::String)
-          namespace(:time, RDF::N3::Time)
+          namespace(:crypto, RDF::N3::Crypto.to_uri)
+          namespace(:list, RDF::N3::List.to_uri)
+          namespace(:log, RDF::N3::Log.to_uri)
+          namespace(:math, RDF::N3::Math.to_uri)
+          namespace(:rei, RDF::N3::Rei.to_uri)
+          #namespace(:string, RDF::N3::String.to_uri)
+          namespace(:time, RDF::N3::Time.to_uri)
         end
         progress("validate") {validate?.inspect}
         progress("canonicalize") {canonicalize?.inspect}

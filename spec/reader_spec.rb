@@ -897,6 +897,14 @@ describe "RDF::N3::Reader" do
           expect(seq.third).to eq RDF::URI.new("http://resource2")
           expect(seq.fourth).to be_node
         end
+
+        it "should use exactly the same object when referencing a list" do
+          n3 = %(:thing :prop ( 4 ) .)
+          g = parse(n3)
+          n1 = g.first_object(predicate: RDF::URI("#prop"))
+          n2 = g.first_subject(predicate: RDF.first)
+          expect(n1.object_id).to eq n2.object_id
+        end
       end
 
       context "property paths" do

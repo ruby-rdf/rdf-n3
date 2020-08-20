@@ -5,11 +5,6 @@ module RDF::N3
   const_set("Crypto", Class.new(RDF::Vocabulary("http://www.w3.org/2000/10/swap/crypto#")))
 
   # @!parse
-  #   # List namespace
-  #   class List < RDF::Vocabulary; end
-  const_set("List", Class.new(RDF::Vocabulary("http://www.w3.org/2000/10/swap/list#")))
-
-  # @!parse
   #   # Log namespace
   #   class Log < RDF::Vocabulary; end
   const_set("Log", Class.new(RDF::Vocabulary("http://www.w3.org/2000/10/swap/log#")))

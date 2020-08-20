@@ -22,22 +22,6 @@ module RDF
     end
   end
 
-  module Queryable
-    ##
-    # Return the RDF::List representation of the resource from self, with any recursive lists represented as RDF::List.
-    #
-    # @param [RDF::Resource] subject
-    # @return [RDF::List, RDF::Resource] returns either the original resource, or a list based on that resource
-    def as_list(subject)
-      return subject unless subject.node? || subject.uri? && subject == RDF.nil
-      ln = RDF::List.new(subject: subject, graph: self)
-      return subject unless ln.valid?
-
-      # Return a new list, outside of this queryable, with any embedded lists also expanded
-      RDF::List.new(subject: subject, values: ln.to_a.map {|li| self.as_list(li)})
-    end
-  end
-
   class List
     ##
     # Evaluates the list using the given variable `bindings`.
@@ -46,10 +30,14 @@ module RDF
     #   a query solution containing zero or more variable bindings
     # @param [Hash{Symbol => Object}] options ({})
     #   options passed from query
-    # @return [RDF::List]
+    # @return [RDF::N3::List]
     # @see SPARQL::Algebra::Expression.evaluate
     def evaluate(bindings, **options)
-      RDF::List[*to_a.map {|o| o.evaluate(bindings, **options)}]
+      # if values are constant, simply return ourselves
+      return self if to_a.none? {|li| li.node? || li.variable?}
+      # Create a new list subject using a combination of the current subject and a hash of the binding values
+      subj = "#{subject.id}_#{bindings.values.sort.hash}"
+      RDF::N3::List.new(subject: RDF::Node.intern(subj), values: to_a.map {|o| o.evaluate(bindings, **options)})
     end
 
     ##
@@ -88,6 +76,16 @@ module RDF
     # @return [String]
     def to_sxp
       to_sxp_bin.to_sxp
+    end
+  end
+
+  module Value
+    ##
+    # Returns `true` if `self` is a {RDF::N3::Formula}.
+    #
+    # @return [Boolean]
+    def formula?
+      false
     end
   end
 

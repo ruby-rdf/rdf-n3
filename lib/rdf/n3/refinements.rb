@@ -71,36 +71,6 @@ module RDF::N3::Refinements
     end
   end
 
-  refine ::RDF::List do
-    # Allow a list to be treated as a term in a statement.
-    include ::RDF::Term
-
-    ##
-    # Refine each_statement to recursively emit statements from embedded lists.
-    #
-    # @example
-    #   RDF::List[1, 2, 3].each_statement do |statement|
-    #     puts statement.inspect
-    #   end
-    #
-    # @return [Enumerator]
-    # @see    RDF::Enumerable#each_statement
-    def each_statement(&block)
-      return enum_statement unless block_given?
-
-      each_subject do |subject|
-        graph.query({subject: subject}) do |statement|
-          if statement.object.list?
-            block.call(RDF::Statement.from(statement.subject, statement.predicate, statement.object.subject))
-            statement.object.each_statement(&block)
-          else
-            block.call(statement)
-          end
-        end
-      end
-    end
-  end
-
   refine ::RDF::Graph do
     # Allow a graph to be treated as a term in a statement.
     include ::RDF::Term

@@ -50,7 +50,7 @@ module RDF::N3
     #   RDF::N3::Reader.open("rules.n3") {|r| reasoner << r}
     #   reasoner.each_triple {}
     #
-    # @param  [RDF::Enumerable] input (nil)
+    # @param  [RDF::Mutable] input (nil)
     # @param  [Hash{Symbol => Object}] options
     # @option options [#to_s]    :base_uri     (nil)
     #   the base URI to use when resolving relative URIs (for acessing intermediate parser productions)
@@ -100,6 +100,7 @@ module RDF::N3
     #
     # @param  [Hash{Symbol => Object}] options
     # @option options [Boolean] :apply
+    # @option options [Boolean] :rules
     # @option options [Boolean] :think
     # @yield  [statement]
     # @yieldparam  [RDF::Statement] statement
@@ -112,6 +113,7 @@ module RDF::N3
         count = 0
         log_info("reasoner: think start") { "count: #{count}"}
         while @mutable.count > count
+          log_info("reasoner: think do") { "count: #{count}"}
           count = @mutable.count
           dataset = RDF::Graph.new << @mutable.project_graph(nil)
           log_depth {formula.execute(dataset, **options)}
@@ -120,11 +122,11 @@ module RDF::N3
         log_info("reasoner: think end") { "count: #{count}"}
       else
         # Run one iteration
-        log_info("reasoner: apply start") { "count: #{count}"}
+        log_info("reasoner: rules start") { "count: #{count}"}
         dataset = RDF::Graph.new << @mutable.project_graph(nil)
         log_depth {formula.execute(dataset, **options)}
         @mutable << formula
-        log_info("reasoner: apply end") { "count: #{count}"}
+        log_info("reasoner: rules end") { "count: #{count}"}
       end
 
       log_debug("reasoner: datastore") {@mutable.to_sxp}
@@ -247,14 +249,22 @@ module RDF::N3
           memo.merge(graph_name => Algebra::Formula.new(graph_name: graph_name, **@options))
         end
 
+        # Create `queryable` as a repo subset of `mutable` excluding built-ins and statements with a variable subject or predicate. This is useful for extracting lists.
+        queryable = RDF::Repository.new
+
         # Add patterns to appropiate formula based on graph_name,
         # and replace subject and object bnodes which identify
         # named graphs with those formula
         @mutable.each_statement do |statement|
           pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
 
+          if statement.subject.constant? && statement.predicate.constant?
+            queryable << statement
+          end
+
           # A graph name indicates a formula.
-          form = formulae[pattern.graph_name]
+          graph_name = pattern.graph_name
+          form = formulae[graph_name]
 
           # Formulae may be the subject or object of a known operator
           if klass = Algebra.for(pattern.predicate)
@@ -274,24 +284,21 @@ module RDF::N3
           end
         end
 
-        # Bind formula operands which are lists to RDF::List
+        # Create a graph for each formula, containing statements and built-in operands
         formulae.each do |gn, form|
           form_graph = RDF::Graph.new do |g|
+            # Graph initialized with non-built-in statements
             form.operands.each do |op|
               g << op if op.is_a?(RDF::Statement)
             end
           end
           form.operands.each do |op|
             next unless op.is_a?(SPARQL::Algebra::Operator)
+            # Bind built-in operands which are constant lists to RDF::N3::List
             op.operands.map! do |operand|
-              if operand.is_a?(RDF::Node)
-                ln = RDF::List.new(subject: operand, graph: form_graph)
-                ln.valid? ? ln : operand
-              elsif operand.is_a?(RDF::URI) && operand == RDF.nil
-                RDF::List::NIL
-              else
-                operand
-              end
+              # Use a List object, if it is constant
+              ln = RDF::N3::List.try_list(operand, queryable) unless !operand.is_a?(RDF::Term) || operand.list?
+              ln || operand
             end
           end
         end

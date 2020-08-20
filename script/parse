@@ -18,11 +18,11 @@ def run(input, **options)
   start = Time.new
   num = 0
   Profiler__::start_profile if options[:profile]
-  if options[:think]
+  if options[:think] || options[:rules]
     # Parse into a new reasoner and evaluate
     reader_class.new(input, **options[:parser_options].merge(logger: nil)) do |reader|
-      reasoner = RDF::N3::Reasoner.new(reader, options[:parser_options])
-      reasoner.reason!(options)
+      reasoner = RDF::N3::Reasoner.new(reader, **options[:parser_options])
+      reasoner.reason!(**options)
       repo = RDF::Repository.new
       if options[:conclusions]
         repo << reasoner.conclusions
@@ -77,8 +77,8 @@ rescue RDF::ReaderError => e
   STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
   exit(1)
 rescue Exception => e
-  STDERR.puts "Error: #{e.message}"
-  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  STDERR.puts "Error: #{e}"
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ")
   exit(1)
 end
 

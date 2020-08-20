@@ -72,7 +72,9 @@ def run_tc(man, tc, **options)
       begin
         graph << reader
       rescue Exception => e
-        STDERR.puts "Unexpected exception: #{e.inspect}" if options[:verbose]
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
         result = "failed"
       end
     else
@@ -92,7 +94,9 @@ def run_tc(man, tc, **options)
         output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
         result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
       rescue Exception => e
-        STDERR.puts "Unexpected exception reading result: #{e.inspect}"
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
         result = "failed"
       end
     elsif tc.reason? && result.nil?
@@ -110,7 +114,9 @@ def run_tc(man, tc, **options)
           repo << reasoner
         end
       rescue Exception => e
-        STDERR.puts "Unexpected exception reasoning: #{e.inspect}"
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
         result = "failed"
       end
       STDERR.puts  "\nResult: #{repo.dump(:n3)}" if options[:verbose]
@@ -121,16 +127,14 @@ def run_tc(man, tc, **options)
       result ||= "passed"
     end
 
-  rescue Interrupt
+  rescue Interrupt => e
     STDERR.puts "(interrupt)"
+    STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
     exit 1
   rescue Exception => e
     STDERR.puts "#{"exception:" unless options[:quiet]}: #{e}"
-    if options[:quiet]
-      return
-    else
-      raise
-    end
+    return if options[:quiet]
+    STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
   end
 
   STDERR.puts options[:logger] if options[:verbose] && !options[:live]
