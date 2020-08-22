@@ -102,7 +102,7 @@ module Fixtures
     class Manifest < JSON::LD::Resource
       def self.open(file)
         #puts "open: #{file}"
-        g = RDF::Repository.load(file)
+        g = RDF::N3:: Repository.load(file)
         JSON::LD::API.fromRDF(g) do |expanded|
           JSON::LD::API.frame(expanded, FRAME) do |framed|
             yield Manifest.new(framed)

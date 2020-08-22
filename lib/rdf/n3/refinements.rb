@@ -63,7 +63,7 @@ module RDF::N3::Refinements
     # @return [Boolean] `true` or `false`
     def valid?
       (has_subject?   ? (subject.term? || subject.variable?) && subject.valid? : true) && 
-      (has_predicate? ? (predicate.resource? || predicate.variable?) && predicate.valid? : true) &&
+      (has_predicate? ? (predicate.term? || predicate.variable?) && predicate.valid? : true) &&
       (has_object?    ? (object.term? || object.variable?) && object.valid? : true) &&
       (has_graph?     ? (graph_name.resource? || graph_name.variable?) && graph_name.valid? : true)
     rescue NoMethodError

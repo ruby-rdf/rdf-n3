@@ -47,7 +47,7 @@ describe RDF::N3::Reader do
             output_repo = if t.evaluate?
               begin
                 format = detect_format(t.expected)
-                RDF::Repository.load(t.result, format: format, base_uri: t.accept)
+                RDF::N3:: Repository.load(t.result, format: format, base_uri: t.accept)
               rescue Exception => e
                 expect(e.message).to produce("Exception loading output #{e.inspect}", t)
               end

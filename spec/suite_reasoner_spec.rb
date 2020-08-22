@@ -40,6 +40,7 @@ describe RDF::N3::Reader do
             reader = RDF::N3::Reader.new(t.input,
                 base_uri: t.base,
                 canonicalize: false,
+                list_terms: true,
                 validate: false,
                 logger: false)
 
@@ -47,7 +48,7 @@ describe RDF::N3::Reader do
                 base_uri:  t.base,
                 logger: t.logger)
 
-            repo = RDF::Repository.new
+            repo = RDF::N3:: Repository.new
 
             if t.positive_test?
               begin
@@ -65,7 +66,7 @@ describe RDF::N3::Reader do
 
               t.logger.info "result:\n#{repo.dump(:n3)}"
               if t.evaluate? || t.reason?
-                output_repo = RDF::Repository.load(t.result, format: :n3, base_uri:  t.base)
+                output_repo = RDF::N3:: Repository.load(t.result, format: :n3, base_uri:  t.base)
                 expect(repo).to be_equivalent_graph(output_repo, t)
               else
               end

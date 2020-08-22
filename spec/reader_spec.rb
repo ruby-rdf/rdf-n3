@@ -1043,7 +1043,7 @@ describe "RDF::N3::Reader" do
     end
 
     describe "formulae" do
-      before(:each) { @repo = RDF::Repository.new }
+      before(:each) { @repo = RDF::N3:: Repository.new }
 
       it "creates an RDF::Node instance for formula" do
         n3 = %(:a :b {} .)
@@ -1057,7 +1057,7 @@ describe "RDF::N3::Reader" do
         n3 = %(:a :b {[:c :d]} .)
         trig = %(<#a> <#b> _:c . _:c {[<#c> <#d>] .})
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
-        expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
+        expected = RDF::N3:: Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
         expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
       end
 
@@ -1078,7 +1078,7 @@ describe "RDF::N3::Reader" do
           }
         )
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
-        expected = RDF::Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
+        expected = RDF::N3:: Repository.new {|r| r << RDF::TriG::Reader.new(trig, base_uri: "http://a/b")}
         expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
       end
 
@@ -1152,7 +1152,7 @@ describe "RDF::N3::Reader" do
 
             # ENDS
           )
-          @repo = RDF::Repository.new
+          @repo = RDF::N3:: Repository.new
           parse(n3, repo: @repo, base_uri: "http://a/b")
         end
         subject {@repo}

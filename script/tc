@@ -63,7 +63,7 @@ def run_tc(man, tc, **options)
 
     reader = RDF::N3::Reader.new(tc.input, **options)
 
-    graph = RDF::Repository.new
+    graph = RDF::N3::Repository.new
     result = nil
 
     if !options[:slow] && tc.slow?
@@ -91,7 +91,7 @@ def run_tc(man, tc, **options)
 
     if tc.evaluate? && result.nil?
       begin
-        output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
+        output_graph = RDF::N3::Repository.load(tc.result, base_uri:  tc.base)
         result = graph.isomorphic_with?(output_graph) ? "passed" : "failed"
       rescue Exception => e
         if options[:verbose]
@@ -102,7 +102,7 @@ def run_tc(man, tc, **options)
     elsif tc.reason? && result.nil?
       reasoner = RDF::N3::Reasoner.new(graph, **options)
 
-      repo = RDF::Repository.new
+      repo = RDF::N3::Repository.new
 
       begin
         reasoner.execute(logger: logger, think: !!tc.options['think'])
@@ -121,7 +121,7 @@ def run_tc(man, tc, **options)
       end
       STDERR.puts  "\nResult: #{repo.dump(:n3)}" if options[:verbose]
 
-      output_graph = RDF::Repository.load(tc.result, base_uri:  tc.base)
+      output_graph = RDF::N3::Repository.load(tc.result, base_uri:  tc.base)
       result = repo.isomorphic_with?(output_graph) ? "passed" : "failed"
     else
       result ||= "passed"
@@ -160,9 +160,10 @@ def run_tc(man, tc, **options)
 end
 
 options = {
+  level: Logger::WARN,
+  list_terms: true,
   output:  STDOUT,
   results: {},
-  level: Logger::WARN,
   slow: true  # Run slow tests by default
 }
 

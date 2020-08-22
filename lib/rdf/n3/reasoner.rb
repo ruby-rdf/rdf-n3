@@ -51,6 +51,7 @@ module RDF::N3
     #   reasoner.each_triple {}
     #
     # @param  [RDF::Mutable] input (nil)
+    #   Input should be parsed N3 using native lists (see `:list_terms` option to {RDF::N3::Reader#initialize})
     # @param  [Hash{Symbol => Object}] options
     # @option options [#to_s]    :base_uri     (nil)
     #   the base URI to use when resolving relative URIs (for acessing intermediate parser productions)
@@ -62,8 +63,8 @@ module RDF::N3
       @options = options
       @mutable = case input
       when RDF::Mutable then input
-      when RDF::Enumerable then RDF::Repository.new {|r| r << input}
-      else RDF::Repository.new
+      when RDF::Enumerable then RDF::N3::Repository.new {|r| r << input}
+      else RDF::N3::Repository.new
       end
 
       log_debug("reasoner: expression") {SXP::Generator.string(formula.to_sxp_bin)}
@@ -79,7 +80,7 @@ module RDF::N3
     ##
     # Returns a copy of this reasoner
     def dup
-      repo = RDF::Repository.new {|r| r << @mutable}
+      repo = RDF::N3::Repository.new {|r| r << @mutable}
       self.class.new(repo) do |reasoner|
         reasoner.instance_variable_set(:@options, @options.dup)
         reasoner.instance_variable_set(:@formula, @formula.dup) if @formula
@@ -250,7 +251,7 @@ module RDF::N3
         end
 
         # Create `queryable` as a repo subset of `mutable` excluding built-ins and statements with a variable subject or predicate. This is useful for extracting lists.
-        queryable = RDF::Repository.new
+        queryable = RDF::N3::Repository.new
 
         # Add patterns to appropiate formula based on graph_name,
         # and replace subject and object bnodes which identify
@@ -302,6 +303,8 @@ module RDF::N3
             end
           end
         end
+
+        log_info("reasoner formula") {SXP::Generator.string formulae[nil].to_sxp_bin}
 
         # Formula is that without a graph name
         formulae[nil]

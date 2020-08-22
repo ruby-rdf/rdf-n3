@@ -243,7 +243,7 @@ describe "RDF::N3::Reasoner" do
 
   # Parse N3 input into a repository
   def parse(input, **options)
-    repo = options[:repo] || RDF::Repository.new
+    repo = options[:repo] || RDF::N3:: Repository.new
     RDF::N3::Reader.new(input, **options).each_statement do |statement|
       repo << statement
     end
@@ -252,9 +252,10 @@ describe "RDF::N3::Reasoner" do
 
   # Reason over input, returning a repo
   def reason(input, base_uri: 'http://example.com/', filter: false, data: true, think: true, **options)
+    options[:list_terms] ||= true
     input = parse(input, **options) if input.is_a?(String)
     reasoner = RDF::N3::Reasoner.new(input, base_uri:  base_uri)
-    repo = RDF::Repository.new
+    repo = RDF::N3:: Repository.new
 
     reasoner.execute(logger: logger, think: think)
     if filter

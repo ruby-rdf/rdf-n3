@@ -23,7 +23,7 @@ def run(input, **options)
     reader_class.new(input, **options[:parser_options].merge(logger: nil)) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader, **options[:parser_options])
       reasoner.reason!(**options)
-      repo = RDF::Repository.new
+      repo = RDF::N3::Repository.new
       if options[:conclusions]
         repo << reasoner.conclusions
       elsif options[:data]
@@ -93,11 +93,12 @@ parser_options = {
 }
 
 options = {
-  parser_options: parser_options,
+  input_format: :n3,
+  list_terms: true,
   logger: logger,
   output: STDOUT,
   output_format: :n3,
-  input_format: :n3,
+  parser_options: parser_options,
 }
 input = nil
 

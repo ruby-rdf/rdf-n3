@@ -108,7 +108,7 @@ module RDF::N3
     # @yield  [writer]
     # @yieldparam [RDF::Writer] writer
     def initialize(output = $stdout, **options, &block)
-      @repo = RDF::Repository.new
+      @repo = RDF::N3::Repository.new
       @uri_to_pname = {}
       @uri_to_prefix = {}
       super do
