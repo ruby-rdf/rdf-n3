@@ -59,7 +59,7 @@ module RDF
     #
     # @return [String]
     def to_sxp
-      to_sxp_bin.to_sxp
+      to_a.to_sxp_bin.to_sxp
     end
   end
 
