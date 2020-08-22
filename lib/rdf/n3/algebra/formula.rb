@@ -27,16 +27,17 @@ module RDF::N3::Algebra
     #   optional initial solutions for chained queries
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
-      log_debug("formula #{graph_name}") {operands.to_sxp}
+      log_debug("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
       log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
-      @query ||= RDF::Query.new(patterns)
+      @query ||= RDF::Query.new(patterns).optimize!
+      log_debug("(formula query)") { @query.patterns.to_sxp}
 
-      @solutions = if @query.patterns.empty?
+      solutions = if @query.patterns.empty?
         solutions
       else
-        these_solutions = queryable.query(@query, solutions: solutions, optimize: true, **options)
+        these_solutions = queryable.query(@query, solutions: solutions, **options)
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
             # Replace blank node bindings with lists, where those blank nodes are associated with lists.
@@ -50,7 +51,7 @@ module RDF::N3::Algebra
       end
 
       # Reject solutions which include variables as values
-      @solutions = @solutions.filter {|s| s.enum_value.none?(&:variable?)}
+      @solutions = solutions.dup.filter {|s| s.enum_value.none?(&:variable?)}
 
       # Use our solutions for sub-ops
       # Join solutions from other operands
