@@ -46,7 +46,7 @@ module RDF::N3::Algebra
             memo.merge(name => value)
           end)
         end
-        log_debug("(formula solutions)") { these_solutions.to_sxp}
+        log_debug("(formula query solutions)") { these_solutions.to_sxp}
         solutions.merge(these_solutions)
       end
 
@@ -66,7 +66,7 @@ module RDF::N3::Algebra
           end
         end
       end
-      log_debug("(formula solutions)") {@solutions.to_sxp}
+      log_debug("(formula sub-op solutions)") {@solutions.to_sxp}
 
       # Only return solutions with universal variables
       variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$')}
@@ -160,17 +160,14 @@ module RDF::N3::Algebra
       @statements ||= begin
         statements = operands.select {|op| op.is_a?(RDF::Statement)}
 
-        # Find statements associated with lists referenced from a built-in. Blank nodes which are related to these operands are marked non-distinguished, so they become optional patterns.
-        op_lists = sub_ops.map(&:operands).flatten.select(&:list?)
-        op_list_subjects = op_lists.map(&:subjects).flatten
-
         statements.map do |pattern|
-          # Map nodes to existential variables (except when in top-level formula). They are non-distinguished if associated with a built-in.
           if graph_name
             terms = {}
-            has_nd_var = op_list_subjects.include?(pattern.subject)
             [:subject, :predicate, :object].each do |r|
               terms[r] = case o = pattern.send(r)
+              when RDF::N3::List
+                # Substitute blank node members with existential variables, recusively.
+                o.has_nodes? ? o.to_existential : o
               when RDF::Node
                 RDF::Query::Variable.new(o.id, existential: true)
               else
@@ -179,7 +176,7 @@ module RDF::N3::Algebra
             end
 
             # A pattern with a non-destinguished variable becomes optional, so that it will bind to itself, if not matched in queryable.
-            RDF::Query::Pattern.from(terms, optional: has_nd_var)
+            RDF::Query::Pattern.from(terms)
           else
             RDF::Query::Pattern.from(pattern)
           end
@@ -218,6 +215,10 @@ module RDF::N3::Algebra
     # Existential vars in this formula
     def existential_vars
       @existentials ||= patterns.vars.select(&:existential?)
+    end
+
+    def to_s
+      to_sxp
     end
 
     def to_sxp_bin

@@ -66,8 +66,15 @@ describe RDF::N3::Reader do
 
               t.logger.info "result:\n#{repo.dump(:n3)}"
               if t.evaluate? || t.reason?
-                output_repo = RDF::N3:: Repository.load(t.result, format: :n3, base_uri:  t.base)
-                expect(repo).to be_equivalent_graph(output_repo, t)
+                output_repo = RDF:: Repository.load(t.result, format: :n3, base_uri:  t.base)
+
+                # Check against expanded triples from repo
+                expanded_repo = RDF::Repository.new do |r|
+                  repo.each_expanded_statement do |st|
+                    r << st
+                  end
+                end
+                expect(expanded_repo).to be_equivalent_graph(output_repo, t)
               else
               end
             else

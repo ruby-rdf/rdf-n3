@@ -116,7 +116,7 @@ module RDF::N3
         while @mutable.count > count
           log_info("reasoner: think do") { "count: #{count}"}
           count = @mutable.count
-          dataset = RDF::Graph.new << @mutable.project_graph(nil)
+          dataset = @mutable.project_graph(nil)
           log_depth {formula.execute(dataset, **options)}
           @mutable << formula
         end
@@ -124,13 +124,13 @@ module RDF::N3
       else
         # Run one iteration
         log_info("reasoner: rules start") { "count: #{count}"}
-        dataset = RDF::Graph.new << @mutable.project_graph(nil)
+        dataset = @mutable.project_graph(nil)
         log_depth {formula.execute(dataset, **options)}
         @mutable << formula
         log_info("reasoner: rules end") { "count: #{count}"}
       end
 
-      log_debug("reasoner: datastore") {@mutable.to_sxp}
+      log_debug("reasoner: datastore") {SXP::Generator.string @mutable.statements.to_sxp_bin}
 
       conclusions(&block) if block_given?
       self
@@ -287,7 +287,7 @@ module RDF::N3
 
         # Create a graph for each formula, containing statements and built-in operands
         formulae.each do |gn, form|
-          form_graph = RDF::Graph.new do |g|
+          form_graph = RDF::N3::Repository.new(with_graph_name: false) do |g|
             # Graph initialized with non-built-in statements
             form.operands.each do |op|
               g << op if op.is_a?(RDF::Statement)

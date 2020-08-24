@@ -633,6 +633,27 @@ describe RDF::N3::Writer do
     end
   end
 
+  describe "results" do
+    {
+      "r1": {
+        input: %(
+          ( "one"  "two" ) a :whatever.
+          "one" a :SUCCESS.
+          "two" a :SUCCESS.
+        ),
+        regexp: [
+          %r(\(\s*"one"\s+"two"\s*\) a :whatever\s*\.),
+          %r("one" a :SUCCESS \.),
+          %r("two" a :SUCCESS \.),
+        ]
+      },
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], list_terms: true, **params)
+      end
+    end
+  end
+
   # W3C TriG Test suite
   describe "w3c n3 parser tests" do
     require_relative 'suite_helper'
@@ -645,7 +666,7 @@ describe RDF::N3::Writer do
             case t.name
             when *%w(cwm_syntax_path2.n3
                      cwm_includes_quantifiers.n3 cwm_includes_quantifiers_limited.n3
-                     cwm_list_append.n3 cwm_includes_builtins.n3
+                     cwm_includes_builtins.n3
                      cwm_list_unify5-ref.n3
                      cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
                      cwm_other_lists.n3   # empty list with extra properties
