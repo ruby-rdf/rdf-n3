@@ -24,23 +24,6 @@ module RDF
 
   class List
     ##
-    # Evaluates the list using the given variable `bindings`.
-    #
-    # @param  [RDF::Query::Solution] bindings
-    #   a query solution containing zero or more variable bindings
-    # @param [Hash{Symbol => Object}] options ({})
-    #   options passed from query
-    # @return [RDF::N3::List]
-    # @see SPARQL::Algebra::Expression.evaluate
-    def evaluate(bindings, **options)
-      # if values are constant, simply return ourselves
-      return self if to_a.none? {|li| li.node? || li.variable?}
-      # Create a new list subject using a combination of the current subject and a hash of the binding values
-      subj = "#{subject.id}_#{bindings.values.sort.hash}"
-      RDF::N3::List.new(subject: RDF::Node.intern(subj), values: to_a.map {|o| o.evaluate(bindings, **options)})
-    end
-
-    ##
     # A list is variable if any of its members are variable?
     #
     # @return [Boolean]
@@ -108,6 +91,35 @@ module RDF
     #     def evaluate(bindings, **options); end
     def evaluate(bindings, **options)
       bindings.fetch(self.id.to_sym, self)
+    end
+  end
+
+  class Query::Pattern
+    ##
+    # Checks pattern equality against a statement, considering nesting an lists.
+    #
+    # * A pattern which has a pattern as a subject or an object, matches
+    #   a statement having a statement as a subject or an object using {#eql?}.
+    #
+    # @param  [Statement] other
+    # @return [Boolean]
+    #
+    # @see RDF::URI#==
+    # @see RDF::Node#==
+    # @see RDF::Literal#==
+    # @see RDF::Query::Variable#==
+    def eql?(other)
+      return false unless other.is_a?(RDF::Statement) && (self.graph_name || false) == (other.graph_name || false)
+
+      [:subject, :predicate, :object].each do |part|
+        case o = self.send(part)
+        when RDF::Query::Pattern, RDF::List
+          return false unless o.eql?(other.send(part))
+        else
+          return false unless o == other.send(part)
+        end
+      end
+      true
     end
   end
 
