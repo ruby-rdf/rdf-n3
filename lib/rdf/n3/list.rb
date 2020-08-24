@@ -68,7 +68,16 @@ module RDF::N3
 
       @values = case
       when values
-        values
+        values.map do |v|
+          # Convert values, as necessary.
+          case v
+          when RDF::Value then v.to_term
+          when Symbol     then RDF::Node.intern(v)
+          when Array      then RDF::N3::List.new(values: v)
+          when nil        then nil
+          else                 RDF::Literal.new(v)
+          end
+        end
       when subject && graph
         ln = RDF::List.new(subject: subject, graph: graph)
         @valid = ln.valid?
@@ -126,29 +135,39 @@ module RDF::N3
       when Array then args.last
       when RDF::List then args.last.to_a
       else [args.last]
+      end.map do |v|
+        # Convert values, as necessary.
+        case v
+        when RDF::Value then v.to_term
+        when Symbol     then RDF::Node.intern(v)
+        when Array      then RDF::N3::List.new(values: v)
+        when nil        then nil
+        else                 RDF::Literal.new(v)
+        end
       end
 
-      case args.length
+      ret = case args.length
       when 3
         start, length = args[0], args[1]
-        @value[start, length] = value
+        @subject = nil if start == 0
+        @values[start, length] = value
+      when 2
         case args.first
         when Integer
           raise ArgumentError, "Index form of []= takes a single term" if args.last.is_a?(Array)
-          @value[args.first] = case args.last
-          when RDF::N3::List then args.last
-          when RDF::List then RDF::N3::List.new(values: args.last.to_a)
-          when Array then RDF::N3::List.new(values: args.last.to_a)
-          else args.last
-          end
+          @values[args.first] = value.first
         when Range
-          @value[args.first] = value
+          @values[args.first] = value
         else
           raise ArgumentError, "Index form of must use an integer or range"
         end
       else
         raise ArgumentError, "List []= takes one or two index values"
       end
+
+      @subject = RDF.nil if @values.empty?
+      @subject ||= RDF::Node.new
+      ret # Returns inserted values
     end
 
     ##
