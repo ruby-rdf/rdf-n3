@@ -286,7 +286,7 @@ module RDF::N3
     # @return [RDF::Term, nil]
     # @see    http://ruby-doc.org/core-1.9/classes/Array.html#M000420
     def fetch(*args, &block)
-      @values.fetch(*args, default)
+      @values.fetch(*args, &block)
     end
 
     ##
@@ -333,7 +333,7 @@ module RDF::N3
     #
     # @return [RDF::List]
     def rest
-      self.class.new(values: values[1..-1])
+      self.class.new(values: @values[1..-1])
     end
 
     ##
@@ -344,7 +344,7 @@ module RDF::N3
     #
     # @return [RDF::List]
     def tail
-      self.class.new(values: values[-1..-1])
+      self.class.new(values: @values[-1..-1])
     end
 
     ##
@@ -386,16 +386,17 @@ module RDF::N3
         *values, last = @values
         while !values.empty?
           subj = subjects.shift
-          block.call(RDF::Statement(subj, RDF.first, values.shift))
+          value = values.shift
+          block.call(RDF::Statement(subj, RDF.first, value.list? ? value.subject : value))
           block.call(RDF::Statement(subj, RDF.rest, subjects.first))
         end
         subj = subjects.shift
-        block.call(RDF::Statement(subj, RDF.first, last))
+        block.call(RDF::Statement(subj, RDF.first, last.list? ? last.subject : last))
         block.call(RDF::Statement(subj, RDF.rest, RDF.nil))
       end
 
       # If a graph was used, also get statements from sub-lists
-      @values.select(&:list?).each {|li| li.each_statement(&block)} if graph
+      @values.select(&:list?).each {|li| li.each_statement(&block)}
     end
 
     ##
@@ -415,6 +416,29 @@ module RDF::N3
     end
 
     ##
+    # Does this list, or any recusive list have any blank node members?
+    #
+    # @return [Boolean]
+    def has_nodes?
+      @values.any? {|e| e.node? || e.list? && e.has_nodes?}
+    end
+
+    ##
+    # Substitutes blank node members with existential variables, recusively.
+    #
+    # @return [RDF::N3::List]
+    def to_existential
+      values = @values.map do |e|
+        case e
+        when RDF::Node     then RDF::Query::Variable.new(e.id, existential: true)
+        when RDF::N3::List then e.to_existential
+        else                    e
+        end
+      end
+      RDF::N3::List.new(values: values)
+    end
+
+    ##
     # Returns the elements in this list as an array.
     #
     # @example
@@ -424,6 +448,132 @@ module RDF::N3
     # @return [Array]
     def to_a
       @values
+    end
+
+    ##
+    # Checks pattern equality against another list, considering nesting.
+    #
+    # @param  [List, Array] other
+    # @return [Boolean]
+    def eql?(other)
+      other = RDF::N3::List[*other] if other.is_a?(Array)
+      return false if !other.is_a?(RDF::List) || count != other.count
+      @values.each_with_index do |li, ndx|
+        case li
+        when RDF::Query::Pattern, RDF::N3::List
+          return false unless li.eql?(other.at(ndx))
+        else
+          return false unless li == other.at(ndx)
+        end
+      end
+      true
+    end
+
+    ##
+    # A list is variable if any of its members are variable?
+    #
+    # @return [Boolean]
+    def variable?
+      @values.any?(&:variable?)
+    end
+
+    ##
+    # Returns all variables in this list.
+    #
+    # Note: this returns a hash containing distinct variables only.
+    #
+    # @return [Hash{Symbol => Variable}]
+    def variables
+      @values.inject({}) do |hash, li|
+        li.respond_to?(:variables) ? hash.merge(li.variables) : hash
+      end
+    end
+
+    ##
+    # Returns the number of variables in this list, recursively.
+    #
+    # @return [Integer]
+    def variable_count
+      variables.length
+    end
+
+    ##
+    # Returns all values the list in the same pattern position
+    #
+    # @param [Symbol] var
+    # @param [RDF::N3::List] list
+    # @return [Array<RDF::Term>]
+    def var_values(var, list)
+      results = []
+      @values.each_index do |ndx|
+        maybe_var = @values[ndx]
+        next unless maybe_var.respond_to?(:var_values)
+        results.append(maybe_var.var_values(var, list.at(ndx)))
+      end
+      results.flatten.compact
+    end
+
+    ##
+    # Evaluates the list using the given variable `bindings`.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::N3::List]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, **options)
+      # if values are constant, simply return ourselves
+      return self if to_a.none? {|li| li.node? || li.variable?}
+      bindings = bindings.to_h unless bindings.is_a?(Hash)
+      # Create a new list subject using a combination of the current subject and a hash of the binding values
+      subj = "#{subject.id}_#{bindings.values.sort.hash}"
+      RDF::N3::List.new(subject: RDF::Node.intern(subj), values: to_a.map {|o| o.evaluate(bindings, **options)})
+    end
+
+
+    ##
+    # Returns a query solution constructed by binding any variables in this list with the corresponding terms in the given `list`.
+    #
+    # @param  [RDF::N3::List] list
+    #   a native list with patterns to bind.
+    # @return [RDF::Query::Solution]
+    # @see RDF::Query::Pattern#solution
+    def solution(list)
+      RDF::Query::Solution.new do |solution|
+        @values.each_with_index do |li, ndx|
+          if li.respond_to?(:solution)
+            solution.merge!(li.solution(list[ndx]))
+          elsif li.is_a?(RDF::Query::Variable)
+            solution[li.to_sym] = list[ndx]
+          end
+        end
+      end
+    end
+
+    ##
+    # Returns the base representation of this term.
+    #
+    # @return [Sring]
+    def to_base
+      "(#{@values.map(&:to_base).join(' ')})"
+    end
+
+    private
+
+    ##
+    # Normalizes `Array` to `RDF::List` and `nil` to `RDF.nil`.
+    #
+    # @param value [Object]
+    # @return [RDF::Value, Object] normalized value
+    def normalize_value(value)
+      case value
+      when RDF::Value then value.to_term
+      when Array      then RDF::N3::List.new(values: value)
+      when Symbol     then RDF::Node.intern(value)
+      when nil        then nil
+      else                 RDF::Literal.new(value)
+      end
     end
   end
 end
