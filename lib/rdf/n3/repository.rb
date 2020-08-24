@@ -110,6 +110,35 @@ module RDF::N3
     alias_method :each, :each_statement
 
     ##
+    # Projects statements with lists expanded to first/rest chains
+    #
+    # @yield [RDF::Statement]
+    def each_expanded_statement(&block)
+      if block_given?
+        each_statement do |st|
+          if st.subject.list?
+            st.subject.each_statement(&block)
+            st.subject = st.subject.subject
+          end
+          if st.object.list?
+            st.object.each_statement(&block)
+            st.object = st.object.subject
+          end
+          block.call(st)
+        end
+      end
+      enum_for(:each_expanded_statement) unless block_given?
+    end
+
+    ##
+    # Returns the expanded statements for this repository
+    #
+    # @return [Array<RDF::Statement>]
+    def expanded_statements
+      each_expanded_statement.to_a
+    end
+
+    ##
     # @see Mutable#apply_changeset
     def apply_changeset(changeset)
       data = @data
