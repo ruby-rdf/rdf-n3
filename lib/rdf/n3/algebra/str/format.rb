@@ -43,15 +43,5 @@ module RDF::N3::Algebra::Str
         end
       end.compact)
     end
-
-    ##
-    # Does not yield statements.
-    #
-    # @yield  [statement]
-    #   each matching statement
-    # @yieldparam  [RDF::Statement] solution
-    # @yieldreturn [void] ignored
-    def each(&block)
-    end
   end
 end
