@@ -515,7 +515,7 @@ module RDF::N3
       @values.each_index do |ndx|
         maybe_var = @values[ndx]
         next unless maybe_var.respond_to?(:var_values)
-        results.append(maybe_var.var_values(var, list.at(ndx)))
+        results.push(*Array(maybe_var.var_values(var, list.at(ndx))))
       end
       results.flatten.compact
     end
