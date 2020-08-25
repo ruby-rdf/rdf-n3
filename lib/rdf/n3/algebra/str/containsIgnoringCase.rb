@@ -13,11 +13,11 @@ module RDF::N3::Algebra::Str
     # @param  [RDF::Literal] right
     #   a literal
     # @return [RDF::Literal::Boolean]
-    # @raise  [TypeError] if operands are not compatible
     def apply(left, right)
       case
       when !left.compatible?(right)
-        raise TypeError, "expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"
+        log_error(NAME) {"expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"}
+        RDF::Literal::FALSE
       when left.to_s.downcase.include?(right.to_s.downcase) then RDF::Literal::TRUE
       else RDF::Literal::FALSE
       end

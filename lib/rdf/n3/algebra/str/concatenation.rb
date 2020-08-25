@@ -18,7 +18,6 @@ module RDF::N3::Algebra::Str
     # @param [RDF::Queryable] queryable
     # @param [RDF::Query::Solutions] solutions
     # @return [RDF::Query::Solutions]
-    # @raise  [TypeError] if operands are not compatible
     def execute(queryable, solutions:, **options)
       result = operand(1)
 
@@ -29,7 +28,10 @@ module RDF::N3::Algebra::Str
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
         log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-        raise TypeError, "operand is not a list" unless list.list? && list.valid?
+        unless list.list? && list.valid?
+          log_error(NAME) {"operand is not a list: #{list.to_sxp}"}
+          next
+        end
 
         if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
