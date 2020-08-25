@@ -204,6 +204,58 @@ describe "RDF::N3::Reasoner" do
         end
       end
     end
+
+    context "list:member" do
+      {
+        "1 in (1 2 3 4 5)": {
+          input: %(
+            { (  1 2 3 4 5 ) list:member 1 } => { :test4a a :SUCCESS }.
+          ),
+          expect: %(
+            :test4a a :SUCCESS .
+          )
+        },
+        "?x in (1 2 3 4 5)": {
+          input: %(
+            { (  1 2 3 4 5 ) list:member ?x } => { :test4a :is ?x }.
+          ),
+          expect: %(
+            :test4a :is 1 .
+            :test4a :is 2 .
+            :test4a :is 3 .
+            :test4a :is 4 .
+            :test4a :is 5 .
+          )
+        },
+        "Pythag 3 5": {
+          input: %(
+            {   ((3) (5))!list:member list:member ?z } => { ?z a :Pythagorean }.
+          ),
+          expect: %(
+            3 a :Pythagorean.
+            5 a :Pythagorean.
+          )
+        },
+        #"Pythag 3 4 5 5 12 13": {
+        #  input: %(
+        #    {   ((3 4 5) (5 12 13))!list:member   list:member ?z } => { ?z a :Pythagorean }.
+        #  ),
+        #  expect: %(
+        #    3 a :Pythagorean.
+        #    4 a :Pythagorean.
+        #    5 a :Pythagorean.
+        #    12 a :Pythagorean.
+        #    13 a :Pythagorean.
+        #  )
+        #},
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
   end
 
   context "n3:string" do

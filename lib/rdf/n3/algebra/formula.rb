@@ -156,7 +156,7 @@ module RDF::N3::Algebra
     ##
     # Statements memoizer
     def statements
-      # BNodes in statements are existential variables. If part of a built-in, they become non-distinguished, creating optional patterns, and may become bound to themselves.
+      # BNodes in statements are existential variables.
       @statements ||= begin
         statements = operands.select {|op| op.is_a?(RDF::Statement)}
 
@@ -202,7 +202,21 @@ module RDF::N3::Algebra
     # Non-statement operands memoizer
     def sub_ops
       # operands that aren't statements, ordered by their graph_name
-      @sub_ops ||= operands.reject {|op| op.is_a?(RDF::Statement)}
+      @sub_ops ||= operands.reject {|op| op.is_a?(RDF::Statement)}.map do |op|
+        # Substitute nodes for existential variables in operator operands
+        op.operands.map! do |o|
+          case o
+          when RDF::N3::List
+            # Substitute blank node members with existential variables, recusively.
+            o.has_nodes? ? o.to_existential : o
+          when RDF::Node
+            RDF::Query::Variable.new(o.id, existential: true)
+          else
+            o
+          end
+        end
+        op
+      end
     end
 
     ##

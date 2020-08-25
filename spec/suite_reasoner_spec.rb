@@ -19,11 +19,11 @@ describe RDF::N3::Reader do
           next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
-            when *%w{cwm_includes_listin cwm_includes_bnode cwm_includes_concat
-                     cwm_includes_conjunction cwm_includes_conclusion_simple
-                   }
-              pending "support for lists"
-            when *%w{cwm_unify_unify1}
+            when *%w{cwm_includes_conjunction}
+              pending "log:conjunction"
+            when *%w{cwm_includes_bnode}
+              pending "log:includes"
+            when *%w{cwm_includes_conclusion_simple cwm_unify_unify1}
               pending "reason over formulae"
             when *%w{cwm_reason_t6}
               pending "support for math"

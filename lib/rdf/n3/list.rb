@@ -478,6 +478,13 @@ module RDF::N3
     end
 
     ##
+    # Return the variables contained this list
+    # @return [Array<RDF::Query::Variable>]
+    def vars
+      @values.vars
+    end
+
+    ##
     # Returns all variables in this list.
     #
     # Note: this returns a hash containing distinct variables only.
