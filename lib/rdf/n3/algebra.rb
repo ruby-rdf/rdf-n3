@@ -12,6 +12,7 @@ module RDF::N3
 
     module List
       autoload :Append,               'rdf/n3/algebra/list/append'
+      autoload :First,                'rdf/n3/algebra/list/first'
       autoload :In,                   'rdf/n3/algebra/list/in'
       autoload :Last,                 'rdf/n3/algebra/list/last'
       autoload :Member,               'rdf/n3/algebra/list/member'
@@ -62,6 +63,7 @@ module RDF::N3
     def for(uri)
       {
         RDF::N3::List.append              => List::Append,
+        RDF::N3::List.first               => List::First,
         RDF::N3::List.in                  => List::In,
         RDF::N3::List.last                => List::Last,
         RDF::N3::List.member              => List::Member,
