@@ -236,18 +236,170 @@ describe "RDF::N3::Reasoner" do
             5 a :Pythagorean.
           )
         },
-        #"Pythag 3 4 5 5 12 13": {
-        #  input: %(
-        #    {   ((3 4 5) (5 12 13))!list:member   list:member ?z } => { ?z a :Pythagorean }.
-        #  ),
-        #  expect: %(
-        #    3 a :Pythagorean.
-        #    4 a :Pythagorean.
-        #    5 a :Pythagorean.
-        #    12 a :Pythagorean.
-        #    13 a :Pythagorean.
-        #  )
-        #},
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+  end
+
+  context "n3:math" do
+    context "math:absoluteValue" do
+      {
+        '"1"': {
+          input: %(
+            { "1" math:absoluteValue 1 } => {:test1a a :SUCCESS}.
+          ),
+          expect: %(
+            :test1a a :SUCCESS .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          if options[:exception]
+            expect {reason(options[:input], filter: true)}.to raise_error options[:exception]
+          else
+            expected = parse(options[:expect])
+            expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          end
+        end
+      end
+    end
+
+    context "math:ceiling" do
+      {
+        '"2.6"': {
+          input: %(
+            { "2.6" math:ceiling ?x} => { ?x :valueOf "ceiling(2.7)" } .
+          ),
+          expect: %(
+            3 :valueOf "ceiling(2.7)" .
+          )
+        },
+        "-8.1": {
+          input: %(
+            { -8.1 math:ceiling ?x } => {:test2a :is ?x}.
+          ),
+          expect: %(
+            :test2a :is -8 .
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "math:difference" do
+      {
+        '("8" "3")': {
+          input: %(
+            { ("8" "3") math:difference ?x} => { ?x :valueOf "8 - 3" } .
+          ),
+          expect: %(
+            5 :valueOf "8 - 3" .
+          )
+        },
+        '("8")': {
+          input: %(
+            { ("8") math:difference ?x } => { ?x :valueOf "8 - (error?)" } .
+          ),
+          expect: %()
+        },
+        '(8 3)': {
+          input: %(
+            { (8 3) math:difference ?x} => { ?x :valueOf "8 - 3" } .
+          ),
+          expect: %(
+            5 :valueOf "8 - 3" .
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "math:floor" do
+      {
+        '"2.6"': {
+          input: %(
+            { "2.6" math:floor ?x} => { ?x :valueOf "floor(2.7)" } .
+          ),
+          expect: %(
+            2 :valueOf "floor(2.7)" .
+          )
+        },
+        '-8.1': {
+          input: %(
+            { -8.1 math:floor ?x } => {:test2a :is ?x}.
+          ),
+          expect: %(
+            :test2a :is -9 .
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "math:greaterThan" do
+      {
+        '"008" > "70"': {
+          input: %(
+            { "008" math:greaterThan "70" } => { :test10 a :FAILURE }.
+          ),
+          expect: %()
+        },
+        '"070" > "008"': {
+          input: %(
+            { "70" math:greaterThan "008" } => { :test10 a :success }.
+          ),
+          expect: %(
+            :test10 a :success .
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "math:sum" do
+      {
+        '("3" "5")': {
+          input: %(
+            { ("3" "5") math:sum ?x } => { ?x :valueOf "3 + 5" } .
+          ),
+          expect: %(
+            8 :valueOf "3 + 5" .
+          )
+        },
+        '(3 5 100)': {
+          input: %(
+            { (3 5 100) math:sum ?x } => { ?x :valueOf "3 + 5 + 100" } .
+          ),
+          expect: %(
+            108 :valueOf "3 + 5 + 100" .
+          )
+        },
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"

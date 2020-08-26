@@ -25,8 +25,6 @@ describe RDF::N3::Reader do
               pending "log:includes"
             when *%w{cwm_includes_conclusion_simple cwm_unify_unify1}
               pending "reason over formulae"
-            when *%w{cwm_reason_t6}
-              pending "support for math"
             when *%w{cwm_supports_simple cwm_string_roughly cwm_string_uriEncode}
               pending "Uses unsupported builtin"
             when *%w{cwm_list_builtin_generated_match}

@@ -31,17 +31,11 @@ module RDF::N3
 
     module Math
       autoload :AbsoluteValue,        'rdf/n3/algebra/math/absoluteValue'
+      autoload :Ceiling,              'rdf/n3/algebra/math/ceiling'
       autoload :Difference,           'rdf/n3/algebra/math/difference'
-      autoload :EqualTo,              'rdf/n3/algebra/math/equalTo'
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
-      autoload :GreaterThan,          'rdf/n3/algebra/math/greaterThan'
+      autoload :Floor,                'rdf/n3/algebra/math/floor'
       autoload :IntegerQuotient,      'rdf/n3/algebra/math/integerQuotient'
-      autoload :LessThan,             'rdf/n3/algebra/math/lessThan'
-      autoload :MemberCount,          'rdf/n3/algebra/math/memberCount'
-      autoload :Negation,             'rdf/n3/algebra/math/negation'
-      autoload :NotEqualTo,           'rdf/n3/algebra/math/notEqualTo'
-      autoload :NotGreaterThan,       'rdf/n3/algebra/math/notGreaterThan'
-      autoload :NotLessThan,          'rdf/n3/algebra/math/notLessThan'
       autoload :Product,              'rdf/n3/algebra/math/product'
       autoload :Quotient,             'rdf/n3/algebra/math/quotient'
       autoload :Remainder,            'rdf/n3/algebra/math/remainder'
@@ -79,22 +73,23 @@ module RDF::N3
         RDF::N3::Log.supports             => NotImplemented,
 
         RDF::N3::Math.absoluteValue       => Math::AbsoluteValue,
+        RDF::N3::Math.ceiling             => Math::Ceiling,
         RDF::N3::Math.difference          => Math::Difference,
-        RDF::N3::Math.equalTo             => Math::EqualTo,
+        RDF::N3::Math.equalTo             => SPARQL::Algebra::Operator::Equal,
         RDF::N3::Math.exponentiation      => Math::Exponentiation,
-        RDF::N3::Math.greaterThan         => Math::GreaterThan,
+        RDF::N3::Math.floor               => Math::Floor,
+        RDF::N3::Math.greaterThan         => SPARQL::Algebra::Operator::GreaterThan,
         RDF::N3::Math.integerQuotient     => Math::IntegerQuotient,
-        RDF::N3::Math.lessThan            => Math::LessThan,
-        RDF::N3::Math.memberCount         => Math::MemberCount,
-        RDF::N3::Math.negation            => Math::Negation,
-        RDF::N3::Math.notEqualTo          => Math::NotEqualTo,
-        RDF::N3::Math.notGreaterThan      => Math::NotGreaterThan,
-        RDF::N3::Math.notLessThan         => Math::NotLessThan,
+        RDF::N3::Math.lessThan            => SPARQL::Algebra::Operator::LessThan,
+        RDF::N3::Math.negation            => SPARQL::Algebra::Operator::Negate,
+        RDF::N3::Math.notEqualTo          => SPARQL::Algebra::Operator::NotEqual,
+        RDF::N3::Math.notGreaterThan      => SPARQL::Algebra::Operator::LessThanOrEqual,
+        RDF::N3::Math.notLessThan         => SPARQL::Algebra::Operator::GreaterThanOrEqual,
         RDF::N3::Math.product             => Math::Product,
         RDF::N3::Math.quotient            => Math::Quotient,
         RDF::N3::Math.remainder           => Math::Remainder,
         RDF::N3::Math.rounded             => Math::Rounded,
-        RDF::N3::Math.sum                 => Math::Sum,
+        RDF::N3::Math[:sum]               => Math::Sum,
 
         RDF::N3::Str.concatenation        => Str::Concatenation,
         RDF::N3::Str.contains             => SPARQL::Algebra::Operator::Contains,

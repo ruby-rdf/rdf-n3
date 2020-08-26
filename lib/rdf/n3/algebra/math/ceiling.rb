@@ -1,16 +1,16 @@
 module RDF::N3::Algebra::Math
   ##
-  # The object is calulated as the absolute value of the subject.
-  class AbsoluteValue < SPARQL::Algebra::Operator::Binary
+  # The object is calculated as the subject upwards to a whole number.
+  class Ceiling < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::Enumerable
     include RDF::Util::Logger
 
-    NAME = :mathAbsoluteValue
+    NAME = :mathCeiling
 
     ##
-    # The math:sum operator takes string or number and calculates its absolute value.
+    # The math:ceiling operator takes string or number and calculates its ceiling.
     #
     # @param [RDF::Queryable] queryable
     # @param [RDF::Query::Solutions] solutions
@@ -26,8 +26,8 @@ module RDF::N3::Algebra::Math
           next
         end
 
-        num = RDF::Literal::Integer.new(num.value) unless num.is_a?(RDF::Literal::Numeric)
-        num = num.abs
+        num = RDF::Literal::Double.new(num.value) unless num.is_a?(RDF::Literal::Numeric)
+        num = num.ceil
 
         if result.variable?
           solution.merge(result.to_sym => num)
