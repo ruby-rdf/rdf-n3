@@ -1,10 +1,5 @@
 module RDF::N3::Algebra::Str
-  class Scrape < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class Scrape < RDF::N3::Algebra::ListOperator
     NAME = :strScrape
 
     ##
@@ -13,43 +8,27 @@ module RDF::N3::Algebra::Str
     # @example
     #     ("abcdef" "ab(..)ef") string:scrape "cd"
     #
-    # @param [RDF::Queryable] queryable
-    # @param [RDF::Query::Solutions] solutions
-    # @return [RDF::Query::Solutions]
-    def execute(queryable, solutions:, **options)
-      result = operand(1)
+    # @param [RDF::N3::List] list
+    # @return [RDF::Term]
+    # @see RDF::N3::ListOperator#evaluate
+    def evaluate(list)
+      input, regex = list.to_a
+      md = Regexp.new(regex.to_s).match(input.to_s)
+      RDF::Literal(md[1]) if md
+    end
 
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        list = operand(0).evaluate(solution.bindings)
-        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
-
-        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-
-        unless list.list? && list.valid?
-          log_error(NAME) {"operand is not a list: #{list.to_sxp}"}
-          next
-        end
-        unless list.length == 2
-          log_error(NAME) {"list must have exactly two entries: #{list.to_sxp}"}
-          next
-        end
-
-        if list.to_a.any? {|op| op.variable? && op.unbound?}
-          # Can't bind list elements
-          solution
-        else
-          input, regex = list.to_a
-          md = Regexp.new(regex.to_s).match(input.to_s)
-
-          if result.variable? && md && md[1]
-            solution.merge(result.to_sym => RDF::Literal(md[1]))
-          elsif !md || result != md[1]
-            nil
-          else
-            solution
-          end
-        end
-      end.compact)
+    ##
+    # Subclasses may override or supplement validate to perform validation on the list subject
+    #
+    # @param [RDF::N3::List] list
+    # @return [Boolean]
+    def validate(list)
+      if super && list.length == 2
+        true
+      else
+        log_error(NAME) {"list must have exactly two entries: #{list.to_sxp}"}
+        false
+      end
     end
   end
 end

@@ -8,6 +8,7 @@ module RDF::N3
   # @author [Gregg Kellogg](http://greggkellogg.net/)
   module Algebra
     autoload :Formula,                'rdf/n3/algebra/formula'
+    autoload :ListOperator,           'rdf/n3/algebra/list_operator'
     autoload :NotImplemented,         'rdf/n3/algebra/notImplemented'
 
     module List

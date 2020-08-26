@@ -1,10 +1,5 @@
 module RDF::N3::Algebra::Str
-  class Replace < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class Replace < RDF::N3::Algebra::ListOperator
     NAME = :strReplace
 
     ##
@@ -13,43 +8,27 @@ module RDF::N3::Algebra::Str
     # @example
     #     ("fofof bar", "of", "baz") string:replace "fbazbaz bar"
     #
-    # @param [RDF::Queryable] queryable
-    # @param [RDF::Query::Solutions] solutions
-    # @return [RDF::Query::Solutions]
-    def execute(queryable, solutions:, **options)
-      result = operand(1)
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
-        list = operand(0).evaluate(solution.bindings)
-        # If it evaluated to a BNode, re-expand as a list
-        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
+    # @param [RDF::N3::List] list
+    # @return [RDF::Term]
+    # @see RDF::N3::ListOperator#evaluate
+    def evaluate(list)
+      format, *args = list.to_a.map(&:value)
+      input, old_str, new_str = list.to_a
+      RDF::Literal(input.to_s.gsub(old_str.to_s, new_str.to_s))
+    end
 
-        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
-        unless list.list? && list.valid?
-          log_error(NAME) {"operand is not a list: #{list.to_sxp}"}
-          next
-        end
-        unless list.length == 3
-          log_error(NAME) {"list must have exactly three entries: #{list.to_sxp}"}
-          next
-        end
-
-        if list.to_a.any? {|op| op.variable? && op.unbound?}
-          # Can't bind list elements
-          solution
-        else
-          input, old_str, new_str = list.to_a
-          output = input.to_s.gsub(old_str.to_s, new_str.to_s)
-
-          if result.variable?
-            solution.merge(result.to_sym => RDF::Literal(output))
-          elsif result != output
-            nil
-          else
-            solution
-          end
-        end
-      end.compact)
+    ##
+    # Subclasses may override or supplement validate to perform validation on the list subject
+    #
+    # @param [RDF::N3::List] list
+    # @return [Boolean]
+    def validate(list)
+      if super && list.length == 3
+        true
+      else
+        log_error(NAME) {"list must have exactly three entries: #{list.to_sxp}"}
+        false
+      end
     end
   end
 end
