@@ -37,6 +37,7 @@ module RDF::N3
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
       autoload :Floor,                'rdf/n3/algebra/math/floor'
       autoload :IntegerQuotient,      'rdf/n3/algebra/math/integerQuotient'
+      autoload :Negation,             'rdf/n3/algebra/math/negation'
       autoload :Product,              'rdf/n3/algebra/math/product'
       autoload :Quotient,             'rdf/n3/algebra/math/quotient'
       autoload :Remainder,            'rdf/n3/algebra/math/remainder'
@@ -82,7 +83,7 @@ module RDF::N3
         RDF::N3::Math.greaterThan         => SPARQL::Algebra::Operator::GreaterThan,
         RDF::N3::Math.integerQuotient     => Math::IntegerQuotient,
         RDF::N3::Math.lessThan            => SPARQL::Algebra::Operator::LessThan,
-        RDF::N3::Math.negation            => SPARQL::Algebra::Operator::Negate,
+        RDF::N3::Math.negation            => Math::Negation,
         RDF::N3::Math.notEqualTo          => SPARQL::Algebra::Operator::NotEqual,
         RDF::N3::Math.notGreaterThan      => SPARQL::Algebra::Operator::LessThanOrEqual,
         RDF::N3::Math.notLessThan         => SPARQL::Algebra::Operator::GreaterThanOrEqual,
