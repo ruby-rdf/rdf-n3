@@ -74,7 +74,7 @@ module RDF::N3
           when RDF::Value then v.to_term
           when Symbol     then RDF::Node.intern(v)
           when Array      then RDF::N3::List.new(values: v)
-          when nil        then nil
+          when nil        then RDF.nil
           else                 RDF::Literal.new(v)
           end
         end
@@ -141,7 +141,7 @@ module RDF::N3
         when RDF::Value then v.to_term
         when Symbol     then RDF::Node.intern(v)
         when Array      then RDF::N3::List.new(values: v)
-        when nil        then nil
+        when nil        then RDF.nil
         else                 RDF::Literal.new(v)
         end
       end
@@ -164,6 +164,9 @@ module RDF::N3
       else
         raise ArgumentError, "List []= takes one or two index values"
       end
+
+      # Fill any nil entries in @values with rdf:nil
+      @values.map! {|v| v || RDF.nil}
 
       @subject = RDF.nil if @values.empty?
       @subject ||= RDF::Node.new
@@ -578,7 +581,7 @@ module RDF::N3
       when RDF::Value then value.to_term
       when Array      then RDF::N3::List.new(values: value)
       when Symbol     then RDF::Node.intern(value)
-      when nil        then nil
+      when nil        then RDF.nil
       else                 RDF::Literal.new(value)
       end
     end
