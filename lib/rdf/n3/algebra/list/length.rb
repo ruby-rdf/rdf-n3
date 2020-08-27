@@ -22,7 +22,7 @@ module RDF::N3::Algebra::List
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
     def evaluate(list)
-      list.length
+      RDF::Literal(list.length)
     end
   end
 end
