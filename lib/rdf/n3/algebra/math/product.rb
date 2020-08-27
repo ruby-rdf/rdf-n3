@@ -15,7 +15,7 @@ module RDF::N3::Algebra::Math
         li.is_a?(RDF::Literal::Numeric) ?
           li :
           RDF::Literal::Integer.new(li.value)
-      end.reduce(&:*)
+      end.reduce(&:*) || RDF::Literal(1)  # Empty list product is 1
     end
   end
 end

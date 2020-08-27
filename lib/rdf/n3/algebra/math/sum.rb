@@ -19,7 +19,7 @@ module RDF::N3::Algebra::Math
         li.is_a?(RDF::Literal::Numeric) ?
           li :
           RDF::Literal::Integer.new(li.value)
-      end.reduce(&:+)
+      end.reduce(&:+) || RDF::Literal(0)  # Empty list sums to 0
     end
   end
 end

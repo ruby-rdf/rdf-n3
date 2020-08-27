@@ -382,6 +382,41 @@ describe "RDF::N3::Reasoner" do
       end
     end
 
+    context "math:product" do
+      {
+        '("5" "3" "2")': {
+          input: %(
+            { ("5" "3" "2") math:product ?x} => { ?x :valueOf "5 * 3 * 2" } .
+          ),
+          expect: %(
+            30 :valueOf "5 * 3 * 2" .
+          )
+        },
+        '(5 3 2)': {
+          input: %(
+            { (5 3 2) math:product ?x} => { ?x :valueOf "5 * 3 * 2" } .
+          ),
+          expect: %(
+            30 :valueOf "5 * 3 * 2" .
+          )
+        },
+        "()": {
+          input: %(
+            { () math:product ?x } =>  { ?x :valuOf " () math:product ?x  --- should be 1" }.
+          ),
+          expect: %(
+            1 :valuOf " () math:product ?x  --- should be 1" .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
     context "math:sum" do
       {
         '("3" "5")': {
@@ -398,6 +433,46 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             108 :valueOf "3 + 5 + 100" .
+          )
+        },
+        "()": {
+          input: %(
+            { () math:sum ?x } =>  { ?x :valuOf " () math:sum ?x  --- should be 0" }.
+          ),
+          expect: %(
+            0 :valuOf " () math:sum ?x  --- should be 0" .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "nesting" do
+      {
+        "A nested rule": {
+          input: %(
+          { ?x is math:sum of (3 (8 3)!math:difference ) } 
+             => { ?x :valueOf "3 + (8 - 3)" } .
+          ),
+          expect: %(
+            8 :valueOf "3 + (8 - 3)" .
+          )
+        },
+        "Big test": {
+          input: %(
+            { (	("7" "2")!math:quotient  
+               	(("7" "2")!math:remainder  "10000000")!math:exponentiation
+               	("a" "b" "c" "d" "e")!list:length
+              ) math:sum ?x } => 
+            { ?x :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5e0]" } .
+          ),
+          expect: %(
+            9.5e0 :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5e0]" .
           )
         },
       }.each do |name, options|
