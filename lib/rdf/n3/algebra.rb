@@ -16,6 +16,7 @@ module RDF::N3
       autoload :First,                'rdf/n3/algebra/list/first'
       autoload :In,                   'rdf/n3/algebra/list/in'
       autoload :Last,                 'rdf/n3/algebra/list/last'
+      autoload :Length,               'rdf/n3/algebra/list/length'
       autoload :Member,               'rdf/n3/algebra/list/member'
     end
 
@@ -34,10 +35,12 @@ module RDF::N3
       autoload :AbsoluteValue,        'rdf/n3/algebra/math/absoluteValue'
       autoload :Ceiling,              'rdf/n3/algebra/math/ceiling'
       autoload :Difference,           'rdf/n3/algebra/math/difference'
+      autoload :EqualTo,              'rdf/n3/algebra/math/equalTo'
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
       autoload :Floor,                'rdf/n3/algebra/math/floor'
       autoload :IntegerQuotient,      'rdf/n3/algebra/math/integerQuotient'
       autoload :Negation,             'rdf/n3/algebra/math/negation'
+      autoload :NotEqualTo,           'rdf/n3/algebra/math/notEqualTo'
       autoload :Product,              'rdf/n3/algebra/math/product'
       autoload :Quotient,             'rdf/n3/algebra/math/quotient'
       autoload :Remainder,            'rdf/n3/algebra/math/remainder'
@@ -62,6 +65,7 @@ module RDF::N3
         RDF::N3::List.first               => List::First,
         RDF::N3::List.in                  => List::In,
         RDF::N3::List.last                => List::Last,
+        RDF::N3::List.length              => List::Length,
         RDF::N3::List.member              => List::Member,
 
         RDF::N3::Log.conclusion           => Log::Conclusion,
@@ -77,14 +81,14 @@ module RDF::N3
         RDF::N3::Math.absoluteValue       => Math::AbsoluteValue,
         RDF::N3::Math.ceiling             => Math::Ceiling,
         RDF::N3::Math.difference          => Math::Difference,
-        RDF::N3::Math.equalTo             => SPARQL::Algebra::Operator::Equal,
+        RDF::N3::Math.equalTo             => Math::EqualTo,
         RDF::N3::Math.exponentiation      => Math::Exponentiation,
         RDF::N3::Math.floor               => Math::Floor,
         RDF::N3::Math.greaterThan         => SPARQL::Algebra::Operator::GreaterThan,
         RDF::N3::Math.integerQuotient     => Math::IntegerQuotient,
         RDF::N3::Math.lessThan            => SPARQL::Algebra::Operator::LessThan,
         RDF::N3::Math.negation            => Math::Negation,
-        RDF::N3::Math.notEqualTo          => SPARQL::Algebra::Operator::NotEqual,
+        RDF::N3::Math.notEqualTo          => Math::NotEqualTo,
         RDF::N3::Math.notGreaterThan      => SPARQL::Algebra::Operator::LessThanOrEqual,
         RDF::N3::Math.notLessThan         => SPARQL::Algebra::Operator::GreaterThanOrEqual,
         RDF::N3::Math.product             => Math::Product,
