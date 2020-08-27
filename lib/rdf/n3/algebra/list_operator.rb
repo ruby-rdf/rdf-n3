@@ -7,8 +7,6 @@ module RDF::N3::Algebra
     include RDF::Enumerable
     include RDF::Util::Logger
 
-    NAME = :listOperator
-
     ##
     # The operator takes a list and provides a mechanism for subclasses to operate over (and validate) that list argument.
     #
@@ -24,7 +22,7 @@ module RDF::N3::Algebra
         # If it evaluated to a BNode, re-expand as a list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
 
-        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+        log_debug(self.class.const_get(:NAME)) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
         next unless validate(list)
 
         if list.to_a.any? {|op| op.variable? && op.unbound?}
