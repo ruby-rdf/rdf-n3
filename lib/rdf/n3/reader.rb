@@ -441,15 +441,15 @@ module RDF::N3
     def read_literal
       error("Unexpected end of file", production: :literal) unless token = @lexer.first
       case token.type || token.value
-      when :INTEGER then prod(:literal) {literal(@lexer.shift.value, datatype:  RDF::XSD.integer, canonicalize: canonicalize?)}
+      when :INTEGER then prod(:literal) {literal(@lexer.shift.value, datatype:  RDF::XSD.integer, canonicalize: true)}
       when :DECIMAL
         prod(:literal) do
           value = @lexer.shift.value
           value = "0#{value}" if value.start_with?(".")
-          literal(value, datatype:  RDF::XSD.decimal, canonicalize: canonicalize?)
+          literal(value, datatype:  RDF::XSD.decimal, canonicalize: true)
         end
-      when :DOUBLE then prod(:literal) {literal(@lexer.shift.value.sub(/\.([eE])/, '.0\1'), datatype:  RDF::XSD.double, canonicalize: canonicalize?)}
-      when "true", "false" then prod(:literal) {literal(@lexer.shift.value, datatype: RDF::XSD.boolean, canonicalize: canonicalize?)}
+      when :DOUBLE then prod(:literal) {literal(@lexer.shift.value.sub(/\.([eE])/, '.0\1'), datatype:  RDF::XSD.double, canonicalize: true)}
+      when "true", "false" then prod(:literal) {literal(@lexer.shift.value, datatype: RDF::XSD.boolean, canonicalize: true)}
       when :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE
         prod(:literal) do
           value = @lexer.shift.value[1..-2]

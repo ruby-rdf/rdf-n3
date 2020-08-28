@@ -452,7 +452,7 @@ describe "RDF::N3::Reasoner" do
       end
     end
 
-    context "nesting" do
+    context "math-test" do
       {
         "A nested rule": {
           input: %(
@@ -469,14 +469,91 @@ describe "RDF::N3::Reasoner" do
                	(("7" "2")!math:remainder  "10000000")!math:exponentiation
                	("a" "b" "c" "d" "e")!list:length
               ) math:sum ?x } => 
-            { ?x :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5e0]" } .
+            { ?x :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5]" } .
           ),
           expect: %(
-            9.5e0 :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5e0]" .
+            9.5 :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5]" .
+          )
+        },
+        "Combinatorial test - worksWith": {
+          input: %(
+          "3.1415926" a :testValue.
+          3.1415926 a :testValue.
+          "1729" a :testValue.
+          1729 a :testValue.
+          "0" a :testValue.
+          0 a :testValue.
+          "1.0e7" a :testValue.
+          1.0e7 a :testValue.
+          { ?x a :testValue. ?y a :testValue.
+            (?x [ is math:difference of (?y ?x)]) math:sum ?y } => {?x :worksWith ?y}.
+          ),
+          expect: %(
+            "1.0e7" :worksWith 1.0e7 .
+            "1729" :worksWith 3.1415926, 1.0e7, 0, 1729 .
+            1729 :worksWith 3.1415926, 1.0e7, 0, 1729 .
+            "3.1415926"  :worksWith 3.1415926, 1.0e7 .
+            3.1415926 :worksWith 3.1415926, 1.0e7 .
+            1.0e7 :worksWith 1.0e7 .
+            "0" :worksWith 3.1415926, 1.0e7, 0, 1729 .
+            0 :worksWith 3.1415926, 1.0e7, 0, 1729 .
+          ),
+          pending: true
+        },
+        "Combinatorial test - SumDifferenceFAILS": {
+          input: %(
+          "3.1415926" a :testValue.
+          3.1415926 a :testValue.
+          "1729" a :testValue.
+          1729 a :testValue.
+          "0" a :testValue.
+          0 a :testValue.
+          "1.0e7" a :testValue.
+          1.0e7 a :testValue.
+          { ?x a :testValue. ?y a :testValue.
+            ?z is math:sum of (?x (?y ?x)!math:difference).
+            ?z math:notEqualTo ?y } => {(?x ?y) :SumDifferenceFAILS ?z}.
+          ),
+          expect: %()
+        },
+        "Combinatorial test - concatenation": {
+          input: %(
+          @prefix string: <http://www.w3.org/2000/10/swap/string#> .
+          "3.1415926" a :testValue.
+          3.1415926 a :testValue.
+          "1729" a :testValue.
+          1729 a :testValue.
+          "0" a :testValue.
+          0 a :testValue.
+          "1.0e7" a :testValue.
+          1.0e7 a :testValue.
+          { ?x a :testValue. ?y a :testValue.
+            (?x ?y) math:sum ?z.
+            (?x " + " ?y " = " ?z ) string:concatenation ?s
+          } => { ?s a :RESULT }.
+          ),
+          expect: %(
+            "0 + 0 = 0"     a :RESULT .
+            "0 + 1.0e7 = 1.0e7"     a :RESULT .
+            "0 + 1729 = 1729"     a :RESULT .
+            "0 + 3.1415926 = 3.1415926"     a :RESULT .
+            "1.0e7 + 0 = 1.0e7"     a :RESULT .
+            "1.0e7 + 1.0e7 = 2.0e7"     a :RESULT .
+            "1.0e7 + 1729 = 1.0001729e7"     a :RESULT .
+            "1.0e7 + 3.1415926 = 1.00000031415926e7"     a :RESULT .
+            "1729 + 0 = 1729"     a :RESULT .
+            "1729 + 1.0e7 = 1.0001729e7"     a :RESULT .
+            "1729 + 1729 = 3458"     a :RESULT .
+            "1729 + 3.1415926 = 1732.1415926"     a :RESULT .
+            "3.1415926 + 0 = 3.1415926"     a :RESULT .
+            "3.1415926 + 1.0e7 = 1.00000031415926e7"     a :RESULT .
+            "3.1415926 + 1729 = 1732.1415926"     a :RESULT .
+            "3.1415926 + 3.1415926 = 6.2831852"     a :RESULT .
           )
         },
       }.each do |name, options|
         it name do
+          pending(options[:pending]) if options[:pending]
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
           expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
