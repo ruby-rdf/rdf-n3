@@ -25,8 +25,8 @@ module RDF::N3::Algebra::Math
           next
         end
 
-        subject = RDF::Literal::Integer.new(subject.value) if subject.literal? && !subject.is_a?(RDF::Literal::Numeric)
-        object = RDF::Literal::Integer.new(object.value) if object.literal? && !object.is_a?(RDF::Literal::Numeric)
+        subject = subject.as_number
+        object = object.as_number
         if subject.variable?
           solution.merge(subject.to_sym => -object)
         elsif object.variable?

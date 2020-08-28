@@ -26,8 +26,7 @@ module RDF::N3::Algebra::Math
           next
         end
 
-        num = RDF::Literal::Double.new(num.value) unless num.is_a?(RDF::Literal::Numeric)
-        num = num.round
+        num = num.as_number.round
 
         if result.variable?
           solution.merge(result.to_sym => num)

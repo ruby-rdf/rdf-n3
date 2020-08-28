@@ -16,11 +16,7 @@ module RDF::N3::Algebra::Math
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
     def evaluate(list)
-      list.to_a.map do |li|
-        li.is_a?(RDF::Literal::Numeric) ?
-          li :
-          RDF::Literal::Integer.new(li.value)
-      end.reduce(&:-)
+      list.to_a.map(&:as_number).reduce(&:-)
     end
 
     ##

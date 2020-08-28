@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'rdf'
+require 'rdf/n3/terminals'
 
 # Monkey-patch RDF::Enumerable to add `:existentials` and `:univerals` accessors
 module RDF
@@ -78,6 +79,47 @@ module RDF
     def sameTerm?(other)
       eql?(other)
     end
+
+    ##
+    # Parse the value as a numeric literal, or return 0.
+    #
+    # @return [RDF::Literal::Numeric]
+    def as_number
+      RDF::Literal(0)
+    end
+  end
+
+  class Literal
+    include RDF::N3::Terminals
+
+    ##
+    # Parse the value as a numeric literal, or return 0.
+    #
+    # @return [RDF::Literal::Numeric]
+    def as_number
+      return self if self.is_a?(RDF::Literal::Numeric)
+      case value
+      when DOUBLE  then RDF::Literal::Double.new(value)
+      when DECIMAL then RDF::Literal::Decimal.new(value)
+      when INTEGER then RDF::Literal::Integer.new(value)
+      else
+        RDF::Literal(0)
+      end
+    end
+
+    class Double
+      ##
+      # Returns the SXP representation of this object.
+      #
+      # @return [String]
+      def to_sxp
+        case
+          when nan? then 'nan.0'
+          when infinite? then (infinite? > 0 ? '+inf.0' : '-inf.0')
+          else canonicalize.to_s.downcase
+        end
+      end
+    end
   end
 
   class Node
@@ -144,6 +186,19 @@ module RDF
     # True if the other is the same variable
     def sameTerm?(other)
       other.is_a?(::RDF::Query::Variable) && name.eql?(other.name)
+    end
+
+    ##
+    # Parse the value as a numeric literal, or return 0.
+    #
+    # @return [RDF::Literal::Numeric]
+    def as_number
+      RDF::Literal(0)
+    end
+
+    def to_sxp
+      prefix = distinguished? ? (existential? ? '$' : '?') : (existential? ? '$$' : '??')
+      unbound? ? "#{prefix}#{name}" : "#{prefix}#{name}=#{value.to_sxp}"
     end
   end
 end

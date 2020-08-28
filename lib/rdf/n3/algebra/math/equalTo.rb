@@ -18,6 +18,7 @@ module RDF::N3::Algebra::Math
     #
     # @see RDF::Term#==
     def apply(term1, term2)
+      log_debug(NAME) { "term1: #{term1.to_sxp} == term2: #{term2.to_sxp} ? #{(term1 == term2).inspect}"}
       RDF::Literal(term1 == term2)
     end
   end
