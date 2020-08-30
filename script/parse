@@ -19,6 +19,7 @@ def run(input, **options)
   num = 0
   Profiler__::start_profile if options[:profile]
   if options[:think] || options[:rules]
+    STDERR.puts "Reason" if $verbose
     # Parse into a new reasoner and evaluate
     reader_class.new(input, **options[:parser_options].merge(logger: nil)) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader, **options[:parser_options])
@@ -35,6 +36,7 @@ def run(input, **options)
       options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
+    STDERR.puts "Parse nt/quiet" if $verbose
     reader_class.new(input, **options[:parser_options]).each do |statement|
       num += 1
       if options[:errors] && statement.invalid?
@@ -46,16 +48,19 @@ def run(input, **options)
       end
     end
   elsif options[:output_format] == :sxp
+    STDERR.puts "Parse to SXP" if $verbose
     reader_class.new(input, **options[:parser_options]) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader)
       SXP::Generator.print(reasoner.to_sxp_bin)
     end
   elsif options[:output_format] == :inspect
+    STDERR.puts "Parse to inspect" if $verbose
     reader_class.new(input, **options[:parser_options]).each do |statement|
       num += 1
       options[:output].puts statement.inspect
     end
   else
+    STDERR.puts "Parse to #{options[:output_format]}" if $verbose
     reader = reader_class.new(input, **options[:parser_options])
     repo = [].extend(RDF::Enumerable, RDF::Queryable)
     reader.each_statement {|st| repo << st}

@@ -95,12 +95,6 @@ module RDF::N3::Algebra
       end
       log_debug("formula #{graph_name} each") {@solutions.to_sxp}
 
-      # Yield constant statements
-      constants.each do |statement|
-        #log_debug {"(formula constant) #{statement.to_sxp}"}
-        block.call(RDF::Statement.from(statement, graph_name: graph_name))
-      end
-
       # Yield patterns by binding variables
       @solutions.each do |solution|
         # Bind blank nodes to the solution when it doesn't contain a solution for an existential variable
@@ -158,6 +152,7 @@ module RDF::N3::Algebra
     def statements
       # BNodes in statements are existential variables.
       @statements ||= begin
+        # Operations/Builtins are not statements.
         statements = operands.select {|op| op.is_a?(RDF::Statement)}
 
         statements.map do |pattern|
@@ -185,17 +180,10 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Constants memoizer
-    def constants
-      # BNodes in statements are existential variables
-      @constants ||= statements.select(&:constant?)
-    end
-
-    ##
     # Patterns memoizer
     def patterns
       # BNodes in statements are existential variables
-      @patterns ||= statements.reject(&:constant?)
+      @patterns ||= statements
     end
 
     ##
