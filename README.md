@@ -83,7 +83,15 @@ Reasoning is discussed in the [Design Issues][] document.
 #### RDF Math vocabulary <http://www.w3.org/2000/10/swap/math#>
 
   * `math:absoluteValue`    (See {RDF::N3::Algebra::Math::AbsoluteValue})
+  * `math:acos`             (See {RDF::N3::Algebra::Math::ACos})
+  * `math:asin`             (See {RDF::N3::Algebra::Math::ASin})
+  * `math:atan`             (See {RDF::N3::Algebra::Math::ATan})
+  * `math:acosh`            (See {RDF::N3::Algebra::Math::ACosH})
+  * `math:asinh`            (See {RDF::N3::Algebra::Math::ASinH})
+  * `math:atanh`            (See {RDF::N3::Algebra::Math::ATanH})
   * `math:ceiling`          (See {RDF::N3::Algebra::Math::Ceiling})
+  * `math:cosh`             (See {RDF::N3::Algebra::Math::CosH})
+  * `math:cos`              (See {RDF::N3::Algebra::Math::Cos})
   * `math:difference`       (See {RDF::N3::Algebra::Math::Difference})
   * `math:equalTo`          (See {SPARQL::Algebra::Operator::Equal})
   * `math:exponentiation`   (See {RDF::N3::Algebra::Math::Exponentiation})
@@ -99,7 +107,11 @@ Reasoning is discussed in the [Design Issues][] document.
   * `math:quotient`         (See {RDF::N3::Algebra::Math::Quotient})
   * `math:remainder`        (See {RDF::N3::Algebra::Math::Remainder})
   * `math:rounded`          (See {RDF::N3::Algebra::Math::Rounded})
+  * `math:sinh`             (See {RDF::N3::Algebra::Math::SinH})
+  * `math:sin`              (See {RDF::N3::Algebra::Math::Sin})
   * `math:sum`              (See {RDF::N3::Algebra::Math::Sum})
+  * `math:tanh`             (See {RDF::N3::Algebra::Math::TanH})
+  * `math:tan`              (See {RDF::N3::Algebra::Math::Tan})
 
 #### RDF String vocabulary <http://www.w3.org/2000/10/swap/str#>
 

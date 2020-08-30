@@ -33,7 +33,15 @@ module RDF::N3
 
     module Math
       autoload :AbsoluteValue,        'rdf/n3/algebra/math/absoluteValue'
+      autoload :ACos,                 'rdf/n3/algebra/math/acos'
+      autoload :ASin,                 'rdf/n3/algebra/math/asin'
+      autoload :ATan,                 'rdf/n3/algebra/math/atan'
+      autoload :ACosH,                'rdf/n3/algebra/math/acosh'
+      autoload :ASinH,                'rdf/n3/algebra/math/asinh'
+      autoload :ATanH,                'rdf/n3/algebra/math/atanh'
       autoload :Ceiling,              'rdf/n3/algebra/math/ceiling'
+      autoload :Cos,                  'rdf/n3/algebra/math/cos'
+      autoload :CosH,                 'rdf/n3/algebra/math/cosh'
       autoload :Difference,           'rdf/n3/algebra/math/difference'
       autoload :EqualTo,              'rdf/n3/algebra/math/equalTo'
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
@@ -45,7 +53,11 @@ module RDF::N3
       autoload :Quotient,             'rdf/n3/algebra/math/quotient'
       autoload :Remainder,            'rdf/n3/algebra/math/remainder'
       autoload :Rounded,              'rdf/n3/algebra/math/rounded'
+      autoload :Sin,                  'rdf/n3/algebra/math/sin'
+      autoload :SinH,                 'rdf/n3/algebra/math/sinh'
       autoload :Sum,                  'rdf/n3/algebra/math/sum'
+      autoload :Tan,                  'rdf/n3/algebra/math/tan'
+      autoload :TanH,                 'rdf/n3/algebra/math/tanh'
     end
 
     module Str
@@ -79,7 +91,15 @@ module RDF::N3
         RDF::N3::Log.supports             => NotImplemented,
 
         RDF::N3::Math.absoluteValue       => Math::AbsoluteValue,
+        RDF::N3::Math.acos                => Math::ACos,
+        RDF::N3::Math.asin                => Math::ASin,
+        RDF::N3::Math.atan                => Math::ATan,
+        RDF::N3::Math.acosh               => Math::ACosH,
+        RDF::N3::Math.asinh               => Math::ASinH,
+        RDF::N3::Math.atanh               => Math::ATanH,
         RDF::N3::Math.ceiling             => Math::Ceiling,
+        RDF::N3::Math.cos                 => Math::Cos,
+        RDF::N3::Math.cosh                => Math::CosH,
         RDF::N3::Math.difference          => Math::Difference,
         RDF::N3::Math.equalTo             => Math::EqualTo,
         RDF::N3::Math.exponentiation      => Math::Exponentiation,
@@ -95,6 +115,10 @@ module RDF::N3
         RDF::N3::Math.quotient            => Math::Quotient,
         RDF::N3::Math.remainder           => Math::Remainder,
         RDF::N3::Math.rounded             => Math::Rounded,
+        RDF::N3::Math.sin                 => Math::Sin,
+        RDF::N3::Math.sinh                => Math::SinH,
+        RDF::N3::Math.tan                 => Math::Tan,
+        RDF::N3::Math.tanh                => Math::TanH,
         RDF::N3::Math[:sum]               => Math::Sum,
 
         RDF::N3::Str.concatenation        => Str::Concatenation,

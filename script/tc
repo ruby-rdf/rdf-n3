@@ -37,6 +37,13 @@ def earl_preamble(**options)
 end
 
 def run_tc(man, tc, **options)
+  case options[:type]
+  when :parser
+    return if tc.reason?
+  when :reasoner
+    return unless tc.reason?
+  end
+
   STDERR.write "test #{tc.name} "
 
   if options[:verbose]
@@ -172,7 +179,8 @@ options = {
   list_terms: true,
   output:  STDOUT,
   results: {},
-  slow: true  # Run slow tests by default
+  slow: true,  # Run slow tests by default
+  type: :all
 }
 
 opts = GetoptLong.new(
@@ -183,6 +191,7 @@ opts = GetoptLong.new(
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT],
   ["--quiet", "-q",     GetoptLong::NO_ARGUMENT],
   ["--skip-slow", "-s", GetoptLong::NO_ARGUMENT],
+  ["--type",            GetoptLong::REQUIRED_ARGUMENT],
   ["--validate",        GetoptLong::NO_ARGUMENT],
   ["--verbose", "-v",   GetoptLong::NO_ARGUMENT],
 )
@@ -197,12 +206,12 @@ def help(**options)
   puts "      --output:             Output to specified file"
   puts "      --quiet:              Minimal output"
   puts "      --skip-slow:          Avoid files taking too much time"
+  puts "      --type:               Test type (`parser`, `reasoner`, or `all`)"
   puts "      --validate:           Validate input"
   puts "      --verbose:            Verbose processing"
   puts "      --help,-?:            This message"
   exit(0)
 end
-
 
 opts.each do |opt, arg|
   case opt
@@ -217,6 +226,12 @@ opts.each do |opt, arg|
     options[:quiet] = true
     options[:level] = Logger::FATAL
   when '--skip-slow'        then options[:slow] = false
+  when '--type'
+    unless %(parser reasoner all).include?(arg)
+      STDERR.puts "unknown test type: #{options[:type]}"
+      help(**options)
+    end
+    options[:type] = arg.to_sym
   when '--validate'         then options[:validate] = true
   when '--verbose'          then options[:verbose] = true
   end
