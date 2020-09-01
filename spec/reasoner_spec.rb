@@ -79,7 +79,7 @@ describe "RDF::N3::Reasoner" do
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
           result = reason(options[:input])
-          expect(reason(options[:input])).to be_equivalent_graph(expected, logger: logger, format: :n3)
+          expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
         end
       end
     end
@@ -448,6 +448,47 @@ describe "RDF::N3::Reasoner" do
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
           expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+
+      context "trig" do
+        {
+          "0": {
+            asin: "0.0e0",
+            sin: "0.0e0",
+            sinh: "0.0e0",
+            cos: "1.0e0",
+            cosh: "1.0e0",
+            atan: "0.0e0",
+            tan: "0.0e0",
+            tanh: "0.0e0",
+          },
+          "3.14159265358979323846": {
+            cos: "-1.0e0"
+          },
+          # pi/4
+          "0.7853981633974483": {
+            tan: ["1.0e0", "0.9e0"],
+          },
+          # pi/3
+          "1.0471975511965976": {
+            cos: ["0.51e0", "0.49e0"],
+          },
+        }.each do |subject, params|
+          params.each do |fun, object|
+            it "#{subject} math:#{fun} #{object}" do
+              if object.is_a?(Array)
+                input = %({ #{subject} math:#{fun} _:x . _:x math:lessThan #{object.first}; math:greaterThan #{object.last} } => { :#{fun} a :SUCCESS} .)
+                expect = %(:#{fun} a :SUCCESS .)
+              else
+                input = %({ #{subject} math:#{fun} ?x } => { #{subject} :#{fun} ?x} .)
+                expect = %(#{subject} :#{fun} #{object} .)
+              end
+              logger.info "input: #{input}"
+              expected = parse(expect)
+              expect(reason(input, filter: true)).to be_equivalent_graph(expected, logger: logger)
+            end
+          end
         end
       end
     end

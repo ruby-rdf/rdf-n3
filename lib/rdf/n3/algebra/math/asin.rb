@@ -14,7 +14,7 @@ module RDF::N3::Algebra::Math
       case position
       when :subject
         return nil unless resource.literal?
-        RDF::Literal(Math.asin(resource.as_number.object))
+        RDF::Literal(Math.asin(resource.as_number.object), canonicalize: true)
       when :object
         return nil unless resource.literal? || resource.variable?
         resource

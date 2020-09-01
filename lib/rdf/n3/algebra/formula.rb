@@ -64,6 +64,7 @@ module RDF::N3::Algebra
               @solutions :
               RDF::Query::Solutions.new
           end
+          log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + @solutions.to_sxp}
         end
       end
       log_info("(formula sub-op solutions)") {@solutions.to_sxp}
