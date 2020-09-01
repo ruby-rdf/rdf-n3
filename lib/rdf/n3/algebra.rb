@@ -9,6 +9,7 @@ module RDF::N3
   module Algebra
     autoload :Formula,                'rdf/n3/algebra/formula'
     autoload :ListOperator,           'rdf/n3/algebra/list_operator'
+    autoload :LiteralOperator,        'rdf/n3/algebra/literal_operator'
     autoload :NotImplemented,         'rdf/n3/algebra/notImplemented'
 
     module List
@@ -69,6 +70,20 @@ module RDF::N3
       autoload :NotMatches,           'rdf/n3/algebra/str/notMatches'
       autoload :Replace,              'rdf/n3/algebra/str/replace'
       autoload :Scrape,               'rdf/n3/algebra/str/scrape'
+    end
+
+    module Time
+      autoload :DayOfWeek,            'rdf/n3/algebra/time/day_of_week'
+      autoload :Day,                  'rdf/n3/algebra/time/day'
+      autoload :GmTime,               'rdf/n3/algebra/time/gm_time'
+      autoload :Hour,                 'rdf/n3/algebra/time/hour'
+      autoload :InSeconds,            'rdf/n3/algebra/time/in_seconds'
+      autoload :LocalTime,            'rdf/n3/algebra/time/local_time'
+      autoload :Minute,               'rdf/n3/algebra/time/minute'
+      autoload :Month,                'rdf/n3/algebra/time/month'
+      autoload :Second,               'rdf/n3/algebra/time/second'
+      autoload :Timezone,             'rdf/n3/algebra/time/timezone'
+      autoload :Year,                 'rdf/n3/algebra/time/year'
     end
 
     def for(uri)
@@ -138,6 +153,18 @@ module RDF::N3
         RDF::N3::Str.replace              => Str::Replace,
         RDF::N3::Str.scrape               => Str::Scrape,
         RDF::N3::Str.startsWith           => SPARQL::Algebra::Operator::StrStarts,
+
+        RDF::N3::Time.dayOfWeek           => Time::DayOfWeek,
+        RDF::N3::Time.day                 => Time::Day,
+        RDF::N3::Time.gmTime              => Time::GmTime,
+        RDF::N3::Time.hour                => Time::Hour,
+        RDF::N3::Time.inSeconds           => Time::InSeconds,
+        RDF::N3::Time.localTime           => Time::LocalTime,
+        RDF::N3::Time.minute              => Time::Minute,
+        RDF::N3::Time.month               => Time::Month,
+        RDF::N3::Time.second              => Time::Second,
+        RDF::N3::Time.timeZone            => Time::Timezone,
+        RDF::N3::Time.year                => Time::Year,
       }[uri]
     end
     module_function :for
