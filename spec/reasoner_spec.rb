@@ -598,6 +598,25 @@ describe "RDF::N3::Reasoner" do
     end
   end
 
+  context "n3:time" do
+    context "time:day" do
+      {
+        "2002-06-22T22:09:32-05:00" => {
+          input: %(
+            { "2002-06-22T22:09:32-05:00" time:day ?x } => { :test1 :is "22" }.
+          ),
+          expect: %(:test1 :is "22".)
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+  end
+
   # Parse N3 input into a repository
   def parse(input, **options)
     repo = options[:repo] || RDF::N3:: Repository.new

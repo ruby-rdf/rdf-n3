@@ -132,6 +132,20 @@ Reasoning is discussed in the [Design Issues][] document.
   * `string:scrape`               (See {RDF::N3::Algebra::Str::Scrape})
   * `string:startsWith`           (See {SPARQL::Algebra::Operator::StrStarts})
 
+#### RDF Time vocabulary <>
+
+  * `time:dayOfWeek`              (See {RDF::N3::Algebra::Time::DayOfWeek})
+  * `time:day`                    (See {RDF::N3::Algebra::Time::Day})
+  * `time:gmTime`                 (See {RDF::N3::Algebra::Time::GmTime})
+  * `time:hour`                   (See {RDF::N3::Algebra::Time::Hour})
+  * `time:inSeconds`              (See {RDF::N3::Algebra::Time::InSeconds})
+  * `time:localTime`              (See {RDF::N3::Algebra::Time::LocalTime})
+  * `time:minute`                 (See {RDF::N3::Algebra::Time::Minute})
+  * `time:month`                  (See {RDF::N3::Algebra::Time::Month})
+  * `time:second`                 (See {RDF::N3::Algebra::Time::Second})
+  * `time:timeZone`               (See {RDF::N3::Algebra::Time::Timezone})
+  * `time:year`                   (See {RDF::N3::Algebra::Time::Year})
+
 ### Formulae
 
 N3 Formulae are introduced with the `{ statement-list }` syntax. A given formula is assigned an `RDF::Node` instance, which is also used as the graph_name for `RDF::Statement` instances provided to `RDF::N3::Reader#each_statement`. For example, the following N3 generates the associated statements:

@@ -87,6 +87,14 @@ module RDF
     def as_number
       RDF::Literal(0)
     end
+
+    ##
+    # Parse the value as a dateTime literal, or return now.
+    #
+    # @return [RDF::Literal::DateTime]
+    def as_datetime
+      RDF::Literal::DateTime.new(DateTime.now)
+    end
   end
 
   class Literal
@@ -105,6 +113,17 @@ module RDF
       else
         RDF::Literal(0)
       end
+    end
+
+    ##
+    # Parse the value as a dateTime literal, or return now.
+    #
+    # @return [RDF::Literal::DateTime]
+    def as_datetime
+      mvalue = value.match?(%r(^\d{4}$)) ? "#{value}-" : value
+      RDF::Literal::DateTime.new(::DateTime.iso8601(mvalue), lexical: value)
+    rescue
+      RDF::Literal(0)
     end
 
     class Double
