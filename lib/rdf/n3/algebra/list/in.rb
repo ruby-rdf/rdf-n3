@@ -4,12 +4,7 @@ module RDF::N3::Algebra::List
   #
   # @example
   #     { 1 list:in  (  1 2 3 4 5 ) } => { :test4a a :SUCCESS }.
-  class In < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class In < RDF::N3::Algebra::ListOperator
     NAME = :listIn
 
     ##

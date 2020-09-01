@@ -1,41 +1,24 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is an angle expressed in radians. The object is calulated as the tangent value of the subject.
-  class TanH < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class TanH < RDF::N3::Algebra::LiteralOperator
     NAME = :mathTanH
 
     ##
     # The math:tanh operator takes string or number and calculates its hyperbolic tangent.
     #
-    # @param [RDF::Queryable] queryable
-    # @param [RDF::Query::Solutions] solutions
-    # @return [RDF::Query::Solutions]
-    def execute(queryable, solutions:, **options)
-      num = operand(0)
-      result = operand(1)
-
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        log_debug(NAME) {"num: #{num.to_sxp}, result: #{result.to_sxp}"}
-        unless num.literal?
-          log_error(NAME) {"num is not a literal: #{num.inspect}"}
-          next
-        end
-
-        num = RDF::Literal(Math.tanh(num.as_number.object))
-
-        if result.variable?
-          solution.merge(result.to_sym => num)
-        elsif result != num
-          nil
-        else
-          solution
-        end
-      end.compact)
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    def evaluate(resource, position:)
+      case position
+      when :subject
+        return nil unless resource.literal?
+        RDF::Literal(Math.tanh(resource.as_number.object))
+      when :object
+        return nil unless resource.literal? || resource.variable?
+        resource
+      end
     end
   end
 end

@@ -12,31 +12,18 @@ module RDF::N3::Algebra::Math
     ##
     # The math:negation operator takes may have either a bound subject or object.
     #
-    # @param [RDF::Queryable] queryable
-    # @param [RDF::Query::Solutions] solutions
-    # @return [RDF::Query::Solutions]
-    def execute(queryable, solutions:, **options)
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        subject, object = operand(0), operand(1)
-
-        log_debug(NAME) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
-        unless subject.literal? || object.literal?
-          log_error(NAME) {"subject or object are not literals: #{subject.inspect}, #{object.inspect}"}
-          next
-        end
-
-        subject = subject.as_number
-        object = object.as_number
-        if subject.variable?
-          solution.merge(subject.to_sym => -object)
-        elsif object.variable?
-          solution.merge(object.to_sym => -subject)
-        elsif subject == -object
-          solution
-        else
-          nil
-        end
-      end.compact)
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    def evaluate(resource, position:)
+      case resource
+      when RDF::Query::Variable
+        resource
+      when RDF::Literal
+        RDF::Literal(-resource.as_number)
+      else
+        nil
+      end
     end
   end
 end

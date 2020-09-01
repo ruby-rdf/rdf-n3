@@ -1,41 +1,24 @@
 module RDF::N3::Algebra::Math
   ##
   # The object is calulated as the absolute value of the subject.
-  class AbsoluteValue < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class AbsoluteValue < RDF::N3::Algebra::LiteralOperator
     NAME = :mathAbsoluteValue
 
     ##
     # The math:sum operator takes string or number and calculates its absolute value.
     #
-    # @param [RDF::Queryable] queryable
-    # @param [RDF::Query::Solutions] solutions
-    # @return [RDF::Query::Solutions]
-    def execute(queryable, solutions:, **options)
-      num = operand(0)
-      result = operand(1)
-
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        log_debug(NAME) {"num: #{num.to_sxp}, result: #{result.to_sxp}"}
-        unless num.literal?
-          log_error(NAME) {"num is not a literal: #{num.inspect}"}
-          next
-        end
-
-        num = num.as_number.abs
-
-        if result.variable?
-          solution.merge(result.to_sym => num)
-        elsif result != num
-          nil
-        else
-          solution
-        end
-      end.compact)
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    def evaluate(resource, position:)
+      case position
+      when :subject
+        return nil unless resource.literal?
+        RDF::Literal(resource.as_number.abs)
+      when :object
+        return nil unless resource.literal? || resource.variable?
+        resource
+      end
     end
   end
 end

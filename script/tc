@@ -126,9 +126,9 @@ def run_tc(man, tc, **options)
         end
         result = "failed"
       end
-      STDERR.puts  "\nResult: #{repo.dump(:n3)}" if options[:verbose]
+      STDERR.puts  "\nResult: #{repo.dump(:n3, base_uri: RDF::URI(tc.base).parent, standard_prefixes: true)}" if options[:verbose]
 
-      output_graph = RDF::N3::Repository.load(tc.result, base_uri:  tc.base)
+      output_graph = RDF::N3::Repository.load(tc.result, base_uri: tc.base)
 
       # Check against expanded triples from repo
       expanded_repo = RDF::Repository.new do |r|
@@ -227,7 +227,7 @@ opts.each do |opt, arg|
     options[:level] = Logger::FATAL
   when '--skip-slow'        then options[:slow] = false
   when '--type'
-    unless %(parser reasoner all).include?(arg)
+    unless %w(parser reasoner all).include?(arg)
       STDERR.puts "unknown test type: #{options[:type]}"
       help(**options)
     end

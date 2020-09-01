@@ -1,12 +1,7 @@
 module RDF::N3::Algebra::List
   ##
   # Iff the subject is a list and the object is in that list, then this is true.
-  class Member < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
+  class Member < RDF::N3::Algebra::ListOperator
     NAME = :listMember
 
     ##
