@@ -21,7 +21,7 @@ module RDF::N3::Algebra::List
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        subject = operand(0)
+        subject = operand(0).evaluate(solution.bindings) || operand(0)
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
         list = operand(1).evaluate(solution.bindings)
         # If it evaluated to a BNode, re-expand as a list

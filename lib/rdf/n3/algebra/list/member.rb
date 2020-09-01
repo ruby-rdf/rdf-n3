@@ -20,9 +20,9 @@ module RDF::N3::Algebra::List
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         list = operand(0).evaluate(solution.bindings)
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
-        result = operand(1)
+        object = operand(1).evaluate(solution.bindings) || operand(1)
 
-        log_debug(NAME) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+        log_debug(NAME) {"list: #{list.to_sxp}, object: #{object.to_sxp}"}
         unless list.list? && list.valid?
           log_error(NAME) {"operand is not a list: #{list.to_sxp}"}
           next
@@ -32,12 +32,12 @@ module RDF::N3::Algebra::List
           # Can't bind list elements
           solution
         else
-          if result.variable?
+          if object.variable?
             # Bind all list entries to this solution, creates an array of solutions
             list.to_a.map do |term|
-              solution.merge(result.to_sym => term)
+              solution.merge(object.to_sym => term)
             end
-          elsif list.to_a.include?(result)
+          elsif list.to_a.include?(object)
             solution
           else
             nil

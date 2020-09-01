@@ -27,8 +27,8 @@ module RDF::N3::Algebra
     #   optional initial solutions for chained queries
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
-      log_debug("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
-      log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
+      log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
+      log_info("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
@@ -46,7 +46,7 @@ module RDF::N3::Algebra
             memo.merge(name => value)
           end)
         end
-        log_debug("(formula query solutions)") { these_solutions.to_sxp}
+        log_info("(formula query solutions)") { these_solutions.to_sxp}
         solutions.merge(these_solutions)
       end
 
@@ -66,7 +66,7 @@ module RDF::N3::Algebra
           end
         end
       end
-      log_debug("(formula sub-op solutions)") {@solutions.to_sxp}
+      log_info("(formula sub-op solutions)") {@solutions.to_sxp}
 
       # Only return solutions with universal variables
       variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$')}
@@ -153,7 +153,7 @@ module RDF::N3::Algebra
       # BNodes in statements are existential variables.
       @statements ||= begin
         # Operations/Builtins are not statements.
-        statements = operands.select {|op| op.is_a?(RDF::Statement)}
+        statements = operands.select {|op| op.is_a?(RDF::Statement) && !RDF::N3::Algebra.for(op.predicate)}
 
         statements.map do |pattern|
           if graph_name

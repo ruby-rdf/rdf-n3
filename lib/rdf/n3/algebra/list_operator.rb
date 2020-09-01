@@ -14,26 +14,26 @@ module RDF::N3::Algebra
     # @param [RDF::Query::Solutions] solutions
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
-      result = operand(1)
-
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
         list = operand(0).evaluate(solution.bindings)
         # If it evaluated to a BNode, re-expand as a list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
+        object = operand(1).evaluate(solution.bindings) || operand(1)
 
-        log_debug(self.class.const_get(:NAME)) {"list: #{list.to_sxp}, result: #{result.to_sxp}"}
+
+        log_debug(self.class.const_get(:NAME)) {"list: #{list.to_sxp}, object: #{object.to_sxp}"}
         next unless validate(list)
 
         if list.to_a.any? {|op| op.variable? && op.unbound?}
           # Can't bind list elements
           solution
         else
-          rhs = evaluate(list)
+          lhs = evaluate(list)
 
-          if result.variable?
-            solution.merge(result.to_sym => rhs)
-          elsif result != rhs
+          if object.variable?
+            solution.merge(object.to_sym => lhs)
+          elsif object != lhs
             nil
           else
             solution
