@@ -25,19 +25,14 @@ module RDF::N3::Algebra
         log_debug(self.class.const_get(:NAME)) {"list: #{list.to_sxp}, object: #{object.to_sxp}"}
         next unless validate(list)
 
-        if list.to_a.any? {|op| op.variable? && op.unbound?}
-          # Can't bind list elements
-          solution
-        else
-          lhs = evaluate(list)
+        lhs = evaluate(list)
 
-          if object.variable?
-            solution.merge(object.to_sym => lhs)
-          elsif object != lhs
-            nil
-          else
-            solution
-          end
+        if object.variable?
+          solution.merge(object.to_sym => lhs)
+        elsif object != lhs
+          nil
+        else
+          solution
         end
       end.compact)
     end

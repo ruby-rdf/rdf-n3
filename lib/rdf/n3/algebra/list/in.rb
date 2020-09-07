@@ -28,20 +28,15 @@ module RDF::N3::Algebra::List
           next
         end
 
-        if list.to_a.any? {|op| op.variable? && op.unbound?}
-          # Can't bind list elements
+        if subject.variable?
+          # Bind all list entries to this solution, creates an array of solutions
+          list.to_a.map do |term|
+            solution.merge(subject.to_sym => term)
+          end
+        elsif list.to_a.include?(subject)
           solution
         else
-          if subject.variable?
-            # Bind all list entries to this solution, creates an array of solutions
-            list.to_a.map do |term|
-              solution.merge(subject.to_sym => term)
-            end
-          elsif list.to_a.include?(subject)
-            solution
-          else
-            nil
-          end
+          nil
         end
       end.flatten.compact)
     end
