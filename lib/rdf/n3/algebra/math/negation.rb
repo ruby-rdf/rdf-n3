@@ -20,7 +20,7 @@ module RDF::N3::Algebra::Math
       when RDF::Query::Variable
         resource
       when RDF::Literal
-        RDF::Literal(-resource.as_number)
+        as_literal(-resource.as_number)
       else
         nil
       end

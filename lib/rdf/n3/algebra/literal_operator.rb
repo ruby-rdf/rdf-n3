@@ -65,5 +65,18 @@ module RDF::N3::Algebra
     def valid?(subject, object)
       true
     end
+
+    ##
+    # Returns a literal for the numeric argument, with doubles canonicalized using a lower-case 'e'.
+    def as_literal(object)
+      case object
+      when Float
+        literal = RDF::Literal(object, canonicalize: true)
+        literal.instance_variable_set(:@string, literal.to_s.downcase)
+        literal
+      else
+        RDF::Literal(object, canonicalize: true)
+      end
+    end
   end
 end

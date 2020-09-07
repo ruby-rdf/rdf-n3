@@ -16,9 +16,9 @@ module RDF::N3::Algebra::Math
       when RDF::Literal
         case position
         when :subject
-          RDF::Literal(Math.cosh(resource.as_number.object), canonicalize: true)
+          as_literal(Math.cosh(resource.as_number.object))
         when :object
-          RDF::Literal(Math.acosh(resource.as_number.object), canonicalize: true)
+          as_literal(Math.acosh(resource.as_number.object))
         end
       else
         nil

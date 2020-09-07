@@ -16,9 +16,9 @@ module RDF::N3::Algebra::Math
       when RDF::Literal
         case position
         when :subject
-          RDF::Literal(Math.tanh(resource.as_number.object), canonicalize: true)
+          as_literal(Math.tanh(resource.as_number.object))
         when :object
-          RDF::Literal(Math.atanh(resource.as_number.object), canonicalize: true)
+          as_literal(Math.atanh(resource.as_number.object))
         end
       else
         nil
