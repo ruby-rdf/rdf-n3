@@ -250,7 +250,7 @@ manifests.each do |man|
   Fixtures::SuiteTest::Manifest.open(man) do |m|
     m.entries.each do |tc|
       next unless ARGV.empty? || ARGV.any? {|n| tc.property('@id').match?(/#{n}/) || tc.property('action').match?(/#{n}/)}
-      run_tc(man, tc, **options)
+      run_tc(man, tc, **options.merge(list_terms: !man.include?("TurtleTests")))
     end
   end
 end

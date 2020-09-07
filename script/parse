@@ -93,13 +93,13 @@ logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [sev
 
 parser_options = {
   base_uri: "http://example.com",
+  list_terms: true,
   logger: logger,
   validate: false,
 }
 
 options = {
   input_format: :n3,
-  list_terms: true,
   logger: logger,
   output: STDOUT,
   output_format: :n3,

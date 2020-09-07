@@ -11,11 +11,6 @@ describe RDF::N3::Reader do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
-            case t.name
-            when *%w(turtle-syntax-bad-struct-05 turtle-syntax-bad-kw-05 turtle-syntax-bad-struct-15)
-              pending("n3 allows odd predicates")
-            end
-
             t.logger = RDF::Spec.logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
