@@ -280,13 +280,6 @@ describe "RDF::N3::Reader" do
       end
     end
 
-    it "whitespace in uris" do
-      n3 = %{<http: //example.org/\r\nresource3> <http://\texample.org/property> <\nhttp://example.org/resource2\n> .}
-      nt = %{<http://example.org/resource3> <http://example.org/property> <http://example.org/resource2> .}
-      graph = parse(n3, logger: logger)
-      expect(graph).to be_equivalent_graph(nt, logger: logger)
-    end
-
     it "should allow mixed-case language" do
       n3doc = %(:x2 :p "xyz"@en .)
       statement = parse(n3doc).statements.first
@@ -687,27 +680,6 @@ describe "RDF::N3::Reader" do
         <http://example.com/path/DFFERENT/d3> <http://example.com/path/DFFERENT/#b3> <http://example.com/path/DFFERENT/e3> .
         )
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
-      end
-    end
-
-    describe "IRIs" do
-      {
-        "with newlines": {
-          n3: %(
-            <http://example.com/iri with
-            whitespace is
-            okay
-            > a :testcase .
-          ),
-          ttl: %(
-          <http://example.com/iriwithwhitespaceisokay> a <http://a/b#testcase> .
-          )
-        },
-      }.each do |name, params|
-        it name do
-          expected = parse(params[:ttl], base_uri: "http://a/b", logger: false)
-          expect(parse(params[:n3], base_uri: "http://a/b")).to be_equivalent_graph(expected, about: "http://a/b", logger: logger)
-        end
       end
     end
 
