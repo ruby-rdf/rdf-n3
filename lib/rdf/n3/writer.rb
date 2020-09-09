@@ -283,7 +283,11 @@ module RDF::N3
         when RDF::XSD.boolean, RDF::XSD.integer, RDF::XSD.decimal
           literal.canonicalize.to_s
         when RDF::XSD.double
-          literal.canonicalize.to_s.sub('E', 'e')  # Favor lower case exponent
+          if literal.nan? || literal.infinite?
+            quoted(literal.value) + "^^#{format_uri(literal.datatype)}"
+          else
+            literal.canonicalize.to_s.sub('E', 'e')  # Favor lower case exponent
+          end
         else
           text = quoted(literal.value)
           text << "@#{literal.language}" if literal.has_language?
