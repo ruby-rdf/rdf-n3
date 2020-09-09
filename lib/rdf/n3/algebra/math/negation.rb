@@ -6,6 +6,7 @@ module RDF::N3::Algebra::Math
     include SPARQL::Algebra::Update
     include RDF::Enumerable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :mathNegation
 
@@ -24,6 +25,14 @@ module RDF::N3::Algebra::Math
       else
         nil
       end
+    end
+
+    ##
+    # Input is either the subject or object
+    #
+    # @return [RDF::Term]
+    def input_operand
+      RDF::N3::List.new(values: operands)
     end
   end
 end

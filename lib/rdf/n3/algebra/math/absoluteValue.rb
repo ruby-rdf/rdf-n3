@@ -20,5 +20,13 @@ module RDF::N3::Algebra::Math
         resource
       end
     end
+
+    ##
+    # Input is either the subject or object
+    #
+    # @return [RDF::Term]
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
   end
 end

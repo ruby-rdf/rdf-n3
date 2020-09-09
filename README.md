@@ -56,7 +56,9 @@ Experimental N3 reasoning is supported. Instantiate a reasoner from a dataset:
        end
     end
 
-Reasoning is performed by turning a repository containing formula and predicate operators into an executable set of operators (similar to the executable SPARQL Algebra). Reasoning adds statements to the base dataset, marked with `:inferred` (e.g. `statement.inferred?`). Predicate operators are defined from the following vocabularies:
+Reasoning is performed by turning a repository containing formula and predicate operators into an executable set of operators (similar to the executable SPARQL Algebra). Reasoning adds statements to the base dataset, marked with `:inferred` (e.g. `statement.inferred?`). Predicate operators are defined from the following vocabularies.
+
+When dispatching built-in operators, precedence is given to operators whos operands are fully evaluated, followed by those having only variable output operands, followed by those having the fewest operands. Operators are evaluated until either no solutions are derived, or all operators have been completed.
 
 Reasoning is discussed in the [Design Issues][] document.
 
@@ -76,7 +78,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `log:equalTo`       (See {RDF::N3::Algebra::Log::EqualTo})
   * `log:implies`       (See {RDF::N3::Algebra::Log::Implies})
   * `log:includes`      (See {RDF::N3::Algebra::Log::Includes})
-  * `log:notEqualTo`    (not implemented yet - See {RDF::N3::Algebra::Log::NotEqualTo})
+  * `log:notEqualTo`    (See {RDF::N3::Algebra::Log::NotEqualTo})
   * `log:notIncludes`   (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
   * `log:outputString`  (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
 
@@ -93,16 +95,16 @@ Reasoning is discussed in the [Design Issues][] document.
   * `math:cosh`             (See {RDF::N3::Algebra::Math::CosH})
   * `math:cos`              (See {RDF::N3::Algebra::Math::Cos})
   * `math:difference`       (See {RDF::N3::Algebra::Math::Difference})
-  * `math:equalTo`          (See {SPARQL::Algebra::Operator::Equal})
+  * `math:equalTo`          (See {RDF::N3::Algebra::Math::Equal})
   * `math:exponentiation`   (See {RDF::N3::Algebra::Math::Exponentiation})
   * `math:floor`            (See {RDF::N3::Algebra::Math::Floor})
-  * `math:greaterThan`      (See {SPARQL::Algebra::Operator::GreaterThan})
+  * `math:greaterThan`      (See {RDF::N3::Algebra::Math::GreaterThan})
   * `math:integerQuotient`  (See {RDF::N3::Algebra::Math::IntegerQuotient})
-  * `math:lessThan`         (See {SPARQL::Algebra::Operator::LessThan})
-  * `math:negation`         (See {SPARQL::Algebra::Operator::Negate})
-  * `math:notEqualTo`       (See {SPARQL::Algebra::Operator::NotEqual})
-  * `math:notGreaterThan`   (See {SPARQL::Algebra::Operator::LessThanOrEqual})
-  * `math:notLessThan`      (See {SPARQL::Algebra::Operator::GreaterThanOrEqual})
+  * `math:lessThan`         (See {RDF::N3::Algebra::Math::LessThan})
+  * `math:negation`         (See {RDF::N3::Algebra::Math::Negate})
+  * `math:notEqualTo`       (See {RDF::N3::Algebra::Math::NotEqual})
+  * `math:notGreaterThan`   (See {RDF::N3::Algebra::Math::NotGreaterThan})
+  * `math:notLessThan`      (See {RDF::N3::Algebra::Math::NotLessThan})
   * `math:product`          (See {RDF::N3::Algebra::Math::Product})
   * `math:quotient`         (See {RDF::N3::Algebra::Math::Quotient})
   * `math:remainder`        (See {RDF::N3::Algebra::Math::Remainder})
@@ -116,21 +118,21 @@ Reasoning is discussed in the [Design Issues][] document.
 #### RDF String vocabulary <http://www.w3.org/2000/10/swap/str#>
 
   * `string:concatenation`        (See {RDF::N3::Algebra::Str::Concatenation})
-  * `string:contains`             (See {SPARQL::Algebra::Operator::Contains})
+  * `string:contains`             (See {RDF::N3::Algebra::Str::Contains})
   * `string:containsIgnoringCase` (See {RDF::N3::Algebra::Str::ContainsIgnoringCase})
-  * `string:endsWith`             (See {SPARQL::Algebra::Operator::StrEnds})
+  * `string:endsWith`             (See {RDF::N3::Algebra::Str::EndsWith})
   * `string:equalIgnoringCase`    (See {RDF::N3::Algebra::Str::EqualIgnoringCase})
   * `string:format`               (See {RDF::N3::Algebra::Str::Format})
-  * `string:greaterThan`          (See {SPARQL::Algebra::Operator::GreaterThan})
-  * `string:lessThan`             (See {SPARQL::Algebra::Operator::LessThan})
-  * `string:matches`              (See {SPARQL::Algebra::Operator::Regex})
+  * `string:greaterThan`          (See {RDF::N3::Algebra::Str::GreaterThan})
+  * `string:lessThan`             (See {RDF::N3::Algebra::Str::LessThan})
+  * `string:matches`              (See {RDF::N3::Algebra::Str::Matches})
   * `string:notEqualIgnoringCase` (See {RDF::N3::Algebra::Str::NotEqualIgnoringCase})
-  * `string:notGreaterThan`       (See {SPARQL::Algebra::Operator::LessThanOrEqual})
-  * `string:notLessThan`          (See {SPARQL::Algebra::Operator::GreaterThanOrEqual})
+  * `string:notGreaterThan`       (See {RDF::N3::Algebra::Str::NotGreaterThan})
+  * `string:notLessThan`          (See {RDF::N3::Algebra::Str::NotLessThan})
   * `string:notMatches`           (See {RDF::N3::Algebra::Str::NotMatches})
   * `string:replace`              (See {RDF::N3::Algebra::Str::Replace})
   * `string:scrape`               (See {RDF::N3::Algebra::Str::Scrape})
-  * `string:startsWith`           (See {SPARQL::Algebra::Operator::StrStarts})
+  * `string:startsWith`           (See {RDF::N3::Algebra::Str::StartsWith})
 
 #### RDF Time vocabulary <>
 

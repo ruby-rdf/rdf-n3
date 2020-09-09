@@ -1,4 +1,4 @@
-require 'rdf'
+require 'rdf/n3'
 
 module RDF::N3::Algebra
   #
@@ -9,6 +9,7 @@ module RDF::N3::Algebra
     include SPARQL::Algebra::Update
     include RDF::Enumerable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     attr_accessor :query
 
@@ -55,16 +56,40 @@ module RDF::N3::Algebra
 
       # Use our solutions for sub-ops
       # Join solutions from other operands
+      #
+      # * Order operands by those having inputs which are constant or bound.
+      # * Run built-ins with indeterminant inputs (two-way) until any produces non-empty solutions, and then run remaining built-ins until exhasted or finished.
+      # * Re-calculate inputs with bound inputs after each built-in is run.
       log_depth do
-        sub_ops.each do |op|
-          @solutions = if op.executable?
-            op.execute(queryable, solutions: @solutions)
-          else # Evaluatable
-            @solutions.all? {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE} ?
-              @solutions :
-              RDF::Query::Solutions.new
+        # Iterate over sub_ops using evaluation heuristic
+        ops = sub_ops.sort_by {|op| op.rank(@solutions)}
+        while !ops.empty?
+          last_op = nil
+          ops.each do |op|
+            log_debug("(formula built-in)") {op.to_sxp}
+            solutions = if op.executable?
+              op.execute(queryable, solutions: @solutions)
+            else # Evaluatable
+              @solutions.all? {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE} ?
+                @solutions :
+                RDF::Query::Solutions.new
+            end
+            log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + @solutions.to_sxp}
+            # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
+            next if solutions.empty?
+            last_op = op
+            @solutions = solutions
+            break
           end
-          log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + @solutions.to_sxp}
+
+          # If there is no last_op, there are no solutions.
+          unless last_op
+            @solutions = RDF::Query::Solutions.new
+            break
+          end
+
+          # Remove op from list, and re-order remaining ops.
+          ops = (ops - [last_op]).sort_by {|op| op.rank(@solutions)}
         end
       end
       log_info("(formula sub-op solutions)") {@solutions.to_sxp}
@@ -80,6 +105,13 @@ module RDF::N3::Algebra
     # @return [Boolean]
     def formula?
       true
+    end
+
+    ##
+    # Return the variables contained within this formula
+    # @return [Array<RDF::Query::Variable>]
+    def vars
+      operands.map(&:vars).flatten.compact
     end
 
     ##

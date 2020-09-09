@@ -3,6 +3,8 @@ source "https://rubygems.org"
 gemspec
 
 gem "rdf",                  git: "https://github.com/ruby-rdf/rdf", branch: "develop"
+gem 'sparql',             git: "https://github.com/ruby-rdf/sparql",              branch: "develop"
+gem 'sxp',                git: "https://github.com/dryruby/sxp.rb",               branch: "develop"
 
 group :development do
   gem "ebnf",               git: "https://github.com/dryruby/ebnf",                 branch: "develop"
@@ -14,8 +16,6 @@ group :development do
   gem 'rdf-vocab',          git: "https://github.com/ruby-rdf/rdf-vocab",           branch: "develop"
   gem "rdf-xsd",            git: "https://github.com/ruby-rdf/rdf-xsd",             branch: "develop"
   gem "json-ld",            git: "https://github.com/ruby-rdf/json-ld",             branch: "develop"
-  gem 'sparql',             git: "https://github.com/ruby-rdf/sparql",              branch: "develop"
-  gem 'sxp',                git: "https://github.com/dryruby/sxp.rb",               branch: "develop"
 end
 
 group :development, :test do

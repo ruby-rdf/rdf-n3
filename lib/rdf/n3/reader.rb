@@ -85,6 +85,9 @@ module RDF::N3
 
         # Prepopulate operator namespaces unless validating
         unless validate?
+          namespace(:rdf, RDF.to_uri)
+          namespace(:rdfs, RDF::RDFS.to_uri)
+          namespace(:xsd, RDF::XSD.to_uri)
           namespace(:crypto, RDF::N3::Crypto.to_uri)
           namespace(:list, RDF::N3::List.to_uri)
           namespace(:log, RDF::N3::Log.to_uri)

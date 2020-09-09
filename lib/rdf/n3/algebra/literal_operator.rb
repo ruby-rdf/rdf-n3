@@ -6,6 +6,7 @@ module RDF::N3::Algebra
     include SPARQL::Algebra::Update
     include RDF::Enumerable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     ##
     # The operator takes a literal and provides a mechanism for subclasses to operate over (and validate) that argument.
@@ -43,6 +44,14 @@ module RDF::N3::Algebra
           solution
         end
       end.compact)
+    end
+
+    ##
+    # Input is generically the subject
+    #
+    # @return [RDF::Term]
+    def input_operand
+      operand(0)
     end
 
     ##

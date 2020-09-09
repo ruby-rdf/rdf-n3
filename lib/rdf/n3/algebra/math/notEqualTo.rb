@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Math
   # True iff the subject is a string representation of a number which  is NOT EQUAL to a number of which the object is a string representation.
   class NotEqualTo < SPARQL::Algebra::Operator::Compare
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :'!='
 
@@ -18,7 +19,7 @@ module RDF::N3::Algebra::Math
     #
     # @see RDF::Term#==
     def apply(term1, term2)
-      log_debug(NAME) { "term1: #{term1.to_sxp} != term2: #{term2.to_sxp} ? #{(term1 == term2).inspect}"}
+      log_debug(NAME) { "term1: #{term1.to_sxp} != term2: #{term2.to_sxp} ? #{(term1 != term2).inspect}"}
       RDF::Literal(term1 != term2)
     end
   end

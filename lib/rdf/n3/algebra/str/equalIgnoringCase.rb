@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   class EqualIgnoringCase < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Evaluatable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :strEqualIgnoringCase
 

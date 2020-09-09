@@ -1,13 +1,13 @@
 module RDF::N3::Algebra::Str
+  # The subject string; the object is a regular expression in the perl, python style. It is true iff the string does NOT match the regexp.
   class NotMatches < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Evaluatable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :strNotMatches
 
     ##
-    # The subject string; the object is a regular expression in the perl, python style. It is true iff the string does NOT match the regexp.
-    #
     # @param  [RDF::Literal] text
     #   a simple literal
     # @param  [RDF::Literal] pattern

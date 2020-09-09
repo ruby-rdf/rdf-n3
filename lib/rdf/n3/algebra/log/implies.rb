@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Log
     include SPARQL::Algebra::Update
     include RDF::Enumerable
     include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :logImplies
 
@@ -37,6 +38,15 @@ module RDF::N3::Algebra::Log
 
       # Return original solutions, without bindings
       solutions
+    end
+
+    ##
+    # Input is the subject
+    #
+    # @return [RDF::Term]
+    def input_operand
+      # By default, return the merger of input and output operands
+      operand(0)
     end
 
     ##

@@ -7,6 +7,7 @@ module RDF::N3
   #
   # @author [Gregg Kellogg](http://greggkellogg.net/)
   module Algebra
+    autoload :Builtin,                'rdf/n3/algebra/builtin'
     autoload :Formula,                'rdf/n3/algebra/formula'
     autoload :ListOperator,           'rdf/n3/algebra/list_operator'
     autoload :LiteralOperator,        'rdf/n3/algebra/literal_operator'
@@ -47,9 +48,13 @@ module RDF::N3
       autoload :EqualTo,              'rdf/n3/algebra/math/equalTo'
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
       autoload :Floor,                'rdf/n3/algebra/math/floor'
+      autoload :GreaterThan,          'rdf/n3/algebra/math/greater_than'
       autoload :IntegerQuotient,      'rdf/n3/algebra/math/integerQuotient'
+      autoload :LessThan,             'rdf/n3/algebra/math/less_than'
       autoload :Negation,             'rdf/n3/algebra/math/negation'
       autoload :NotEqualTo,           'rdf/n3/algebra/math/notEqualTo'
+      autoload :NotGreaterThan,       'rdf/n3/algebra/math/not_greater_than'
+      autoload :NotLessThan,          'rdf/n3/algebra/math/not_less_than'
       autoload :Product,              'rdf/n3/algebra/math/product'
       autoload :Quotient,             'rdf/n3/algebra/math/quotient'
       autoload :Remainder,            'rdf/n3/algebra/math/remainder'
@@ -63,13 +68,21 @@ module RDF::N3
 
     module Str
       autoload :Concatenation,        'rdf/n3/algebra/str/concatenation'
+      autoload :Contains,             'rdf/n3/algebra/str/contains'
       autoload :ContainsIgnoringCase, 'rdf/n3/algebra/str/containsIgnoringCase'
+      autoload :EndsWith,             'rdf/n3/algebra/str/ends_with'
       autoload :EqualIgnoringCase,    'rdf/n3/algebra/str/equalIgnoringCase'
       autoload :Format,               'rdf/n3/algebra/str/format'
+      autoload :GreaterThan,          'rdf/n3/algebra/str/greater_than'
+      autoload :LessThan,             'rdf/n3/algebra/str/less_than'
+      autoload :Matches,              'rdf/n3/algebra/str/matches'
       autoload :NotEqualIgnoringCase, 'rdf/n3/algebra/str/notEqualIgnoringCase'
+      autoload :NotGreaterThan,       'rdf/n3/algebra/str/not_greater_than'
+      autoload :NotLessThan,          'rdf/n3/algebra/str/not_less_than'
       autoload :NotMatches,           'rdf/n3/algebra/str/notMatches'
       autoload :Replace,              'rdf/n3/algebra/str/replace'
       autoload :Scrape,               'rdf/n3/algebra/str/scrape'
+      autoload :StartsWith,           'rdf/n3/algebra/str/starts_with'
     end
 
     module Time
@@ -119,13 +132,13 @@ module RDF::N3
         RDF::N3::Math.equalTo             => Math::EqualTo,
         RDF::N3::Math.exponentiation      => Math::Exponentiation,
         RDF::N3::Math.floor               => Math::Floor,
-        RDF::N3::Math.greaterThan         => SPARQL::Algebra::Operator::GreaterThan,
+        RDF::N3::Math.greaterThan         => Math::GreaterThan,
         RDF::N3::Math.integerQuotient     => Math::IntegerQuotient,
-        RDF::N3::Math.lessThan            => SPARQL::Algebra::Operator::LessThan,
+        RDF::N3::Math.lessThan            => Math::LessThan,
         RDF::N3::Math.negation            => Math::Negation,
         RDF::N3::Math.notEqualTo          => Math::NotEqualTo,
-        RDF::N3::Math.notGreaterThan      => SPARQL::Algebra::Operator::LessThanOrEqual,
-        RDF::N3::Math.notLessThan         => SPARQL::Algebra::Operator::GreaterThanOrEqual,
+        RDF::N3::Math.notGreaterThan      => Math::NotGreaterThan,
+        RDF::N3::Math.notLessThan         => Math::NotLessThan,
         RDF::N3::Math.product             => Math::Product,
         RDF::N3::Math.quotient            => Math::Quotient,
         RDF::N3::Math.remainder           => Math::Remainder,
@@ -137,22 +150,22 @@ module RDF::N3
         RDF::N3::Math[:sum]               => Math::Sum,
 
         RDF::N3::Str.concatenation        => Str::Concatenation,
-        RDF::N3::Str.contains             => SPARQL::Algebra::Operator::Contains,
+        RDF::N3::Str.contains             => Str::Contains,
         RDF::N3::Str.containsIgnoringCase => Str::ContainsIgnoringCase,
         RDF::N3::Str.containsRoughly      => NotImplemented,
-        RDF::N3::Str.endsWith             => SPARQL::Algebra::Operator::StrEnds,
+        RDF::N3::Str.endsWith             => Str::EndsWith,
         RDF::N3::Str.equalIgnoringCase    => Str::EqualIgnoringCase,
         RDF::N3::Str.format               => Str::Format,
-        RDF::N3::Str.greaterThan          => SPARQL::Algebra::Operator::GreaterThan,
-        RDF::N3::Str.lessThan             => SPARQL::Algebra::Operator::LessThan,
-        RDF::N3::Str.matches              => SPARQL::Algebra::Operator::Regex,
+        RDF::N3::Str.greaterThan          => Str::GreaterThan,
+        RDF::N3::Str.lessThan             => Str::LessThan,
+        RDF::N3::Str.matches              => Str::Matches,
         RDF::N3::Str.notEqualIgnoringCase => Str::NotEqualIgnoringCase,
-        RDF::N3::Str.notGreaterThan       => SPARQL::Algebra::Operator::LessThanOrEqual,
-        RDF::N3::Str.notLessThan          => SPARQL::Algebra::Operator::GreaterThanOrEqual,
+        RDF::N3::Str.notGreaterThan       => Str::NotGreaterThan,
+        RDF::N3::Str.notLessThan          => Str::NotLessThan,
         RDF::N3::Str.notMatches           => Str::NotMatches,
         RDF::N3::Str.replace              => Str::Replace,
         RDF::N3::Str.scrape               => Str::Scrape,
-        RDF::N3::Str.startsWith           => SPARQL::Algebra::Operator::StrStarts,
+        RDF::N3::Str.startsWith           => Str::StartsWith,
 
         RDF::N3::Time.dayOfWeek           => Time::DayOfWeek,
         RDF::N3::Time.day                 => Time::Day,

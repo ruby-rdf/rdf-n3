@@ -1,11 +1,11 @@
 module RDF::N3::Algebra::Str
-  # True iff the subject string contains the object string, with the comparison done ignoring the difference between upper case and lower case characters.
-  class ContainsIgnoringCase < SPARQL::Algebra::Operator::Binary
+  # True iff the string is NOT greater than the object when ordered according to Unicode(tm) code order.
+  class NotGreaterThan < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Evaluatable
     include RDF::Util::Logger
     include RDF::N3::Algebra::Builtin
 
-    NAME = :strContainsIgnoringCase
+    NAME = :strNotGreaterThan
 
     ##
     # @param  [RDF::Literal] left
@@ -17,8 +17,7 @@ module RDF::N3::Algebra::Str
       case
       when !left.compatible?(right)
         log_error(NAME) {"expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"}
-        RDF::Literal::FALSE
-      when left.to_s.downcase.include?(right.to_s.downcase) then RDF::Literal::TRUE
+      when left <= right then RDF::Literal::TRUE
       else RDF::Literal::FALSE
       end
     end

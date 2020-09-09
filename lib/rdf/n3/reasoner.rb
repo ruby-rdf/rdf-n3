@@ -287,12 +287,12 @@ module RDF::N3
 
         # Create a graph for each formula, containing statements and built-in operands
         formulae.each do |gn, form|
-          form_graph = RDF::N3::Repository.new(with_graph_name: false) do |g|
-            # Graph initialized with non-built-in statements
-            form.operands.each do |op|
-              g << op if op.is_a?(RDF::Statement)
-            end
-          end
+          #form_graph = RDF::N3::Repository.new(with_graph_name: false) do |g|
+          #  # Graph initialized with non-built-in statements
+          #  form.operands.each do |op|
+          #    g << op if op.is_a?(RDF::Statement)
+          #  end
+          #end
           form.operands.each do |op|
             next unless op.is_a?(SPARQL::Algebra::Operator)
             # Bind built-in operands which are constant lists to RDF::N3::List

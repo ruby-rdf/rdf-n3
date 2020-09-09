@@ -43,5 +43,13 @@ module RDF::N3::Algebra::Time
       log_error(NAME) {"subject or object are not literals: #{subject.inspect}, #{object.inspect}"}
       false
     end
+
+    ##
+    # Return both subject and object operands.
+    #
+    # @return [RDF::Term]
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
   end
 end
