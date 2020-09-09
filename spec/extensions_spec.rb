@@ -103,10 +103,6 @@ describe RDF::Node do
     it "returns itself if not bound" do
       expect(node.evaluate({})).to eq node
     end
-
-    it "returns bound value if bound" do
-      expect(node.evaluate({a: RDF::URI("a")})).to eq RDF::URI("a")
-    end
   end
 end
 

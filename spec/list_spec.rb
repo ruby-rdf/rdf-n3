@@ -629,10 +629,6 @@ describe RDF::N3::List do
       expect(constant.evaluate(bindings)).to eq constant
     end
 
-    it "returns bound list if nodes" do
-      expect(nodes.evaluate(bindings)).to eq constant
-    end
-
     it "returns bound list if variable" do
       expect(vars.evaluate(bindings)).to eq constant
     end

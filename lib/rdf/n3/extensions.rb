@@ -141,20 +141,6 @@ module RDF
     end
   end
 
-  class Node
-    # Either binds to variable, or returns itself.
-    #
-    # @param  [RDF::Query::Solution] bindings
-    #   a query solution containing zero or more variable bindings
-    # @param [Hash{Symbol => Object}] options ({})
-    #   options passed from query
-    # @return [RDF::Term]
-    #     def evaluate(bindings, **options); end
-    def evaluate(bindings, **options)
-      bindings.fetch(self.id.to_sym, self)
-    end
-  end
-
   class Query::Pattern
     ##
     # Checks pattern equality against a statement, considering nesting an lists.
