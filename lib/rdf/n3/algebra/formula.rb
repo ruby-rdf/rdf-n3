@@ -257,9 +257,16 @@ module RDF::N3::Algebra
     end
 
     def to_sxp_bin
-      raise "a formula can't contain itself" if operands.include?(self)
       [:formula, graph_name].compact +
       operands.map(&:to_sxp_bin)
+    end
+
+    def to_base
+      inspect
+    end
+
+    def inspect
+      sprintf("#<%s:%s(%d)>", self.class.name, self.graph_name, self.operands.count)
     end
   end
 end
