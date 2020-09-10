@@ -74,7 +74,7 @@ module RDF::N3
 
         @formulae = []
         @formula_nodes = {}
-        @label_uniquifier = "#{Random.new_seed}_000000"
+        @label_uniquifier = "0"
         @bnodes = {}  # allocated bnodes by formula
         @variables = {}
 
@@ -753,17 +753,15 @@ module RDF::N3
     # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
     def bnode(label = nil)
       if label
-        value = "#{label}_#{unique_label}"
-        (@bnodes[@formulae.last] ||= {})[label.to_s] ||= RDF::Node.new(value)
+        fl = @formulae.last ? "#{label}_#{formulae.last.id}" : label
+        @bnodes[fl] ||= RDF::Node.new(fl)
       else
         RDF::Node.new
       end
     end
 
     def univar(label, existential = false)
-      # Label using any provided label, followed by seed, followed by incrementing index
-      value = "#{label}_#{unique_label}"
-      RDF::Query::Variable.new(value, existential: existential)
+      RDF::Query::Variable.new(label, existential: existential)
     end
 
     # add a pattern or statement
