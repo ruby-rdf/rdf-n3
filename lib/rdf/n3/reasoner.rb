@@ -269,42 +269,21 @@ module RDF::N3
 
           # Formulae may be the subject or object of a known operator
           if klass = Algebra.for(pattern.predicate)
-            fs = formulae.fetch(pattern.subject, pattern.subject)
-            fo = formulae.fetch(pattern.object, pattern.object)
+            fs = pattern.subject.node? ? formulae.fetch(pattern.subject, pattern.subject) : pattern.subject
+            fo = pattern.object.node? ? formulae.fetch(pattern.object, pattern.object) : pattern.object
             form.operands << klass.new(fs, fo, parent: form, predicate: pattern.predicate, **@options)
           else
-            # Add formulae as direct operators
-            if formulae.has_key?(pattern.subject)
-              form.operands << formulae[pattern.subject]
+            # Use formulae instead of referencing bnodes
+            if pattern.subject.node? && formulae.has_key?(pattern.subject)
+              pattern.subject = formulae[pattern.subject]
             end
-            if formulae.has_key?(pattern.object)
-              form.operands << formulae[pattern.object]
+            if pattern.object.node? && formulae.has_key?(pattern.object)
+              pattern.object = formulae[pattern.object]
             end
             pattern.graph_name = nil
             form.operands << pattern
           end
         end
-
-        # Create a graph for each formula, containing statements and built-in operands
-        formulae.each do |gn, form|
-          #form_graph = RDF::N3::Repository.new(with_graph_name: false) do |g|
-          #  # Graph initialized with non-built-in statements
-          #  form.operands.each do |op|
-          #    g << op if op.is_a?(RDF::Statement)
-          #  end
-          #end
-          form.operands.each do |op|
-            next unless op.is_a?(SPARQL::Algebra::Operator)
-            # Bind built-in operands which are constant lists to RDF::N3::List
-            op.operands.map! do |operand|
-              # Use a List object, if it is constant
-              ln = RDF::N3::List.try_list(operand, queryable) unless !operand.is_a?(RDF::Term) || operand.list?
-              ln || operand
-            end
-          end
-        end
-
-        log_info("reasoner formula") {SXP::Generator.string formulae[nil].to_sxp_bin}
 
         # Formula is that without a graph name
         formulae[nil]

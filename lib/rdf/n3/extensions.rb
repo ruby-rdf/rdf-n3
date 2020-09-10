@@ -51,7 +51,7 @@ module RDF
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
-      [(variable? ? :pattern : :triple), subject, predicate, object, graph_name].compact
+      [(variable? ? :pattern : (has_graph? ? :quad : :triple)), subject, predicate, object, graph_name].compact
     end
 
     ##

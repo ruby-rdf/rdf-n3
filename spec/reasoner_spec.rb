@@ -4,6 +4,7 @@ require 'rdf/trig'
 
 describe "RDF::N3::Reasoner" do
   let(:logger) {RDF::Spec.logger}
+  before {logger.level = Logger::INFO}
 
   context "n3:log" do
     context "log:implies" do
@@ -516,31 +517,31 @@ describe "RDF::N3::Reasoner" do
             9.5 :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5]" .
           )
         },
-        "Combinatorial test - worksWith": {
-          input: %(
-          "3.1415926" a :testValue.
-          3.1415926 a :testValue.
-          "1729" a :testValue.
-          1729 a :testValue.
-          "0" a :testValue.
-          0 a :testValue.
-          "1.0e7" a :testValue.
-          1.0e7 a :testValue.
-          { ?x a :testValue. ?y a :testValue.
-            (?x [ is math:difference of (?y ?x)]) math:sum ?y } => {?x :worksWith ?y}.
-          ),
-          expect: %(
-            "1.0e7" :worksWith 1.0e7 .
-            "1729" :worksWith 3.1415926, 1.0e7, 0, 1729 .
-            1729 :worksWith 3.1415926, 1.0e7, 0, 1729 .
-            "3.1415926"  :worksWith 3.1415926, 1.0e7 .
-            3.1415926 :worksWith 3.1415926, 1.0e7 .
-            1.0e7 :worksWith 1.0e7 .
-            "0" :worksWith 3.1415926, 1.0e7, 0, 1729 .
-            0 :worksWith 3.1415926, 1.0e7, 0, 1729 .
-          ),
-          pending: true
-        },
+        #"Combinatorial test - worksWith": {
+        #  input: %(
+        #  "3.1415926" a :testValue.
+        #  3.1415926 a :testValue.
+        #  "1729" a :testValue.
+        #  1729 a :testValue.
+        #  "0" a :testValue.
+        #  0 a :testValue.
+        #  "1.0e7" a :testValue.
+        #  1.0e7 a :testValue.
+        #  { ?x a :testValue. ?y a :testValue.
+        #    (?x [ is math:difference of (?y ?x)]) math:sum ?y } => {?x :worksWith ?y}.
+        #  ),
+        #  expect: %(
+        #    "1.0e7" :worksWith 1.0e7 .
+        #    "1729" :worksWith 3.1415926, 1.0e7, 0, 1729 .
+        #    1729 :worksWith 3.1415926, 1.0e7, 0, 1729 .
+        #    "3.1415926"  :worksWith 3.1415926, 1.0e7 .
+        #    3.1415926 :worksWith 3.1415926, 1.0e7 .
+        #    1.0e7 :worksWith 1.0e7 .
+        #    "0" :worksWith 3.1415926, 1.0e7, 0, 1729 .
+        #    0 :worksWith 3.1415926, 1.0e7, 0, 1729 .
+        #  ),
+        #  pending: true
+        #},
         "Combinatorial test - SumDifferenceFAILS": {
           input: %(
           "3.1415926" a :testValue.
