@@ -237,7 +237,9 @@ module RDF::N3
     end
 
     ##
-    # Returns the top-level formula for this file
+    # Returns the top-level formula for this file.
+    #
+    # Transforms an RDF dataset into a recursive formula structure.
     #
     # @return [RDF::N3::Algebra::Formula]
     def formula
@@ -257,29 +259,31 @@ module RDF::N3
         # and replace subject and object bnodes which identify
         # named graphs with those formula
         @mutable.each_statement do |statement|
+          # A graph name indicates a formula.
+          graph_name = statement.graph_name
+          form = formulae[graph_name]
+
+          # Map statement components to formulae, if necessary.
+          statement = RDF::Statement.from(statement.to_a.map do |term|
+            case term
+            when RDF::Node
+              formulae.fetch(term, term)
+            when RDF::N3::List
+              term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
+            else
+              term
+            end
+          end)
+
           pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
 
           if statement.subject.constant? && statement.predicate.constant?
             queryable << statement
           end
-
-          # A graph name indicates a formula.
-          graph_name = pattern.graph_name
-          form = formulae[graph_name]
-
           # Formulae may be the subject or object of a known operator
           if klass = Algebra.for(pattern.predicate)
-            fs = pattern.subject.node? ? formulae.fetch(pattern.subject, pattern.subject) : pattern.subject
-            fo = pattern.object.node? ? formulae.fetch(pattern.object, pattern.object) : pattern.object
-            form.operands << klass.new(fs, fo, parent: form, predicate: pattern.predicate, **@options)
+            form.operands << klass.new(pattern.subject, pattern.object, parent: form, predicate: pattern.predicate, **@options)
           else
-            # Use formulae instead of referencing bnodes
-            if pattern.subject.node? && formulae.has_key?(pattern.subject)
-              pattern.subject = formulae[pattern.subject]
-            end
-            if pattern.object.node? && formulae.has_key?(pattern.object)
-              pattern.object = formulae[pattern.object]
-            end
             pattern.graph_name = nil
             form.operands << pattern
           end

@@ -104,6 +104,12 @@ module RDF::N3
     end
 
     ##
+    # @see RDF::Value#hash
+    def hash
+      to_a.hash
+    end
+
+    ##
     # Element Assignment — Sets the element at `index`, or replaces a subarray from the `start` index for `length` elements, or replaces a subarray specified by the `range` of indices.
     #
     # @overload []=(index, term)
@@ -567,6 +573,21 @@ module RDF::N3
     # @return [Sring]
     def to_base
       "(#{@values.map(&:to_base).join(' ')})"
+    end
+
+    # Transform Statement into an SXP
+    # @return [Array]
+    def to_sxp_bin
+      to_a.to_sxp_bin
+    end
+
+    ##
+    # Creates a new list by recusively mapping the values of the list
+    #
+    # @return [RDF::N3::list]
+    def transform(&block)
+      values = self.to_a.map {|v| v.list? ? v.map(&block) : block.call(v)}
+      RDF::N3::List.new(values: values)
     end
 
     private
