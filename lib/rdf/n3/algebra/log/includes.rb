@@ -8,6 +8,10 @@ module RDF::N3::Algebra::Log
   #
   # (Understood natively by cwm when in in the antecedent of a rule. You can use this to peer inside nested formulae.)
   class Includes < SPARQL::Algebra::Operator::Binary
+    include SPARQL::Algebra::Query
+    include SPARQL::Algebra::Update
+    include RDF::N3::Algebra::Builtin
+
     NAME = :logIncludes
   end
 end

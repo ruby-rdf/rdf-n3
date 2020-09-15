@@ -2,7 +2,6 @@ module RDF::N3::Algebra::Str
   # True iff the string is NOT less than the object when ordered according to Unicode(tm) code order.
   class NotLessThan < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Evaluatable
-    include RDF::Util::Logger
     include RDF::N3::Algebra::Builtin
 
     NAME = :strNotLessThan

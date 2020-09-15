@@ -4,6 +4,9 @@ module RDF::N3::Algebra
   ##
   # Behavior for N3 builtin operators
   module Builtin
+    include RDF::Enumerable
+    include RDF::Util::Logger
+
     ##
     # Determine ordering for running built-in operator considering if subject or object is varaible and considered an input or an output. Accepts a solution set to determine if variable inputs are bound.
     #
@@ -22,6 +25,11 @@ module RDF::N3::Algebra
     def input_operand
       # By default, return the merger of input and output operands
       RDF::N3::List.new(values: operands)
+    end
+
+    ##
+    # By default, operators do not yield statements
+    def each(&block)
     end
   end
 end

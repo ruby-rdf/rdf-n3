@@ -7,6 +7,10 @@ module RDF::N3::Algebra::Log
   #
   # Related: See includes
   class NotIncludes < SPARQL::Algebra::Operator::Binary
+    include SPARQL::Algebra::Query
+    include SPARQL::Algebra::Update
+    include RDF::N3::Algebra::Builtin
+
     NAME = :logNotIncludes
   end
 end

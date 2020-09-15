@@ -2,11 +2,6 @@ module RDF::N3::Algebra::Math
   ##
   # The object is calulated as the inverse hyperbolic sine value of the subject.
   class ASinH < RDF::N3::Algebra::LiteralOperator
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
     NAME = :mathASinH
 
     ##

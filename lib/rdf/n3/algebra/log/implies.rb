@@ -8,8 +8,6 @@ module RDF::N3::Algebra::Log
   class Implies < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
     include RDF::N3::Algebra::Builtin
 
     NAME = :logImplies

@@ -7,11 +7,6 @@ module RDF::N3::Algebra::List
   #
   # The object can be calculated as a function of the list.
   class Length < RDF::N3::Algebra::ListOperator
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
     NAME = :listLength
 
     ##

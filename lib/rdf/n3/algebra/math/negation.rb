@@ -1,11 +1,7 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject or object is calculated to be the negation of the other.
-  class Negation < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
+  class Negation < RDF::N3::Algebra::LiteralOperator
     include RDF::N3::Algebra::Builtin
 
     NAME = :mathNegation

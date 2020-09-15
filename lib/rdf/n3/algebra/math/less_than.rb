@@ -2,7 +2,6 @@ module RDF::N3::Algebra::Math
   ##
   # True iff the subject is a string representation of a number which  is less than the number of which the object is a string representation.
   class LessThan < SPARQL::Algebra::Operator::Compare
-    include RDF::Util::Logger
     include RDF::N3::Algebra::Builtin
 
     NAME = :'<'

@@ -7,8 +7,6 @@ module RDF::N3::Algebra
     include RDF::Term
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
     include RDF::N3::Algebra::Builtin
 
     attr_accessor :query

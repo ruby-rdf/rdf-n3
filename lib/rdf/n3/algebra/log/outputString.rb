@@ -2,6 +2,10 @@ module RDF::N3::Algebra::Log
   ##
   # The subject is a key and the object is a string, where the strings are to be output in the order of the keys.
   class OutputString < SPARQL::Algebra::Operator::Binary
+    include SPARQL::Algebra::Query
+    include SPARQL::Algebra::Update
+    include RDF::N3::Algebra::Builtin
+
     NAME = :logOutputString
   end
 end

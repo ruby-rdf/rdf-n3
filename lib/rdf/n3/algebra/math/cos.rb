@@ -2,11 +2,6 @@ module RDF::N3::Algebra::Math
   ##
   # The subject is an angle expressed in radians. The object is calulated as the cosine value of the subject.
   class Cos < RDF::N3::Algebra::LiteralOperator
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
-
     NAME = :mathCos
 
     ##
