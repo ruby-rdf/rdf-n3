@@ -1,0 +1,3 @@
+:captain :age _:a.
+(39 3) math:sum _:a.
+{ :captain :age 42 } => { :test1 a :Success }.
