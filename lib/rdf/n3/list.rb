@@ -104,6 +104,8 @@ module RDF::N3
     end
 
     ##
+    # The list hash is the hash of it's members.
+    #
     # @see RDF::Value#hash
     def hash
       to_a.hash

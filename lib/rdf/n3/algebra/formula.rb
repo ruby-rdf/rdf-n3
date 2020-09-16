@@ -128,7 +128,7 @@ module RDF::N3::Algebra
                 @solutions :
                 RDF::Query::Solutions.new
             end
-            log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + @solutions.to_sxp}
+            log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + SXP::Generator.string(@solutions.to_sxp_bin)}
             # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
             next if solutions.empty?
             last_op = op
@@ -146,7 +146,7 @@ module RDF::N3::Algebra
           ops = (ops - [last_op]).sort_by {|op| op.rank(@solutions)}
         end
       end
-      log_info("(formula sub-op solutions)") {@solutions.to_sxp}
+      log_info("(formula sub-op solutions)") {SXP::Generator.string @solutions.to_sxp_bin}
 
       # Only return solutions with universal variables
       variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$')}
@@ -169,6 +169,14 @@ module RDF::N3::Algebra
     end
 
     ##
+    # The formula hash is the hash of it's operands and graph_name.
+    #
+    # @see RDF::Value#hash
+    def hash
+      ([graph_name] + operands).hash
+    end
+
+    ##
     # Yields each statement from this formula bound to previously determined solutions.
     #
     # @yield  [statement]
@@ -180,7 +188,7 @@ module RDF::N3::Algebra
         # If there are no solutions, create a single solution
         RDF::Query::Solutions(RDF::Query::Solution.new)
       end
-      log_debug("formula #{graph_name} each") {@solutions.to_sxp}
+      log_debug("formula #{graph_name} each") {SXP::Generator.string @solutions.to_sxp_bin}
 
       # Yield patterns by binding variables
       @solutions.each do |solution|
@@ -200,6 +208,12 @@ module RDF::N3::Algebra
                 solution[o].each_statement(&block)
                 # Bind the list subject, and emit list statements
                 solution[o].subject
+              elsif solution[o] && solution[o].formula?
+                form = solution[o]
+                # uses the graph_name of the formula, and yields statements from the formula
+                form.solutions = RDF::Query::Solutions(solution)
+                form.each(&block)
+                form.graph_name
               else
                 solution[o]
               end
