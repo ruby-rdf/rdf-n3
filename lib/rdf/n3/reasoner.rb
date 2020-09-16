@@ -243,55 +243,7 @@ module RDF::N3
     #
     # @return [RDF::N3::Algebra::Formula]
     def formula
-      # SPARQL used for SSE and algebra functionality
-      require 'sparql' unless defined?(:SPARQL)
-
-      @formula ||= begin
-        # Create formulae from statement graph_names
-        formulae = (@mutable.graph_names.unshift(nil)).inject({}) do |memo, graph_name|
-          memo.merge(graph_name => Algebra::Formula.new(graph_name: graph_name, **@options))
-        end
-
-        # Create `queryable` as a repo subset of `mutable` excluding built-ins and statements with a variable subject or predicate. This is useful for extracting lists.
-        queryable = RDF::N3::Repository.new
-
-        # Add patterns to appropiate formula based on graph_name,
-        # and replace subject and object bnodes which identify
-        # named graphs with those formula
-        @mutable.each_statement do |statement|
-          # A graph name indicates a formula.
-          graph_name = statement.graph_name
-          form = formulae[graph_name]
-
-          # Map statement components to formulae, if necessary.
-          statement = RDF::Statement.from(statement.to_a.map do |term|
-            case term
-            when RDF::Node
-              formulae.fetch(term, term)
-            when RDF::N3::List
-              term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
-            else
-              term
-            end
-          end)
-
-          pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
-
-          if statement.subject.constant? && statement.predicate.constant?
-            queryable << statement
-          end
-          # Formulae may be the subject or object of a known operator
-          if klass = Algebra.for(pattern.predicate)
-            form.operands << klass.new(pattern.subject, pattern.object, parent: form, predicate: pattern.predicate, **@options)
-          else
-            pattern.graph_name = nil
-            form.operands << pattern
-          end
-        end
-
-        # Formula is that without a graph name
-        formulae[nil]
-      end
+      @formula ||= RDF::N3::Algebra::Formula.from_enumerable(@mutable, **@options)
     end
 
     ##

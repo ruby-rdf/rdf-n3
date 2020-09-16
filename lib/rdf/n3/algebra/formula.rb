@@ -19,6 +19,57 @@ module RDF::N3::Algebra
     NAME = [:formula]
 
     ##
+    # Create a formula from an RDF::Enumerable (such as RDF::N3::Repository)
+    #
+    # @param [RDF::Enumerable] enumerable
+    # @param  [Hash{Symbol => Object}] options
+    #   any additional keyword options
+    # @return [RDF::N3::Algebra::Formula]
+    def self.from_enumerable(enumerable, **options)
+      # SPARQL used for SSE and algebra functionality
+      require 'sparql' unless defined?(:SPARQL)
+
+      # Create formulae from statement graph_names
+      formulae = (enumerable.graph_names.unshift(nil)).inject({}) do |memo, graph_name|
+        memo.merge(graph_name => Formula.new(graph_name: graph_name, **options))
+      end
+
+      # Add patterns to appropiate formula based on graph_name,
+      # and replace subject and object bnodes which identify
+      # named graphs with those formula
+      enumerable.each_statement do |statement|
+        # A graph name indicates a formula.
+        graph_name = statement.graph_name
+        form = formulae[graph_name]
+
+        # Map statement components to formulae, if necessary.
+        statement = RDF::Statement.from(statement.to_a.map do |term|
+          case term
+          when RDF::Node
+            formulae.fetch(term, term)
+          when RDF::N3::List
+            term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
+          else
+            term
+          end
+        end)
+
+        pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
+
+        # Formulae may be the subject or object of a known operator
+        if klass = RDF::N3::Algebra.for(pattern.predicate)
+          form.operands << klass.new(pattern.subject, pattern.object, parent: form, predicate: pattern.predicate, **options)
+        else
+          pattern.graph_name = nil
+          form.operands << pattern
+        end
+      end
+
+      # Formula is that without a graph name
+      formulae[nil]
+    end
+
+    ##
     # Yields solutions from patterns and other operands. Solutions are created by evaluating each pattern and other sub-operand against `queryable`.
     #
     # When executing, blank nodes are turned into non-distinguished existential variables, noted with `$$`. These variables are removed from the returned solutions, as they can't be bound outside of the formula.
