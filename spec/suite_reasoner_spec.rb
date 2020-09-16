@@ -28,7 +28,7 @@ describe RDF::N3::Reader do
               pending "log:conjunction"
             when *%w{cwm_includes_bnode}
               pending "log:includes"
-            when *%w{cwm_includes_conclusion_simple cwm_unify_unify1 cwm_unify_unify2}
+            when *%w{cwm_includes_conclusion_simple cwm_unify_unify1}
               pending "reason over formulae"
             when *%w{cwm_supports_simple cwm_string_roughly cwm_string_uriEncode}
               pending "Uses unsupported builtin"

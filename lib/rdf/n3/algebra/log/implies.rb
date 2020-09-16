@@ -70,7 +70,7 @@ module RDF::N3::Algebra::Log
       # Yield statements into the default graph
       log_depth do
         object.each do |statement|
-          block.call(RDF::Statement.from(statement.to_triple, inferred: true, graph_name: graph_name))
+          block.call(RDF::Statement.from(statement.to_quad, inferred: true))
         end
       end
     end

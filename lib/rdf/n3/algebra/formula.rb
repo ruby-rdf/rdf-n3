@@ -5,10 +5,15 @@ module RDF::N3::Algebra
   # A Notation3 Formula combines a graph with a BGP query.
   class Formula < SPARQL::Algebra::Operator
     include RDF::Term
+    include RDF::Enumerable
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::N3::Algebra::Builtin
 
+    ##
+    # Query to run against a queryable to determine if the formula matches the queryable.
+    #
+    # @return [RDF::Query]
     attr_accessor :query
 
     NAME = [:formula]
@@ -147,11 +152,16 @@ module RDF::N3::Algebra
               else
                 solution[o]
               end
-            else                           o
+            when RDF::N3::Algebra::Formula
+              # uses the graph_name of the formula, and yields statements from the formula
+              o.each(&block)
+              o.graph_name
+            else
+              o
             end
           end
 
-          statement = RDF::Statement.from(terms)
+          statement = RDF::Statement.from(terms, graph_name: graph_name)
 
           # Sanity checking on statement
           if statement.variable?
@@ -179,7 +189,12 @@ module RDF::N3::Algebra
     def graph_name; @options[:graph_name]; end
 
     ##
-    # Statements memoizer
+    # Statements memoizer.
+    #
+    # * Statements exclude builtins.
+    # * Blank nodes are replaced with existential variables.
+    #
+    # @return [Array<RDF::Statement>]
     def statements
       # BNodes in statements are existential variables.
       @statements ||= begin
@@ -196,6 +211,9 @@ module RDF::N3::Algebra
                 o.has_nodes? ? o.to_existential : o
               when RDF::Node
                 RDF::Query::Variable.new(o.id, existential: true)
+              when RDF::N3::Algebra::Formula
+                # FIXME: is this also existential?
+                o
               else
                 o
               end
