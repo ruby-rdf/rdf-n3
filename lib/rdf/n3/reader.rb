@@ -12,7 +12,9 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
-  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are tracked using `$` or `?`, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are named using an `_ext` suffix, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  #
+  # Non-distinguished blank node variables are created as part of reasoning.
   #
   # @todo
   # * Formulae as RDF::Query representations
@@ -643,12 +645,14 @@ module RDF::N3
       if @lexer.first.type == :QUICK_VAR_NAME
         prod(:quickVar) do
           token = @lexer.shift
-          iri = process_pname(token.value.sub('?', ':'))
-          var = iri.variable? ? iri : univar(iri)
-          add_var_to_formula(formulae[-2], iri, var)
-          # Also add var to this formula
-          add_var_to_formula(formulae.last, iri, var)
-          var
+          value = token.value.sub('?', '')
+          var = find_var(value)
+          return var if var
+
+          # Create a new variable, scoped to the parent formula and add it to the variables list for the parent and this formula.
+          add_var_to_formula(formulae[-2], value,
+            add_var_to_formula(formulae.last, value,
+              univar(value, scope: @formulae[-2])))
         end
       end
     end
@@ -691,7 +695,8 @@ module RDF::N3
         prod(token === '@forAll' ? :universal : :existential) do
           iri_list = read_irilist 
           iri_list.each do |iri|
-            var = univar(iri, token === '@forSome')
+            # Note, this might re-create an equivalent variable already defined in this formula, and replaces an equivalent variable that may have been defined in the parent formula.
+            var = univar(iri, scope: formulae.last, existential: token === '@forSome')
             add_var_to_formula(formulae.last, iri, var)
           end
         end
@@ -753,15 +758,18 @@ module RDF::N3
     # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
     def bnode(label = nil)
       if label
-        fl = @formulae.last ? "#{label}_#{formulae.last.id}" : label
+        fl = "#{label}_#{formulae.last ? formulae.last.id : 'bn_ground'}"
         @bnodes[fl] ||= RDF::Node.new(fl)
       else
         RDF::Node.new
       end
     end
 
-    def univar(label, existential = false)
-      RDF::Query::Variable.new(label, existential: existential)
+    # If not in ground formula, note scope, and if existential
+    def univar(label, scope:, existential: false)
+      value = existential ? "#{label}_ext" : label
+      value = "#{value}_#{scope.id}" if scope
+      RDF::Query::Variable.new(value, existential: existential)
     end
 
     # add a pattern or statement
@@ -801,7 +809,7 @@ module RDF::N3
       value.canonicalize! if canonicalize?
 
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than the current formula
-      var = find_var(@formulae.last, value)
+      var = find_var(value)
       value = var if var
 
       value
@@ -838,10 +846,9 @@ module RDF::N3
 
     # Find any variable that may be defined in the formula identified by `bn`
     # @param [RDF::Node] sym name of formula
-    # @param [#to_s] name
     # @return [RDF::Query::Variable]
-    def find_var(sym, name)
-      (variables[sym] ||= {})[name.to_s]
+    def find_var(name)
+      (variables[@formulae.last] ||= {})[name.to_s]
     end
 
     # Add a variable to the formula identified by `bn`, returning the variable. Useful as an LRU for variable name lookups

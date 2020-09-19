@@ -234,9 +234,8 @@ module RDF::N3
 
       # if resource is a variable (universal or extential), map to a shorter name
       if (@universals + @existentials).include?(resource) &&
-         resource.to_s.match(/#([^_]+)_[^_]+_([^_]+)$/)
-        sn, seq = $1, $2
-        pname = @uri_to_pname.values.include?(sn) ? ":#{sn}_#{seq.to_i}" : ":#{sn}"
+         resource.to_s.match(/#([^_]+)_(?:(?:\.form[^_]+)_)?_ext$/)
+        pname = $1
       end
 
       # Make sure pname is a valid pname
@@ -348,7 +347,7 @@ module RDF::N3
 
       unless @existentials.empty?
         log_debug("start_document: existentials") { @existentials.inspect}
-        terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s))}
+        terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s.sub(/_ext$/, '')))}
         @output.write("@forSome #{terms.join(', ')} .\n") 
       end
     end
@@ -530,7 +529,7 @@ module RDF::N3
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
       l = if resource.is_a?(RDF::Query::Variable)
-        format_term(RDF::URI(resource.name.to_s.sub(/^\$/, '')))
+        format_term(RDF::URI(resource.name.to_s.sub(/_ext$/, '')))
       elsif resource == RDF.nil
         "()"
       else

@@ -141,6 +141,17 @@ module RDF
     end
   end
 
+  class Node
+    # Transform to a nondistinguished exisetntial variable in a formula scope
+    #
+    # @param [RDF::Node] scope
+    # return [RDF::Query::Variable]
+    def to_ndvar(scope)
+      label = "#{id}_#{scope.id}_undext"
+      RDF::Query::Variable.new(label, existential: true, distinguished: false)
+    end
+  end
+
   class Query::Pattern
     ##
     # Checks pattern equality against a statement, considering nesting an lists.
@@ -174,7 +185,12 @@ module RDF
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
-      [:solution] + bindings.map {|k, v| Query::Variable.new(k, v).to_sxp_bin}
+      [:solution] + bindings.map do |k, v|
+        existential = k.to_s.end_with?('ext')
+        k = k.to_s.sub(/_(?:und)?ext$/, '').to_sym
+        distinguished = !k.to_s.end_with?('undext')
+        Query::Variable.new(k, v, existential: existential, distinguished: distinguished).to_sxp_bin
+      end
     end
 
     ##
@@ -202,8 +218,7 @@ module RDF
     end
 
     def to_sxp
-      prefix = distinguished? ? (existential? ? '$' : '?') : (existential? ? '$$' : '??')
-      unbound? ? "#{prefix}#{name}" : "#{prefix}#{name}=#{value.to_sxp}"
+      to_s
     end
   end
 end

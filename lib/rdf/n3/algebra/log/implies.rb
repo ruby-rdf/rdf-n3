@@ -66,7 +66,7 @@ module RDF::N3::Algebra::Log
       object.solutions = @solutions
 
       # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
-      log_debug("(logImplies implication true; solutions: #{SXP::Generator.string @solutions.to_sxp_bin})")
+      log_info("(logImplies implication true; solutions: #{SXP::Generator.string @solutions.to_sxp_bin})")
       # Yield statements into the default graph
       log_depth do
         object.each do |statement|

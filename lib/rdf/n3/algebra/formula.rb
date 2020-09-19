@@ -46,12 +46,25 @@ module RDF::N3::Algebra
         statement = RDF::Statement.from(statement.to_a.map do |term|
           case term
           when RDF::Node
-            formulae.fetch(term, term)
+            term = if formulae[term]
+              # Transform blank nodes denoting formulae into those formulae
+              formulae[term]
+            elsif graph_name
+              # If we're in a quoted graph, transform blank nodes into undistinguished existential variables.
+              term.to_ndvar(graph_name)
+            else
+              term
+            end
           when RDF::N3::List
-            term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
-          else
-            term
+            # Transform blank nodes denoting formulae into those formulae
+            term = term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
+
+            # If we're in a quoted graph, transform blank node components into existential variables
+            if graph_name && term.has_nodes?
+              term = term.to_existential(graph_name)
+            end
           end
+          term
         end)
 
         pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
@@ -148,9 +161,17 @@ module RDF::N3::Algebra
       end
       log_info("(formula sub-op solutions)") {SXP::Generator.string @solutions.to_sxp_bin}
 
-      # Only return solutions with universal variables
-      variable_names = @solutions.variable_names.reject {|v| v.to_s.start_with?('$')}
-      variable_names.empty? ? @solutions : @solutions.dup.project(*variable_names)
+      # Only return solutions with universal variables and distinguished existential variables.
+      # FIXME: also filter in-coming existential variables.
+      #unless undistinguished_vars.empty?
+      #  @solutions = if distinguished_vars.empty?
+      #    # No remaining variables, this only an empty solution
+      #    RDF::Query::Solutions(RDF::Query::Solution.new)
+      #  else
+      #    @solutions.dup.project(*distinguished_vars)
+      #  end
+      #end
+      @solutions
     end
 
     ##
@@ -159,13 +180,6 @@ module RDF::N3::Algebra
     # @return [Boolean]
     def formula?
       true
-    end
-
-    ##
-    # Return the variables contained within this formula
-    # @return [Array<RDF::Query::Variable>]
-    def vars
-      operands.map(&:vars).flatten.compact
     end
 
     ##
@@ -254,50 +268,24 @@ module RDF::N3::Algebra
     def graph_name; @options[:graph_name]; end
 
     ##
-    # Statements memoizer.
-    #
-    # * Statements exclude builtins.
-    # * Blank nodes are replaced with existential variables.
+    # Statements are the operands
     #
     # @return [Array<RDF::Statement>]
-    def statements
-      # BNodes in statements are existential variables.
-      @statements ||= begin
-        # Operations/Builtins are not statements.
-        statements = operands.select {|op| op.is_a?(RDF::Statement) && !RDF::N3::Algebra.for(op.predicate)}
-
-        statements.map do |pattern|
-          if graph_name
-            terms = {}
-            [:subject, :predicate, :object].each do |r|
-              terms[r] = case o = pattern.send(r)
-              when RDF::N3::List
-                # Substitute blank node members with existential variables, recusively.
-                o.has_nodes? ? o.to_existential : o
-              when RDF::Node
-                RDF::Query::Variable.new(o.id, existential: true)
-              when RDF::N3::Algebra::Formula
-                # FIXME: is this also existential?
-                o
-              else
-                o
-              end
-            end
-
-            # A pattern with a non-destinguished variable becomes optional, so that it will bind to itself, if not matched in queryable.
-            RDF::Query::Pattern.from(terms)
-          else
-            RDF::Query::Pattern.from(pattern)
-          end
-        end
-      end
-    end
+    alias_method :statements, :operands
 
     ##
     # Patterns memoizer
+    #
+    # * Patterns exclude builtins.
+    # * Blank nodes are replaced with existential variables.
     def patterns
-      # BNodes in statements are existential variables
-      @patterns ||= statements
+      # BNodes in statements are existential variables.
+      @patterns ||= begin
+        # Operations/Builtins are not statements.
+        operands.
+          select {|op| op.is_a?(RDF::Statement) && !RDF::N3::Algebra.for(op.predicate)}.
+          map {|st| RDF::Query::Pattern.from(st)}
+      end
     end
 
     ##
@@ -310,9 +298,9 @@ module RDF::N3::Algebra
           case o
           when RDF::N3::List
             # Substitute blank node members with existential variables, recusively.
-            o.has_nodes? ? o.to_existential : o
+            graph_name && o.has_nodes? ? o.to_existential(graph_name) : o
           when RDF::Node
-            RDF::Query::Variable.new(o.id, existential: true)
+            graph_name ? o.to_ndvar(graph_name) : o
           else
             o
           end
@@ -322,15 +310,38 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Return the variables contained within this formula
+    # @return [Array<RDF::Query::Variable>]
+    def vars
+      (statements.vars + sub_ops.vars).flatten.compact
+    end
+
+    ##
     # Universal vars in this formula and sub-formulae
+    # @return [Array<RDF::Query::Variable]
     def universal_vars
-      @universals ||= (patterns.vars + sub_ops.vars).reject(&:existential?).uniq
+      @universals ||= vars.reject(&:existential?).uniq
     end
 
     ##
     # Existential vars in this formula
+    # @return [Array<RDF::Query::Variable]
     def existential_vars
-      @existentials ||= patterns.vars.select(&:existential?)
+      @existentials ||= vars.select(&:existential?)
+    end
+
+    ##
+    # Distinguished vars in this formula
+    # @return [Array<RDF::Query::Variable]
+    def distinguished_vars
+      @distinguished ||= vars.vars.select(&:distinguished?)
+    end
+
+    ##
+    # Undistinguished vars in this formula
+    # @return [Array<RDF::Query::Variable]
+    def undistinguished_vars
+      @undistinguished ||= vars.vars.reject(&:distinguished?)
     end
 
     def to_s

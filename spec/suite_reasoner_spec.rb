@@ -6,7 +6,7 @@ describe RDF::N3::Reader do
   describe "w3c n3 tests" do
     require_relative 'suite_helper'
     let(:logger) {RDF::Spec.logger}
-    before {logger.level = Logger::INFO}
+    before {logger.level = Logger::DEBUG}
 
     #after(:each) do |example|
     #  puts logger.to_s if

@@ -592,8 +592,8 @@ describe RDF::N3::Writer do
         ),
         regexp: [
           %r{\(17\) a :TestCase \.},
-          %r{\(:x\) a :TestCase \.},
-          %r{:x a :RESULT \.},
+          %r{\(<x>\) a :TestCase \.},
+          %r{<x> a :RESULT \.},
         ]
       },
     }.each do |name, params|
@@ -622,8 +622,8 @@ describe RDF::N3::Writer do
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
-          %r(@forAll :o \.),
-          %r(:s :p :o \.),
+          %r(@forAll <o> \.),
+          %r(:s :p <o> \.),
         ]
       },
     }.each do |name, params|
@@ -665,7 +665,7 @@ describe RDF::N3::Writer do
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name
             when *%w(cwm_syntax_path2.n3
-                     cwm_includes_quantifiers.n3 cwm_includes_quantifiers_limited.n3
+                     cwm_includes_quantifiers_limited.n3
                      cwm_includes_builtins.n3
                      cwm_list_unify5-ref.n3
                      cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3

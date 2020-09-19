@@ -437,12 +437,13 @@ module RDF::N3
     ##
     # Substitutes blank node members with existential variables, recusively.
     #
+    # @param [RDF::Node] scope
     # @return [RDF::N3::List]
-    def to_existential
+    def to_existential(scope)
       values = @values.map do |e|
         case e
-        when RDF::Node     then RDF::Query::Variable.new(e.id, existential: true)
-        when RDF::N3::List then e.to_existential
+        when RDF::Node     then e.to_ndvar(scope)
+        when RDF::N3::List then e.to_existential(scope)
         else                    e
         end
       end

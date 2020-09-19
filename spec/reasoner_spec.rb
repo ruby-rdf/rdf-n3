@@ -4,7 +4,17 @@ require 'rdf/trig'
 
 describe "RDF::N3::Reasoner" do
   let(:logger) {RDF::Spec.logger}
-  before {logger.level = Logger::INFO}
+  before {logger.level = Logger::DEBUG}
+
+  context "variables" do
+    context "universals" do
+      # Universal variables remain in-scope between formulae
+    end
+
+    context "existentials" do
+      # Universal variables go out of scope between formulae
+    end
+  end
 
   context "n3:log" do
     context "log:implies" do
