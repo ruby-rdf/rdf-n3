@@ -226,21 +226,27 @@ module RDF::N3::Algebra
                 form = solution[o]
                 # uses the graph_name of the formula, and yields statements from the formula
                 form.solutions = RDF::Query::Solutions(solution)
-                form.each(&block)
+                form.each do |stmt|
+                  stmt.graph_name = form.graph_name
+                  block.call(stmt)
+                end
                 form.graph_name
               else
                 solution[o]
               end
             when RDF::N3::Algebra::Formula
               # uses the graph_name of the formula, and yields statements from the formula
-              o.each(&block)
+              o.each do |stmt|
+                stmt.graph_name = o.graph_name
+                block.call(stmt)
+              end
               o.graph_name
             else
               o
             end
           end
 
-          statement = RDF::Statement.from(terms, graph_name: graph_name)
+          statement = RDF::Statement.from(terms)
 
           # Sanity checking on statement
           if statement.variable?
