@@ -57,7 +57,7 @@ module RDF::N3::Algebra
     #
     # Returns nil if resource does not validate, given its position
     #
-    # @param [RDF::N3::List] resource
+    # @param [RDF::Term] resource
     # @return [RDF::Term]
     def evaluate(resource, position: :subject)
       raise NotImplemented

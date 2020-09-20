@@ -25,6 +25,7 @@ module RDF::N3
     module Log
       autoload :Conclusion,           'rdf/n3/algebra/log/conclusion'
       autoload :Conjunction,          'rdf/n3/algebra/log/conjunction'
+      autoload :Content,              'rdf/n3/algebra/log/content'
       autoload :EqualTo,              'rdf/n3/algebra/log/equal_to'
       autoload :Implies,              'rdf/n3/algebra/log/implies'
       autoload :Includes,             'rdf/n3/algebra/log/includes'
@@ -110,6 +111,7 @@ module RDF::N3
 
         RDF::N3::Log.conclusion           => Log::Conclusion,
         RDF::N3::Log.conjunction          => Log::Conjunction,
+        RDF::N3::Log.content              => Log::Content,
         RDF::N3::Log.equalTo              => Log::EqualTo,
         RDF::N3::Log.implies              => Log::Implies,
         RDF::N3::Log.includes             => Log::Includes,
