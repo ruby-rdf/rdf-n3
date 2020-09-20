@@ -427,6 +427,21 @@ module RDF::N3
     end
 
     ##
+    # Enumerate via depth-first recursive descent over list members, yielding each member
+    # @yield term
+    # @yieldparam [RDF::Term] term
+    # @return [Enumerator]
+    def each_descendant(&block)
+      if block_given?
+        each do |term|
+          term.each_descendant(&block) if term.list?
+          block.call(term)
+        end
+      end
+      enum_for(:each_descendant)
+    end
+
+    ##
     # Does this list, or any recusive list have any blank node members?
     #
     # @return [Boolean]
@@ -549,7 +564,6 @@ module RDF::N3
       subj = "#{subject.id}_#{bindings.values.sort.hash}"
       RDF::N3::List.new(subject: RDF::Node.intern(subj), values: to_a.map {|o| o.evaluate(bindings, **options)})
     end
-
 
     ##
     # Returns a query solution constructed by binding any variables in this list with the corresponding terms in the given `list`.

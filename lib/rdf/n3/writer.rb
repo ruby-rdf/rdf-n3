@@ -724,10 +724,19 @@ module RDF::N3
       lists = {}
       graph.each do |statement|
         preprocess_graph_statement(statement)
-        [statement.subject, statement.object].select(&:node?).each do |resource|
+        [statement.subject, statement.object].each do |resource|
           @formulae[resource] = true if
-            formula_names.include?(resource) ||
-            resource.id.start_with?('.form_')
+            resource.node? &&
+            (formula_names.include?(resource) || resource.id.start_with?('.form_'))
+
+          # First-class list may have members which are formulae
+          if resource.list?
+            resource.each_descendant do |term|
+              @formulae[term] = true if
+                term.node? &&
+                (formula_names.include?(term) || term.id.start_with?('.form_'))
+            end
+          end
         end
 
         # Collect list elements

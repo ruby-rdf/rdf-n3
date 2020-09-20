@@ -303,20 +303,35 @@ describe RDF::N3::Writer do
       },
       "list with multiple lists": {
         input: %(
-        <http://example.com/a> <http://example.com/property> _:l1 .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
-        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:a .
-        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:l2 .
-        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:b .
-        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          <http://example.com/a> <http://example.com/property> _:l1 .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:a .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:l2 .
+          _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:b .
+          _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
         ),
         regexp: [
           %r(<http://example.com/a> <http://example.com/property> \(\s*\(\s*"a"\) \(\s*"b"\)\) .)
         ],
         standard_prefixes: true
+      },
+      "list with formula": {
+        input: %(
+          @prefix log:  <http://www.w3.org/2000/10/swap/log#> .
+          {
+            ({:sky :color :blue} {:sky :color :green}) log:conjunction ?F
+          } =>  {  ?F a :result} .
+        ),
+        regexp: [
+          %r(@forAll <F> \.),
+          %r[{\s+\(\s*{\s*:sky :color :blue \.\s+}\s+{]m,
+          %r[{\s+:sky :color :green \.\s+}\s*\)]m,
+          %r[}\)\s+log:conjunction\s+<F>\s+\.\s+} =>]m,
+          %r[=>\s+{\s+<F> a :result \.\s*}]m
+        ]
       },
     }.each do |name, params|
       it name do
