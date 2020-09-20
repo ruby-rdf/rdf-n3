@@ -29,6 +29,7 @@ module RDF::N3
       autoload :EqualTo,              'rdf/n3/algebra/log/equal_to'
       autoload :Implies,              'rdf/n3/algebra/log/implies'
       autoload :Includes,             'rdf/n3/algebra/log/includes'
+      autoload :N3String,             'rdf/n3/algebra/log/n3_string'
       autoload :NotEqualTo,           'rdf/n3/algebra/log/not_equal_to'
       autoload :NotIncludes,          'rdf/n3/algebra/log/not_includes'
       autoload :OutputString,         'rdf/n3/algebra/log/output_string'
@@ -115,6 +116,7 @@ module RDF::N3
         RDF::N3::Log.equalTo              => Log::EqualTo,
         RDF::N3::Log.implies              => Log::Implies,
         RDF::N3::Log.includes             => Log::Includes,
+        RDF::N3::Log.n3String             => Log::N3String,
         RDF::N3::Log.notEqualTo           => Log::NotEqualTo,
         RDF::N3::Log.notIncludes          => Log::NotIncludes,
         RDF::N3::Log.outputString         => Log::OutputString,

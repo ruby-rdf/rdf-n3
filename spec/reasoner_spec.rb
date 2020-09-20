@@ -94,6 +94,31 @@ describe "RDF::N3::Reasoner" do
         end
       end
     end
+
+    context "log:n3String" do
+      {
+        "i18n" => {
+          input: %(
+            {{:㐭 :b :c} log:n3String ?x} => {?x a :interesting}.
+          ),
+          regexp: [
+            %r("""\s*<#㐭> <#b> <#c> \.\s*""" a <#interesting> \.)m
+          ]
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          result = reason(options[:input])
+          n3str = RDF::N3::Writer.buffer {|writer| writer << result}
+
+          logger.info "result: #{n3str}"
+          Array(options[:regexp]).each do |re|
+            logger.info "match: #{re.inspect}"
+            expect(n3str).to match_re(re, logger: logger, input: n3str), logger.to_s
+          end
+        end
+      end
+    end
   end
 
   context "n3:list" do

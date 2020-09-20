@@ -79,6 +79,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `log:equalTo`       (See {RDF::N3::Algebra::Log::EqualTo})
   * `log:implies`       (See {RDF::N3::Algebra::Log::Implies})
   * `log:includes`      (See {RDF::N3::Algebra::Log::Includes})
+  * `log:n3String`      (See {RDF::N3::Algebra::Log::N3String})
   * `log:notEqualTo`    (See {RDF::N3::Algebra::Log::NotEqualTo})
   * `log:notIncludes`   (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
   * `log:outputString`  (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
