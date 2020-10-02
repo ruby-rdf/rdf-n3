@@ -94,6 +94,54 @@ describe "RDF::N3::Reasoner" do
         end
       end
     end
+    context "log:parsedAsN3" do
+      {
+        "i18n" => {
+          input: %(
+            {":㐭 :b :c." log:parsedAsN3 ?x} => {?x a log:Formula} .
+          ),
+          expect: %(
+            {<http://example.com/㐭> <http://example.com/b> <http://example.com/c>} a log:Formula .
+          )
+        },
+        "log_parsedAsN3" => {
+          input: %(
+            @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+            @prefix : <#>.
+
+            @forAll :F.
+
+            {"""     @prefix : <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#> .
+                 @prefix crypto: <http://www.w3.org/2000/10/swap/crypto#> .
+                 @prefix log: <http://www.w3.org/2000/10/swap/log#> .
+                 @prefix os: <http://www.w3.org/2000/10/swap/os#> .
+                 @prefix string: <http://www.w3.org/2000/10/swap/string#> .
+
+                :foo     :credential <access-tina-cert.n3>;
+                     :forDocument <http://www.w3.org/Member>;
+                     :junk "32746213462187364732164732164321" .
+            """ log:parsedAsN3 :F} log:implies { :F a :result }.
+          ),
+          expect: %(
+            @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+            @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+            {
+              <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#foo> <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#credential> <http://example.com/access-tina-cert.n3>;
+                <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#forDocument> <http://www.w3.org/Member>;
+                <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#junk> "32746213462187364732164732164321" .
+            } a <#result> .
+          )
+        }
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          result = reason(options[:input], data: false, filter: true)
+          expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
+        end
+      end
+    end
 
     context "log:n3String" do
       {

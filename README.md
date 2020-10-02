@@ -83,6 +83,8 @@ Reasoning is discussed in the [Design Issues][] document.
   * `log:notEqualTo`    (See {RDF::N3::Algebra::Log::NotEqualTo})
   * `log:notIncludes`   (not implemented yet - See {RDF::N3::Algebra::Log::NotIncludes})
   * `log:outputString`  (not implemented yet - See {RDF::N3::Algebra::Log::OutputString})
+  * `log:parsedAsN3`    (See {RDF::N3::Algebra::Log::ParsedAsN3})
+  * `log:semantics`     (See {RDF::N3::Algebra::Log::Semantics})
 
 #### RDF Math vocabulary <http://www.w3.org/2000/10/swap/math#>
 

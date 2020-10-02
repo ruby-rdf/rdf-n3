@@ -33,6 +33,8 @@ module RDF::N3
       autoload :NotEqualTo,           'rdf/n3/algebra/log/not_equal_to'
       autoload :NotIncludes,          'rdf/n3/algebra/log/not_includes'
       autoload :OutputString,         'rdf/n3/algebra/log/output_string'
+      autoload :ParsedAsN3,           'rdf/n3/algebra/log/parsed_as_n3'
+      autoload :Semantics,            'rdf/n3/algebra/log/semantics'
     end
 
     module Math
@@ -120,6 +122,8 @@ module RDF::N3
         RDF::N3::Log.notEqualTo           => Log::NotEqualTo,
         RDF::N3::Log.notIncludes          => Log::NotIncludes,
         RDF::N3::Log.outputString         => Log::OutputString,
+        RDF::N3::Log.parsedAsN3           => Log::ParsedAsN3,
+        RDF::N3::Log.semantics            => Log::Semantics,
         RDF::N3::Log.supports             => NotImplemented,
 
         RDF::N3::Math.absoluteValue       => Math::AbsoluteValue,
