@@ -15,7 +15,7 @@ module RDF::N3::Algebra::Log
     # @return [RDF::N3::Algebra::Formula]
     # @see RDF::N3::ListOperator#evaluate
     def evaluate(list)
-      form = RDF::N3::Algebra::Formula.new(graph_name: RDF::Node.new(list.hash)) 
+      form = RDF::N3::Algebra::Formula.new(graph_name: RDF::Node.intern(list.hash)) 
 
       list.each do |f|
         form.operands.append(*f.operands)
