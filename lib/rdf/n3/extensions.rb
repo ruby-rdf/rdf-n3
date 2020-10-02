@@ -12,15 +12,6 @@ module RDF
     # Universal quantifiers defined on this enumerable
     # @return [Array<RDF::Query::Variable>]
     attr_accessor :universals
-
-    ##
-    # An enumerable contains another enumerable if every statement in other is a statement in self
-    #
-    # @param [RDF::Enumerable] other
-    # @return [Boolean]
-    def contain?(other)
-      other.all? {|statement| has_statement?(statement)}
-    end
   end
 
   class List
@@ -65,11 +56,19 @@ module RDF
 
   module Value
     ##
-    # Returns `true` if `self` is a {RDF::N3::Formula}.
+    # Returns `true` if `self` is a {RDF::N3::Algebra::Formula}.
     #
     # @return [Boolean]
     def formula?
       false
+    end
+
+    # By default, returns itself. Can be used for terms such as blank nodes to be turned into non-disinguished variables.
+    #
+    # @param [RDF::Node] scope
+    # return [RDF::Query::Variable]
+    def to_ndvar(scope)
+      self
     end
   end
 
@@ -147,12 +146,24 @@ module RDF
     # @param [RDF::Node] scope
     # return [RDF::Query::Variable]
     def to_ndvar(scope)
-      label = "#{id}_#{scope.id}_undext"
+      label = "#{id}_#{scope ? scope.id : 'base'}_undext"
       RDF::Query::Variable.new(label, existential: true, distinguished: false)
     end
   end
 
   class Query::Pattern
+    ##
+    # Overrides `#initialize!` to turn blank nodes into non-distinguished variables, if the `:ndvars` option is set.
+    def initialize!
+      if @options[:ndvars]
+        @graph_name = @graph_name.to_ndvar(nil) if @graph_name
+        @subject = @subject.to_ndvar(@graph_name)
+        @predicate = @predicate.to_ndvar(@graph_name)
+        @object = @object.to_ndvar(@graph_name)
+      end
+      super
+    end
+
     ##
     # Checks pattern equality against a statement, considering nesting an lists.
     #

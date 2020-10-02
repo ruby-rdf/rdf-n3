@@ -550,9 +550,9 @@ describe RDF::N3::List do
     end
   end
 
-  describe "#to_existential" do
+  describe "#to_ndvar" do
     it "creates existential vars for list having nodes" do
-      expect(nodes.to_existential(RDF::Node.new)).to all(be_variable)
+      expect(nodes.to_ndvar(RDF::Node.new)).to all(be_variable)
     end
   end
 
@@ -566,7 +566,7 @@ describe RDF::N3::List do
     end
 
     it "finds list with existentials" do
-      expect(nodes.to_existential(RDF::Node.new)).to be_variable
+      expect(nodes.to_ndvar(RDF::Node.new)).to be_variable
     end
   end
 
@@ -580,7 +580,7 @@ describe RDF::N3::List do
     end
 
     it "finds variables in existential list" do
-      expect(nodes.to_existential(RDF::Node.new).variables).to all(be_variable)
+      expect(nodes.to_ndvar(RDF::Node.new).variables).to all(be_variable)
     end
   end
 

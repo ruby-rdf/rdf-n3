@@ -61,7 +61,7 @@ module RDF::N3::Algebra
 
             # If we're in a quoted graph, transform blank node components into existential variables
             if graph_name && term.has_nodes?
-              term = term.to_existential(graph_name)
+              term = term.to_ndvar(graph_name)
             end
           end
           term
@@ -304,7 +304,7 @@ module RDF::N3::Algebra
           case o
           when RDF::N3::List
             # Substitute blank node members with existential variables, recusively.
-            graph_name && o.has_nodes? ? o.to_existential(graph_name) : o
+            graph_name && o.has_nodes? ? o.to_ndvar(graph_name) : o
           when RDF::Node
             graph_name ? o.to_ndvar(graph_name) : o
           else
