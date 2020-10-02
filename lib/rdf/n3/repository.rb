@@ -45,6 +45,18 @@ module RDF::N3
     end
 
     ##
+    # Creates a query from the statements in this repository, turning blank nodes into non-distinguished variables. This can be used to determine if this repository is logically a subset of another repository.
+    #
+    # @return [RDF::Query]
+    def to_query
+      RDF::Query.new do |query|
+        each do |statement|
+          query.pattern RDF::Query::Pattern.from(statement, ndvars: true)
+        end
+      end
+    end
+
+    ##
     # @private
     # @see RDF::Countable#count
     def count

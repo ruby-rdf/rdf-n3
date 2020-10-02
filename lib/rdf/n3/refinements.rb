@@ -52,7 +52,7 @@ module RDF::N3::Refinements
   # @!parse
   #   # Refinements on RDF::Query::Pattern
   #   class ::RDF::Query::Pattern
-  #     # Refines `valid?` to allow literal subjects and BNode predicates.
+  #     # Refines `#valid?` to allow literal subjects and BNode predicates.
   #     # @return [Boolean]
   #     def valid?; end
   #   end

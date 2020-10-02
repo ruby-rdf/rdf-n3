@@ -12,7 +12,8 @@ module RDF::N3::Algebra::Log
 
     NAME = :logImplies
 
-    # Yields solutions from subject. Solutions are created by evaluating subject against `queryable`.
+    ##
+    # Returns solutions from subject. Solutions are created by evaluating subject against `queryable`.
     #
     # @param  [RDF::Queryable] queryable
     #   the graph or repository to query
@@ -23,12 +24,13 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
       @queryable = queryable
-      log_debug {"logImplies"}
-      @solutions = log_depth {operands.first.execute(queryable, solutions: solutions, **options)}
+      log_debug(NAME) {"subject: #{SXP::Generator.string operand(0).to_sxp_bin}"}
+      log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
+      @solutions = log_depth {operand(0).execute(queryable, solutions: solutions, **options)}
       log_debug("(logImplies solutions pre-filter)") {SXP::Generator.string @solutions.to_sxp_bin}
 
       # filter solutions where not all variables in antecedant are bound.
-      vars = operands.first.universal_vars
+      vars = operand(0).universal_vars
       @solutions = @solutions.filter do |solution|
         vars.all? {|v| solution.bound?(v)}
       end

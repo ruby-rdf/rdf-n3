@@ -1,6 +1,6 @@
 module RDF::N3::Algebra::List
   ##
-  # Iff the suject is a list and the object is the first thing that list, then this is true. The object can be calculated as a function of the list.
+  # Iff the subject is a list and the object is the first thing that list, then this is true. The object can be calculated as a function of the list.
   #
   # @example
   #     { ( 1 2 3 4 5 6 ) list:first 1 } => { :test1 a :SUCCESS }.

@@ -79,7 +79,11 @@ module RDF::N3::Algebra
       end
 
       # Formula is that without a graph name
-      formulae[nil]
+      this = formulae[nil]
+
+      # If assigned a graph name, add it here
+      this.graph_name = options[:graph_name] if options[:graph_name]
+      this
     end
 
     ##
@@ -175,7 +179,7 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Returns `true` if `self` is a {RDF::N3::Formula}.
+    # Returns `true` if `self` is a {RDF::N3::Algebra::Formula}.
     #
     # @return [Boolean]
     def formula?
@@ -272,6 +276,13 @@ module RDF::N3::Algebra
     # Graph name associated with this formula
     # @return [RDF::Resource]
     def graph_name; @options[:graph_name]; end
+
+    # Assign a graph name to this formula
+    # @param [RDF::Resource] name
+    # @return [RDF::Resource]
+    def graph_name=(name)
+      @options[:graph_name] = name
+    end
 
     ##
     # Statements are the operands

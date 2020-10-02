@@ -1,6 +1,6 @@
 module RDF::N3::Algebra::List
   ##
-  # Iff the suject is a list and the object is the last thing that list, then this is true. The object can be calculated as a function of the list.
+  # Iff the subject is a list and the object is the last thing that list, then this is true. The object can be calculated as a function of the list.
   #
   # @example
   #     { ( 1 2 3 4 5 6 ) list:last 6 } => { :test1 a :SUCCESS }.
