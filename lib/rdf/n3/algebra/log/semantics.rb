@@ -23,7 +23,7 @@ module RDF::N3::Algebra::Log
           repo = RDF::N3::Repository.new
           repo << RDF::Reader.open(resource)
           content_hash = repo.hash # used as name of resulting formula
-          RDF::N3::Formula.from_enumerable(repo, graph_name: RDF::Node.new(content_hash))
+          RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.new(content_hash))
         rescue IOError, RDF::ReaderError
           nil
         end

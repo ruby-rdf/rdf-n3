@@ -24,13 +24,19 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
       @queryable = queryable
-      log_debug(NAME) {"subject: #{SXP::Generator.string operand(0).to_sxp_bin}"}
+      subject = subject.evaluate(solutions.first.bindings) || operand(0)
+      object = object.evaluate(solutions.first.bindings) || operand(1)
+      log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
       log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
-      @solutions = log_depth {operand(0).execute(queryable, solutions: solutions, **options)}
+
+      # Nothing to do if variables aren't resolved.
+      return @solutions = solutions if subject.is_a?(RDF::Query::Variable) || object.is_a?(RDF::Query::Variable)
+
+      @solutions = log_depth {subject.execute(queryable, solutions: solutions, **options)}
       log_debug("(logImplies solutions pre-filter)") {SXP::Generator.string @solutions.to_sxp_bin}
 
       # filter solutions where not all variables in antecedant are bound.
-      vars = operand(0).universal_vars
+      vars = subject.universal_vars
       @solutions = @solutions.filter do |solution|
         vars.all? {|v| solution.bound?(v)}
       end

@@ -17,6 +17,29 @@ describe "RDF::N3::Reasoner" do
   end
 
   context "n3:log" do
+    context "log:conjunction" do
+      {
+        "conjunction" => {
+          input: %(
+            {
+              ({:sky :color :blue} {:sky :color :green})
+                log:conjunction ?F
+            } => { ?F a :result} .
+          ),
+          expect: %(
+            {:sky :color :blue, :green } a :result .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          result = reason(options[:input], data: false, filter: true)
+          expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
+        end
+      end
+    end
+
     context "log:implies" do
       {
         "r1" => {
@@ -94,6 +117,36 @@ describe "RDF::N3::Reasoner" do
         end
       end
     end
+
+    context "log:includes" do
+      {
+        "t1" => {
+          input: %(
+            {{ :a :b :c } log:includes { :a :b :c }} log:implies { :test1 a :success } .
+          ),
+          expect: %(
+            :test1 a :success .
+          )
+        },
+        "t2" => {
+          input: %(
+            { { <#theSky> <#is> <#blue> } log:includes {<#theSky> <#is> <#blue>} } log:implies { :test3 a :success } .
+            { { <#theSky> <#is> <#blue> } log:notIncludes {<#theSky> <#is> <#blue>} } log:implies { :test3_bis a :FAILURE } .
+          ),
+          expect: %(
+            :test3 a :success .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          result = reason(options[:input])
+          expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
+        end
+      end
+    end
+
     context "log:parsedAsN3" do
       {
         "i18n" => {

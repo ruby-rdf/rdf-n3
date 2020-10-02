@@ -6,11 +6,25 @@ module RDF::N3::Algebra::Log
   # (In cwm, variables must of course end up getting bound before the log:include test can be done, or an infinite result set would result)
   #
   # Related: See includes
-  class NotIncludes < SPARQL::Algebra::Operator::Binary
+  class NotIncludes < Includes
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::N3::Algebra::Builtin
 
     NAME = :logNotIncludes
+    ##
+    # Uses log:includes and returns a solution if log:includes fails
+    #
+    # @param  [RDF::Queryable] queryable
+    #   the graph or repository to query
+    # @param  [Hash{Symbol => Object}] options
+    #   any additional keyword options
+    # @option options [RDF::Query::Solutions] solutions
+    #   optional initial solutions for chained queries
+    # @return [RDF::Solutions] distinct solutions
+    def execute(queryable, solutions:, **options)
+      super
+      @solutions = solutions.empty? ? RDF::Query::Solutions(RDF::Query::Solution.new) : RDF::Query::Solutions.new
+    end
   end
 end

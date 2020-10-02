@@ -20,14 +20,13 @@ describe RDF::N3::Reader do
           next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
-            when *%w{cwm_math_test}
-              pending "math numeric representation"
+            #when *%w{cwm_math_test}
+            #  pending "math numeric representation"
             when *%w{cwm_time_t1}
               pending "time"
-            when *%w{cwm_includes_bnode}
-              pending "log:includes"
-            when *%w{cwm_includes_conclusion_simple cwm_unify_unify1}
-              pending "reason over formulae"
+            when *%w{cwm_includes_conclusion_simple cwm_unify_unify1 cwm_includes_builtins
+                     cwm_includes_t10 cwm_includes_t11 cwm_includes_quantifiers_limited}
+              pending "log:includes etc."
             when *%w{cwm_supports_simple cwm_string_roughly cwm_string_uriEncode}
               pending "Uses unsupported builtin"
             when *%w{cwm_list_builtin_generated_match}
