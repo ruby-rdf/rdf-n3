@@ -24,35 +24,29 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
       @queryable = queryable
-      subject = subject.evaluate(solutions.first.bindings) || operand(0)
-      object = object.evaluate(solutions.first.bindings) || operand(1)
-      log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
-      log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
+      @solutions = RDF::Query::Solutions(solutions.map do |solution|
+        subject = operand(0).evaluate(solution.bindings)
+        object = operand(1).evaluate(solution.bindings)
+        log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
+        log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
 
-      # Nothing to do if variables aren't resolved.
-      return @solutions = solutions if subject.is_a?(RDF::Query::Variable) || object.is_a?(RDF::Query::Variable)
+        # Nothing to do if variables aren't resolved.
+        next unless subject && object
 
-      @solutions = log_depth {subject.execute(queryable, solutions: solutions, **options)}
-      log_debug("(logImplies solutions pre-filter)") {SXP::Generator.string @solutions.to_sxp_bin}
+        solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
+        log_debug("(logImplies solutions pre-filter)") {SXP::Generator.string solns.to_sxp_bin}
 
-      # filter solutions where not all variables in antecedant are bound.
-      vars = subject.universal_vars
-      @solutions = @solutions.filter do |solution|
-        vars.all? {|v| solution.bound?(v)}
-      end
-      log_debug("(logImplies solutions)") {SXP::Generator.string @solutions.to_sxp_bin}
+        # filter solutions where not all variables in antecedant are bound.
+        vars = subject.universal_vars
+        solns = solns.filter do |soln|
+          vars.all? {|v| soln.bound?(v)}
+        end
+        log_debug("(logImplies solutions)") {SXP::Generator.string solns.to_sxp_bin}
+        solns
+      end.flatten.compact)
 
       # Return original solutions, without bindings
       solutions
-    end
-
-    ##
-    # Input is the subject
-    #
-    # @return [RDF::Term]
-    def input_operand
-      # By default, return the merger of input and output operands
-      operand(0)
     end
 
     ##
@@ -64,21 +58,19 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      subject, object = operands
-
-      return if @solutions.empty?
-
       log_debug {"logImplies each #{SXP::Generator.string @solutions.to_sxp_bin}"}
 
-      # Use solutions from subject for object
-      object.solutions = @solutions
-
-      # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
-      log_info("(logImplies implication true; solutions: #{SXP::Generator.string @solutions.to_sxp_bin})")
-      # Yield statements into the default graph
       log_depth do
-        object.each do |statement|
-          block.call(RDF::Statement.from(statement.to_quad, inferred: true))
+        @solutions.each do |solution|
+          object = operand(1).evaluate(solution.bindings)
+          next unless object # shouldn't happen
+
+          object.solutions = RDF::Query::Solutions(solution)
+
+          # Yield statements into the default graph
+          object.each do |statement|
+            block.call(RDF::Statement.from(statement.to_quad, inferred: true))
+          end
         end
       end
     end
