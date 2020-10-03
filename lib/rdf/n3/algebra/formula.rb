@@ -236,6 +236,8 @@ module RDF::N3::Algebra
               else
                 solution[o]
               end
+            when RDF::N3::List
+              o.variable? ? o.evaluate(solution.bindings) : o
             when RDF::N3::Algebra::Formula
               # uses the graph_name of the formula, and yields statements from the formula
               o.each do |stmt|
