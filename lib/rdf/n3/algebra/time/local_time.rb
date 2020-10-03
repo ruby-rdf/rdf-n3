@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time format string, its time:localTime is the result of formatting the current time of processing and local timezone in the format given. If the format string has zero length, then the ISOdate standrad format is used.  [ is time:localTime of ""]  the therefore the current date time. It will end with a numeric timezone code or "Z" for UTC (GMT).
-  class LocalTime < RDF::N3::Algebra::LiteralOperator
+  class LocalTime < RDF::N3::Algebra::ResourceOperator
     NAME = :timeLocalTime
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

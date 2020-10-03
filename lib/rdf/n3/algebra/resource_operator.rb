@@ -1,7 +1,7 @@
 module RDF::N3::Algebra
   ##
   # This is a generic operator where the subject is a literal or binds to a literal and the object is either a constant that equals the evaluation of the subject, or a variable to which the result is bound in a solution
-  class LiteralOperator < SPARQL::Algebra::Operator::Binary
+  class ResourceOperator < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
     include RDF::N3::Algebra::Builtin

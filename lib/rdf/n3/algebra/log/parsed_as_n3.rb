@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Log
   ##
   # The subject string, parsed as N3, gives this formula.
-  class ParsedAsN3 < RDF::N3::Algebra::LiteralOperator
+  class ParsedAsN3 < RDF::N3::Algebra::ResourceOperator
     NAME = :logParsedAsN3
 
     ##

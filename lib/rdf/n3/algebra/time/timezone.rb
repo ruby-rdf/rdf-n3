@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:timeZone is the trailing timezone offset part, e.g.  "-05:00".
-  class Timezone < RDF::N3::Algebra::LiteralOperator
+  class Timezone < RDF::N3::Algebra::ResourceOperator
     NAME = :timeTimezone
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

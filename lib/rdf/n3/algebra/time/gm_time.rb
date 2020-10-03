@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time format string, its time:gmtime is the result of formatting the Universal Time of processing in the format given. If the format string has zero length, then the ISOdate standard format is used. `[ is time:gmtime of ""]`  the therefore the current date time. It will end with "Z" as a timezone code.
-  class GmTime < RDF::N3::Algebra::LiteralOperator
+  class GmTime < RDF::N3::Algebra::ResourceOperator
     NAME = :timeGmTime
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

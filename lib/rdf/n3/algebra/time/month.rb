@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:month is the two-digit month.
-  class Month < RDF::N3::Algebra::LiteralOperator
+  class Month < RDF::N3::Algebra::ResourceOperator
     NAME = :timeMonth
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

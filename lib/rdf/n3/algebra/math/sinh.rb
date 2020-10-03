@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is an angle expressed in radians. The object is calulated as the hyperbolic sine value of the subject.
-  class SinH < RDF::N3::Algebra::LiteralOperator
+  class SinH < RDF::N3::Algebra::ResourceOperator
     NAME = :mathSinH
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Math
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case resource
       when RDF::Query::Variable then resource

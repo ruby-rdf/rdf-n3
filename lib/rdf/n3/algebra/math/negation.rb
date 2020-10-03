@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject or object is calculated to be the negation of the other.
-  class Negation < RDF::N3::Algebra::LiteralOperator
+  class Negation < RDF::N3::Algebra::ResourceOperator
     include RDF::N3::Algebra::Builtin
 
     NAME = :mathNegation
@@ -12,6 +12,7 @@ module RDF::N3::Algebra::Math
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case resource
       when RDF::Query::Variable

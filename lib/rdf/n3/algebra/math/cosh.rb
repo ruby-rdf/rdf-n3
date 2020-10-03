@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is an angle expressed in radians. The object is calulated as the hyperbolic cosine value of the subject.
-  class CosH < RDF::N3::Algebra::LiteralOperator
+  class CosH < RDF::N3::Algebra::ResourceOperator
     NAME = :mathCosH
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Math
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case resource
       when RDF::Query::Variable then resource

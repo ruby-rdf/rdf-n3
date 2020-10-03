@@ -10,8 +10,8 @@ module RDF::N3
     autoload :Builtin,                'rdf/n3/algebra/builtin'
     autoload :Formula,                'rdf/n3/algebra/formula'
     autoload :ListOperator,           'rdf/n3/algebra/list_operator'
-    autoload :LiteralOperator,        'rdf/n3/algebra/literal_operator'
     autoload :NotImplemented,         'rdf/n3/algebra/not_implemented'
+    autoload :ResourceOperator,       'rdf/n3/algebra/resource_operator'
 
     module List
       autoload :Append,               'rdf/n3/algebra/list/append'

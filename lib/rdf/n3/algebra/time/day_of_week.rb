@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:dayOfWeek is the the day number within the week, Sunday being 0.
-  class DayOfWeek < RDF::N3::Algebra::LiteralOperator
+  class DayOfWeek < RDF::N3::Algebra::ResourceOperator
     NAME = :timeDayOfWeek
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

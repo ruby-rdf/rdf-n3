@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:inSeconds is the (string represntation of) the floating point number of seconds since the beginning of the era on the given system.
-  class InSeconds < RDF::N3::Algebra::LiteralOperator
+  class InSeconds < RDF::N3::Algebra::ResourceOperator
     NAME = :timeInSeconds
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

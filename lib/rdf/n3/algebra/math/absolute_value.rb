@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Math
   ##
   # The object is calulated as the absolute value of the subject.
-  class AbsoluteValue < RDF::N3::Algebra::LiteralOperator
+  class AbsoluteValue < RDF::N3::Algebra::ResourceOperator
     NAME = :mathAbsoluteValue
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Math
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject

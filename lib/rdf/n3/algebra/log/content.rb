@@ -5,7 +5,7 @@ module RDF::N3::Algebra::Log
   # (Cwm knows how to go get a document in order to evaluate this.)
   #
   # Note that the content-type of the information is not given and so must be known or guessed.
-  class Content < RDF::N3::Algebra::LiteralOperator
+  class Content < RDF::N3::Algebra::ResourceOperator
     NAME = :logContent
 
     ##

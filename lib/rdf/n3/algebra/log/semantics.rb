@@ -5,7 +5,7 @@ module RDF::N3::Algebra::Log
   # [Aside: Philosophers will be distracted here into worrying about the meaning of meaning. At least we didn't call this function "meaning"! In as much as N3 is used as an interlingua for interoperability for different systems, this for an N3 based system is the meaning  expressed by a document.]
   #
   # (Cwm knows how to go get a document and parse N3 and RDF/XML it in order to evaluate this. Other languages for web documents  may be defined whose N3 semantics are therefore also calculable, and so they could be added in due course. See for example GRDDL, RDFa, etc)
-  class Semantics < RDF::N3::Algebra::LiteralOperator
+  class Semantics < RDF::N3::Algebra::ResourceOperator
     NAME = :logSemantics
 
     ##

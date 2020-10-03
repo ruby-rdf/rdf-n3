@@ -1,7 +1,7 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:hour is the hour in the 24 hour clock.
-  class Hour < RDF::N3::Algebra::LiteralOperator
+  class Hour < RDF::N3::Algebra::ResourceOperator
     NAME = :timeHour
 
     ##
@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Time
     # @param [RDF::Term] resource
     # @param [:subject, :object] position
     # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
     def evaluate(resource, position:)
       case position
       when :subject
