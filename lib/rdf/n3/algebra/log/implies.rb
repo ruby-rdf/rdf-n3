@@ -41,7 +41,7 @@ module RDF::N3::Algebra::Log
         solns = solns.filter do |soln|
           vars.all? {|v| soln.bound?(v)}
         end
-        log_debug("(logImplies solutions)") {SXP::Generator.string solns.to_sxp_bin}
+        log_info("(logImplies solutions)") {SXP::Generator.string solns.to_sxp_bin}
         solns
       end.flatten.compact)
 

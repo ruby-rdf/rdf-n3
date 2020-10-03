@@ -178,9 +178,6 @@ module Fixtures
       # For debug output formatting
       def format; :n3; end
 
-      # For debug output formatting
-      def format; :ttl; end
-
       def base
         action
       end

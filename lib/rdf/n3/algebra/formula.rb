@@ -118,7 +118,7 @@ module RDF::N3::Algebra
             memo.merge(name => value)
           end)
         end
-        log_info("(formula query solutions)") { these_solutions.to_sxp}
+        log_info("(formula query solutions)") { SXP::Generator.string(these_solutions.to_sxp_bin)}
         solutions.merge(these_solutions)
       end
 
@@ -137,19 +137,17 @@ module RDF::N3::Algebra
         while !ops.empty?
           last_op = nil
           ops.each do |op|
-            log_debug("(formula built-in)") {op.to_sxp}
+            log_debug("(formula built-in)") {SXP::Generator.string op.to_sxp_bin}
             solutions = if op.executable?
               op.execute(queryable, solutions: @solutions)
             else # Evaluatable
-              @solutions.all? {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE} ?
-                @solutions :
-                RDF::Query::Solutions.new
+              @solutions.filter {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE}
             end
-            log_debug("(formula intermediate solutions)") {"after #{op.to_sxp}: " + SXP::Generator.string(@solutions.to_sxp_bin)}
+            log_debug("(formula intermediate solutions)") {"after #{op.class.const_get(:NAME)}: " + SXP::Generator.string(@solutions.to_sxp_bin)}
             # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
             next if solutions.empty?
             last_op = op
-            @solutions = solutions
+            @solutions = RDF::Query::Solutions(solutions)
             break
           end
 

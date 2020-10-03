@@ -20,7 +20,7 @@ module RDF::N3::Algebra
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
         object = operand(1).evaluate(solution.bindings) || operand(1)
 
-        log_debug(self.class.const_get(:NAME)) {"list: #{SXP::Generator.string list.to_sxp_bin}, object: #{SXP::Generator.string object.to_sxp_bin}"}
+        log_debug(self.class.const_get(:NAME)) {"list: #{SXP::Generator.string(list.to_sxp_bin).gsub(/\s+/m, ' ')}, object: #{SXP::Generator.string(object.to_sxp_bin).gsub(/\s+/m, ' ')}"}
         next unless validate(list)
 
         lhs = evaluate(list)
