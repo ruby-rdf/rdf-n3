@@ -14,7 +14,7 @@ module RDF::N3::Algebra::Str
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
     def evaluate(list)
-      RDF::Literal(list.to_a.map{|li| li.is_a?(RDF::Literal::Double) ? li.canonicalize.to_s.downcase : li.canonicalize}.join(""))
+      RDF::Literal(list.to_a.map(&:canonicalize).join(""))
     end
   end
 end

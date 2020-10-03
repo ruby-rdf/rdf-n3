@@ -71,14 +71,6 @@ module RDF::N3::Refinements
     end
   end
 
-  refine ::RDF::Literal::Double do
-    ##
-    # Canonicalizes to lower-case 'e'
-    def to_s
-      super.downcase
-    end
-  end
-
   refine ::RDF::Graph do
     # Allow a graph to be treated as a term in a statement.
     include ::RDF::Term

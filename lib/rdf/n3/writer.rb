@@ -285,7 +285,7 @@ module RDF::N3
           if literal.nan? || literal.infinite?
             quoted(literal.value) + "^^#{format_uri(literal.datatype)}"
           else
-            literal.canonicalize.to_s.sub('E', 'e')  # Favor lower case exponent
+            literal.canonicalize.to_s
           end
         else
           text = quoted(literal.value)
