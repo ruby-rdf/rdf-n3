@@ -477,13 +477,13 @@ describe RDF::N3::Writer do
     
     describe "xsd:double" do
       [
-        [%q("1.0e1"^^xsd:double), /1.0e1 ./],
-        [%q(1.0e1), /1.0e1 ./],
-        [%q("0.1e1"^^xsd:double), /1.0e0 ./],
-        [%q(0.1e1), /1.0e0 ./],
-        [%q("10.02e1"^^xsd:double), /1.002e2 ./],
-        [%q(10.02e1), /1.002e2 ./],
-        [%q("14"^^xsd:double), /1.4e1 ./],
+        [%q("1.0e1"^^xsd:double), /1.0E1 ./],
+        [%q(1.0e1), /1.0E1 ./],
+        [%q("0.1e1"^^xsd:double), /1.0E0 ./],
+        [%q(0.1e1), /1.0E0 ./],
+        [%q("10.02e1"^^xsd:double), /1.002E2 ./],
+        [%q(10.02e1), /1.002E2 ./],
+        [%q("14"^^xsd:double), /1.4E1 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
           ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
@@ -495,15 +495,15 @@ describe RDF::N3::Writer do
       end
 
       [
-        [0, "0.0e0"],
-        [10, "1.0e1"],
-        [-1, "-1.0e0"],
-        ["0", "0.0e0"],
-        ["10", "1.0e1"],
-        ["-1", "-1.0e0"],
-        ["1.0", "1.0e0"],
-        ["0.1", "1.0e-1"],
-        ["10.01", "1.001e1"],
+        [0, "0.0E0"],
+        [10, "1.0E1"],
+        [-1, "-1.0E0"],
+        ["0", "0.0E0"],
+        ["10", "1.0E1"],
+        ["-1", "-1.0E0"],
+        ["1.0", "1.0E0"],
+        ["0.1", "1.0E-1"],
+        ["10.01", "1.001E1"],
         ["true", %{"true"^^<http://www.w3.org/2001/XMLSchema#double>}],
         ["false", %{"false"^^<http://www.w3.org/2001/XMLSchema#double>}],
         ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#double>}],

@@ -1,24 +1,6 @@
 # coding: utf-8
 require_relative 'spec_helper'
 
-describe "RDF::Enmerable" do
-  let(:g1) {RDF::Graph.new {|g| g.insert(*RDF::Spec.triples)}}
-  let(:g2) {RDF::Graph.new {|g| g.insert(*RDF::Spec.triples[0..(RDF::Spec.triples.length/2)])}}
-  describe "#contain?" do
-    it "contains itself" do
-      expect(g1).to be_contain(g1)
-    end
-
-    it "contains a subset" do
-      expect(g1).to be_contain(g2)
-    end
-
-    it "does not contain a superset" do
-      expect(g2).not_to be_contain(g1)
-    end
-  end
-end
-
 describe RDF::List do
   let(:constant) {RDF::List[RDF::URI("A"), RDF::URI("B")]}
   let(:nodes) {RDF::List[RDF::Node.new("a"), RDF::Node.new("b")]}

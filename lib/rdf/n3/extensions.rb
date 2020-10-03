@@ -154,6 +154,7 @@ module RDF
   class Query::Pattern
     ##
     # Overrides `#initialize!` to turn blank nodes into non-distinguished variables, if the `:ndvars` option is set.
+    alias_method :orig_initialize!, :initialize!
     def initialize!
       if @options[:ndvars]
         @graph_name = @graph_name.to_ndvar(nil) if @graph_name
@@ -161,7 +162,7 @@ module RDF
         @predicate = @predicate.to_ndvar(@graph_name)
         @object = @object.to_ndvar(@graph_name)
       end
-      super
+      orig_initialize!
     end
 
     ##
