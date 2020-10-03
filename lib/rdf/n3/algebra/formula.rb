@@ -216,6 +216,9 @@ module RDF::N3::Algebra
         log_debug("(formula apply)") {solution.to_sxp}
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
+          # Skip builtins
+          next if RDF::N3::Algebra.for(pattern.predicate)
+
           terms = {}
           [:subject, :predicate, :object].each do |part|
             terms[part] = case o = pattern.send(part)

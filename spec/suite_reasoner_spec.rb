@@ -20,8 +20,6 @@ describe RDF::N3::Reader do
           next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
-            #when *%w{cwm_math_test}
-            #  pending "math numeric representation"
             when *%w{cwm_time_t1}
               pending "time"
             when *%w{cwm_includes_conclusion_simple cwm_unify_unify1 cwm_includes_builtins

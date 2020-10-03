@@ -11,7 +11,7 @@ module RDF::N3
     include RDF::Mutable
     include RDF::Util::Logger
 
-    # The top-level parsed formula
+    # The top-level parsed formula, including builtins and variables.
     # @return [RDF::N3::Algebra::Formula]
     attr_reader :formula
 
@@ -109,28 +109,33 @@ module RDF::N3
     def execute(**options, &block)
       @options[:logger] = options[:logger] if options.has_key?(:logger)
 
+      # The knowledge base is the non-variable portions of formula
+      knowledge_base = RDF::N3::Repository.new {|r| r << formula}
+      log_debug("reasoner: knowledge_base") {SXP::Generator.string(knowledge_base.statements.to_sxp_bin)}
+
       # If thinking, continuously execute until results stop growing
       if options[:think]
-        count = 0
+        count = -1
         log_info("reasoner: think start") { "count: #{count}"}
-        while @mutable.count > count
+        while knowledge_base.count > count
           log_info("reasoner: think do") { "count: #{count}"}
-          count = @mutable.count
-          dataset = @mutable.project_graph(nil)
-          log_depth {formula.execute(dataset, **options)}
-          @mutable << formula
+          count = knowledge_base.count
+          log_depth {formula.execute(knowledge_base, **options)}
+          knowledge_base << formula
         end
         log_info("reasoner: think end") { "count: #{count}"}
       else
         # Run one iteration
         log_info("reasoner: rules start") { "count: #{count}"}
-        dataset = @mutable.project_graph(nil)
-        log_depth {formula.execute(dataset, **options)}
-        @mutable << formula
+        log_depth {formula.execute(knowledge_base, **options)}
+        knowledge_base << formula
         log_info("reasoner: rules end") { "count: #{count}"}
       end
 
-      log_debug("reasoner: datastore") {SXP::Generator.string @mutable.statements.to_sxp_bin}
+      log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
+
+      # Add updates back to mutable, containg builtins and variables.
+      @mutable << knowledge_base
 
       conclusions(&block) if block_given?
       self
