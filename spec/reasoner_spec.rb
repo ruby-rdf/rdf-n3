@@ -17,6 +17,31 @@ describe "RDF::N3::Reasoner" do
   end
 
   context "n3:log" do
+    context "log:conclusion" do
+      {
+        "conclusion-simple" => {
+          input: %(
+          {
+            {<a> <b> <c>} => {<test> a <SUCCESS> } .
+            <a> <b> <c>.
+          } a :TestRule.
+        
+          { ?x a :TestRule; log:conclusion ?y }  => { ?y a :TestResult }.
+          ),
+          expect: %(
+            { <test> a <SUCCESS> } a :TestResult .
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          expected = parse(options[:expect])
+          result = reason(options[:input], data: false, filter: true)
+          expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
+        end
+      end
+    end
+
     context "log:conjunction" do
       {
         "conjunction" => {
@@ -784,10 +809,10 @@ describe "RDF::N3::Reasoner" do
   # Reason over input, returning a repo
   def reason(input, base_uri: 'http://example.com/', filter: false, data: true, think: true, **options)
     input = parse(input, list_terms: true, **options) if input.is_a?(String)
-    reasoner = RDF::N3::Reasoner.new(input, base_uri:  base_uri)
+    reasoner = RDF::N3::Reasoner.new(input, base_uri:  base_uri, logger: logger)
     repo = RDF::N3:: Repository.new
 
-    reasoner.execute(logger: logger, think: think)
+    reasoner.execute(think: think)
     if filter
       repo << reasoner.conclusions
     elsif data

@@ -67,6 +67,8 @@ module RDF::N3
       else RDF::N3::Repository.new
       end
 
+      @formula = input if input.is_a?(RDF::N3::Algebra::Formula)
+
       log_debug("reasoner: expression") {SXP::Generator.string(formula.to_sxp_bin)}
 
       if block_given?
@@ -93,6 +95,7 @@ module RDF::N3
     # @param  [RDF::Statement] statement
     # @return [void]
     def insert_statement(statement)
+      @formula = nil
       @mutable.insert_statement(statement)
     end
 
@@ -122,6 +125,7 @@ module RDF::N3
           count = knowledge_base.count
           log_depth {formula.execute(knowledge_base, **options)}
           knowledge_base << formula
+          log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
         end
         log_info("reasoner: think end") { "count: #{count}"}
       else
@@ -137,8 +141,7 @@ module RDF::N3
       # Add updates back to mutable, containg builtins and variables.
       @mutable << knowledge_base
 
-      conclusions(&block) if block_given?
-      self
+      block_given? ? conclusions(&block) : self
     end
     alias_method :reason!, :execute
 
