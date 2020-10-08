@@ -663,7 +663,7 @@ module RDF::N3
       path(subject, :subject)
       @output.write(" ")
       num_props = predicateObjectList(subject)
-      @output.write("#{num_props > 0 ? ' ' : ''}.")
+      @output.puts("#{num_props > 0 ? ' ' : ''}.")
       true
     end
 

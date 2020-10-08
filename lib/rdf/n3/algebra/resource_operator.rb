@@ -14,10 +14,13 @@ module RDF::N3::Algebra
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        subject = operand(0).evaluate(solution.bindings) || operand(0)
-        object = operand(1).evaluate(solution.bindings) || operand(1)
+        subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
+        object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
+        subject = formulae.fetch(subject, subject) if subject.node?
+        object = formulae.fetch(object, object) if object.node?
 
         log_debug(self.class.const_get(:NAME)) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
+        next unless valid?(subject, object)
 
         lhs = evaluate(subject, position: :subject)
         if lhs.nil?
@@ -26,11 +29,10 @@ module RDF::N3::Algebra
         end
 
         rhs = evaluate(object, position: :object)
-        if lhs.nil?
+        if rhs.nil?
           log_error(self.class.const_get(:NAME)) {"object is invalid: #{object.inspect}"}
           next
         end
-        next unless valid?(subject, object)
 
         if object.variable?
           solution.merge(object.to_sym => lhs)

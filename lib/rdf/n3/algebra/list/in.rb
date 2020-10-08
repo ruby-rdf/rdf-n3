@@ -16,11 +16,11 @@ module RDF::N3::Algebra::List
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        subject = operand(0).evaluate(solution.bindings) || operand(0)
+        subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
-        list = operand(1).evaluate(solution.bindings)
+        list = operand(1).evaluate(solution.bindings, formulae: formulae)
         # If it evaluated to a BNode, re-expand as a list
-        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings)
+        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
 
         log_debug(NAME) {"subject: #{subject.to_sxp}, list: #{list.to_sxp}"}
         unless list.list? && list.valid?

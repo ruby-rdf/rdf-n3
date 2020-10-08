@@ -233,4 +233,14 @@ module RDF
       to_s
     end
   end
+
+  class SPARQL::Algebra::Operator
+    ##
+    # Map of related formulae, indexed by graph name.
+    #
+    # @return [Hash{RDF::Resource => RDF::N3::Algebra::Formula}]
+    def formulae
+      @options.fetch(:formulae, {})
+    end
+  end
 end

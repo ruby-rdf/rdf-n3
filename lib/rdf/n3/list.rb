@@ -556,13 +556,18 @@ module RDF::N3
     #   options passed from query
     # @return [RDF::N3::List]
     # @see SPARQL::Algebra::Expression.evaluate
-    def evaluate(bindings, **options)
+    def evaluate(bindings, formulae: {}, **options)
       # if values are constant, simply return ourselves
       return self if to_a.none? {|li| li.node? || li.variable?}
       bindings = bindings.to_h unless bindings.is_a?(Hash)
       # Create a new list subject using a combination of the current subject and a hash of the binding values
       subj = "#{subject.id}_#{bindings.values.sort.hash}"
-      RDF::N3::List.new(subject: RDF::Node.intern(subj), values: to_a.map {|o| o.evaluate(bindings, **options)})
+      values = to_a.map do |o|
+        o = o.evaluate(bindings, formulae: formulae, **options)
+        # Map graph names to graphs
+        o.node? ? formulae.fetch(o, o) : o
+      end
+      RDF::N3::List.new(subject: RDF::Node.intern(subj), values: values)
     end
 
     ##

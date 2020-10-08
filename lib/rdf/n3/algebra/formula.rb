@@ -30,8 +30,9 @@ module RDF::N3::Algebra
       require 'sparql' unless defined?(:SPARQL)
 
       # Create formulae from statement graph_names
-      formulae = (enumerable.graph_names.unshift(nil)).inject({}) do |memo, graph_name|
-        memo.merge(graph_name => Formula.new(graph_name: graph_name, **options))
+      formulae = {}
+      enumerable.graph_names.unshift(nil).each do |graph_name|
+        formulae[graph_name] = Formula.new(graph_name: graph_name, formulae: formulae, **options)
       end
 
       # Add patterns to appropiate formula based on graph_name,
@@ -71,7 +72,12 @@ module RDF::N3::Algebra
 
         # Formulae may be the subject or object of a known operator
         if klass = RDF::N3::Algebra.for(pattern.predicate)
-          form.operands << klass.new(pattern.subject, pattern.object, parent: form, predicate: pattern.predicate, **options)
+          form.operands << klass.new(pattern.subject,
+                                     pattern.object,
+                                     formulae: formulae,
+                                     parent: form,
+                                     predicate: pattern.predicate,
+                                     **options)
         else
           pattern.graph_name = nil
           form.operands << pattern
@@ -112,7 +118,8 @@ module RDF::N3::Algebra
         these_solutions = queryable.query(@query, solutions: solutions, **options)
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
-            # Replace blank node bindings with lists, where those blank nodes are associated with lists.
+            # Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
+            value = formulae.fetch(value, value) if value.node?
             l = RDF::N3::List.try_list(value, queryable)
             value = l if l.constant?
             memo.merge(name => value)
@@ -143,7 +150,7 @@ module RDF::N3::Algebra
             else # Evaluatable
               @solutions.filter {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE}
             end
-            log_debug("(formula intermediate solutions)") {"after #{op.class.const_get(:NAME)}: " + SXP::Generator.string(@solutions.to_sxp_bin)}
+            log_debug("(formula intermediate solutions)") {"after #{op.class.const_get(:NAME)}: " + SXP::Generator.string(solutions.to_sxp_bin)}
             # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
             next if solutions.empty?
             last_op = op
@@ -174,6 +181,21 @@ module RDF::N3::Algebra
       #  end
       #end
       @solutions
+    end
+
+    ##
+    # Evaluates the formula using the given variable `bindings` by cloning the formula and setting the solutions to `bindings` so that `#each` will generate statements from those bindings.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::N3::List]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, **options)
+      this = dup
+      this.solutions = RDF::Query::Solutions(bindings)
+      this
     end
 
     ##
@@ -240,7 +262,7 @@ module RDF::N3::Algebra
                 solution[o]
               end
             when RDF::N3::List
-              o.variable? ? o.evaluate(solution.bindings) : o
+              o.variable? ? o.evaluate(solution.bindings, formulae: formulae) : o
             when RDF::N3::Algebra::Formula
               # uses the graph_name of the formula, and yields statements from the formula
               o.each do |stmt|

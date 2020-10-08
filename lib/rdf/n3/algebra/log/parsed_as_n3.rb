@@ -25,7 +25,7 @@ module RDF::N3::Algebra::Log
           nil
         end
       when :object
-        return nil unless resource.literal?
+        return nil unless resource.literal? || resource.is_a?(RDF::Query::Variable)
         resource
       end
     end

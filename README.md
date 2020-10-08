@@ -73,7 +73,7 @@ Reasoning is discussed in the [Design Issues][] document.
 
 #### RDF Log vocabulary <http://www.w3.org/2000/10/swap/log#>
 
-  * `log:conclusion`    (not implemented yet - See {RDF::N3::Algebra::Log::Conclusion})
+  * `log:conclusion`    (See {RDF::N3::Algebra::Log::Conclusion})
   * `log:conjunction`   (See {RDF::N3::Algebra::Log::Conjunction})
   * `log:content`       (See {RDF::N3::Algebra::Log::Content})
   * `log:equalTo`       (See {RDF::N3::Algebra::Log::EqualTo})
