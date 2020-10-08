@@ -5,7 +5,7 @@ module RDF::N3::Algebra::Math
     NAME = :mathRounded
 
     ##
-    # The math:floor operator takes string or number and calculates its floor.
+    # The math:rounded operator takes string or number rounds it to the next  integer.
     #
     # @param [RDF::Term] resource
     # @param [:subject, :object] position

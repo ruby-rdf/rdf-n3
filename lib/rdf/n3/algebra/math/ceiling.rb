@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # The object is calculated as the subject upwards to a whole number.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-ceiling
   class Ceiling < RDF::N3::Algebra::ResourceOperator
     NAME = :mathCeiling
 

@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:minute is the minutes component.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-minutes-from-dateTime
   class Minute < RDF::N3::Algebra::ResourceOperator
     NAME = :timeMinute
 

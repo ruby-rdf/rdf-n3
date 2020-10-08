@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:hour is the hour in the 24 hour clock.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-hours-from-dateTime
   class Hour < RDF::N3::Algebra::ResourceOperator
     NAME = :timeHour
 

@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is a pair of numbers. The object is calculated by dividing the first number of the pair by the second.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-divide
   class Quotient < RDF::N3::Algebra::ListOperator
     NAME = :mathQuotient
 

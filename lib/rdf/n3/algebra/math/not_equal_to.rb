@@ -1,13 +1,15 @@
 module RDF::N3::Algebra::Math
   ##
   # True iff the subject is a string representation of a number which  is NOT EQUAL to a number of which the object is a string representation.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-equal
   class NotEqualTo < SPARQL::Algebra::Operator::Compare
     include RDF::N3::Algebra::Builtin
 
     NAME = :'!='
 
     ##
-    # Returns TRUE if `term1` and `term2` are the same RDF term as defined in Resource Description Framework (RDF): Concepts and Abstract Syntax [CONCEPTS]; produces a type error if the arguments are both literal but are not the same RDF term *; returns FALSE otherwise. `term1` and `term2` are the same if any of the following is true:
+    # The math:notEqualTo operator takes a pair of strings or numbers and determines if they are not the same numeric value.
     #
     # @param  [RDF::Term] term1
     #   an RDF term

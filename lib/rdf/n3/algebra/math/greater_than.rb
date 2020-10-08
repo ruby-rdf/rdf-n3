@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # True iff the subject is a string representation of a number which  is greater than the number of which the object is a string representation.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-greater-than
   class GreaterThan < SPARQL::Algebra::Operator::Compare
     include RDF::N3::Algebra::Builtin
 

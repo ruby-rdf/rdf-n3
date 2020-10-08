@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:month is the two-digit month.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-month-from-dateTime
   class Month < RDF::N3::Algebra::ResourceOperator
     NAME = :timeMonth
 

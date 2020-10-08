@@ -1,7 +1,9 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is a pair of integer numbers. The object is calculated by dividing the first number of the pair by the second, ignoring remainder.
-  class IntegerQuotient < RDF::N3::Algebra::ListOperator
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-integer-divide
+  class IntegerQuotient < RDF::N3::Algebra::Math::Quotient
     NAME = :mathIntegerQuotient
 
     ##

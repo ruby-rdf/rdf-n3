@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:year is  the year component.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-year-from-dateTime
   class Year < RDF::N3::Algebra::ResourceOperator
     NAME = :timeYear
 

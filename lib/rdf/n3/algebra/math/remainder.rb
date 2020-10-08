@@ -1,11 +1,13 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is a pair of integers. The object is calculated by dividing the first number of the pair by the second and taking the remainder.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-mod
   class Remainder < RDF::N3::Algebra::ListOperator
     NAME = :mathRemainder
 
     ##
-    # The math:quotient operator takes a pair of strings or numbers and calculates their quotient.
+    # The math:remainder operator takes a pair of strings or numbers and calculates their remainder.
     #
     # @param [RDF::N3::List] list
     # @return [RDF::Term]

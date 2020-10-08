@@ -1,11 +1,13 @@
 module RDF::N3::Algebra::Math
   ##
   # The object is calulated as the absolute value of the subject.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-abs
   class AbsoluteValue < RDF::N3::Algebra::ResourceOperator
     NAME = :mathAbsoluteValue
 
     ##
-    # The math:sum operator takes string or number and calculates its absolute value.
+    # The math:absoluteValue operator takes string or number and calculates its absolute value.
     #
     # @param [RDF::Term] resource
     # @param [:subject, :object] position

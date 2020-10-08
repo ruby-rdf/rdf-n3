@@ -12,8 +12,8 @@ module RDF::N3::Algebra::Str
     # @param  [RDF::Literal] pattern
     #   a simple literal
     # @return [RDF::Literal::Boolean] `true` or `false`
+    # @see https://www.w3.org/TR/xpath-functions/#regex-syntax
     def apply(text, pattern)
-      # @see https://www.w3.org/TR/xpath-functions/#regex-syntax
       log_error(NAME) {"expected a plain RDF::Literal, but got #{text.inspect}"} unless text.is_a?(RDF::Literal) && text.plain?
       text = text.to_s
       # TODO: validate text syntax

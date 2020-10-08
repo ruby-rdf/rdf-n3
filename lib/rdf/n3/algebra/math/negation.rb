@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject or object is calculated to be the negation of the other.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-unary-minus
   class Negation < RDF::N3::Algebra::ResourceOperator
     include RDF::N3::Algebra::Builtin
 

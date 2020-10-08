@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:day is the day of the month.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-day-from-dateTime
   class Day < RDF::N3::Algebra::ResourceOperator
     NAME = :timeDay
 

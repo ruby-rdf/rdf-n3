@@ -6,6 +6,8 @@ module RDF::N3::Algebra::Math
   #     { ("8" "3") math:difference ?x} => { ?x :valueOf "8 - 3" } .
   #     { ("8") math:difference ?x } => { ?x :valueOf "8 - (error?)" } .
   #     { (8 3) math:difference ?x} => { ?x :valueOf "8 - 3" } .
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-subtract
   class Difference < RDF::N3::Algebra::ListOperator
     NAME = :mathDifference
 

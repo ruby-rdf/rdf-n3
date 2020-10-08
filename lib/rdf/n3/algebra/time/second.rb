@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:second is the seconds component.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-seconds-from-dateTime
   class Second < RDF::N3::Algebra::ResourceOperator
     NAME = :timeSecond
 

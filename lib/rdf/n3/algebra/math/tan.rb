@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is an angle expressed in radians. The object is calulated as the tangent value of the subject.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-math-tan
   class Tan < RDF::N3::Algebra::ResourceOperator
     NAME = :mathTan
 

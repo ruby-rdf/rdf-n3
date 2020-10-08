@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Math
   ##
   # The subject is a list of numbers. The object is calculated as the arithmentic product of those numbers.
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-numeric-multiply
   class Product < RDF::N3::Algebra::ListOperator
     NAME = :mathProduct
 

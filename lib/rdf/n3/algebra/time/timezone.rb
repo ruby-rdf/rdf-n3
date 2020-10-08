@@ -1,6 +1,8 @@
 module RDF::N3::Algebra::Time
   ##
   # For a date-time, its time:timeZone is the trailing timezone offset part, e.g.  "-05:00".
+  #
+  # @see https://www.w3.org/TR/xpath-functions/#func-timezone-from-dateTime
   class Timezone < RDF::N3::Algebra::ResourceOperator
     NAME = :timeTimezone
 
