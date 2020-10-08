@@ -616,12 +616,10 @@ describe "RDF::N3::Reasoner" do
       context "trig" do
         {
           "0": {
-            asin: "0.0e0",
             sin: "0.0e0",
             sinh: "0.0e0",
             cos: "1.0e0",
             cosh: "1.0e0",
-            atan: "0.0e0",
             tan: "0.0e0",
             tanh: "0.0e0",
           },

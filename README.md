@@ -89,12 +89,6 @@ Reasoning is discussed in the [Design Issues][] document.
 #### RDF Math vocabulary <http://www.w3.org/2000/10/swap/math#>
 
   * `math:absoluteValue`    (See {RDF::N3::Algebra::Math::AbsoluteValue})
-  * `math:acos`             (See {RDF::N3::Algebra::Math::ACos})
-  * `math:asin`             (See {RDF::N3::Algebra::Math::ASin})
-  * `math:atan`             (See {RDF::N3::Algebra::Math::ATan})
-  * `math:acosh`            (See {RDF::N3::Algebra::Math::ACosH})
-  * `math:asinh`            (See {RDF::N3::Algebra::Math::ASinH})
-  * `math:atanh`            (See {RDF::N3::Algebra::Math::ATanH})
   * `math:ceiling`          (See {RDF::N3::Algebra::Math::Ceiling})
   * `math:cosh`             (See {RDF::N3::Algebra::Math::CosH})
   * `math:cos`              (See {RDF::N3::Algebra::Math::Cos})

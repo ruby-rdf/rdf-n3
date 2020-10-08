@@ -39,12 +39,6 @@ module RDF::N3
 
     module Math
       autoload :AbsoluteValue,        'rdf/n3/algebra/math/absolute_value'
-      autoload :ACos,                 'rdf/n3/algebra/math/acos'
-      autoload :ASin,                 'rdf/n3/algebra/math/asin'
-      autoload :ATan,                 'rdf/n3/algebra/math/atan'
-      autoload :ACosH,                'rdf/n3/algebra/math/acosh'
-      autoload :ASinH,                'rdf/n3/algebra/math/asinh'
-      autoload :ATanH,                'rdf/n3/algebra/math/atanh'
       autoload :Ceiling,              'rdf/n3/algebra/math/ceiling'
       autoload :Cos,                  'rdf/n3/algebra/math/cos'
       autoload :CosH,                 'rdf/n3/algebra/math/cosh'
@@ -127,12 +121,6 @@ module RDF::N3
         RDF::N3::Log.supports             => NotImplemented,
 
         RDF::N3::Math.absoluteValue       => Math::AbsoluteValue,
-        RDF::N3::Math.acos                => Math::ACos,
-        RDF::N3::Math.asin                => Math::ASin,
-        RDF::N3::Math.atan                => Math::ATan,
-        RDF::N3::Math.acosh               => Math::ACosH,
-        RDF::N3::Math.asinh               => Math::ASinH,
-        RDF::N3::Math.atanh               => Math::ATanH,
         RDF::N3::Math.ceiling             => Math::Ceiling,
         RDF::N3::Math.cos                 => Math::Cos,
         RDF::N3::Math.cosh                => Math::CosH,
