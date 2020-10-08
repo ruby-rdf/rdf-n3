@@ -1,6 +1,6 @@
 module RDF::N3::Algebra::Time
   ##
-  # For a date-time, its time:inSeconds is the (string represntation of) the floating point number of seconds since the beginning of the era on the given system.
+  # Iff the _subject_ is a `xsd:dateTime` and the _object_ is the integer number of seconds since the beginning of the era on a given system.  Don't assume a particular value, always test for it. The _object_ can be calculated as a function of the _subject_.
   class InSeconds < RDF::N3::Algebra::ResourceOperator
     NAME = :timeInSeconds
 
@@ -20,7 +20,7 @@ module RDF::N3::Algebra::Time
         when RDF::Literal
           resource = resource.as_datetime
           # Subject evaluates to seconds from the epoc
-          RDF::Literal::Double.new(resource.object.strftime("%s"))
+          RDF::Literal::Integer.new(resource.object.strftime("%s"))
         else
           nil
         end
