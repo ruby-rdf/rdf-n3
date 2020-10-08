@@ -14,26 +14,7 @@ module RDF::N3::Algebra::Math
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
     def evaluate(list)
-      RDF::Literal::Integer.new(list.to_a.map do |li|
-        li.is_a?(RDF::Literal::Integer) ?
-          li :
-          RDF::Literal::Integer.new(li.value)
-      end.reduce(&:/))
-    end
-
-    ##
-    # The list argument must be a pair of literals.
-    #
-    # @param [RDF::N3::List] list
-    # @return [Boolean]
-    # @see RDF::N3::ListOperator#validate
-    def validate(list)
-      if super && list.all?(&:literal?) && list.length == 2
-        true
-      else
-        log_error(NAME) {"list is not a pair of literals: #{list.to_sxp}"}
-        false
-      end
+      RDF::Literal::Integer.new(super)
     end
   end
 end
