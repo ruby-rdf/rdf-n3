@@ -14,7 +14,7 @@ module RDF::N3::Algebra::Str
     # @return [RDF::Literal::Boolean]
     def apply(left, right)
       case
-      when !left.compatible?(right)
+      when !left.is_a?(RDF::Term) || !right.is_a?(RDF::Term) || !left.compatible?(right)
         log_error(NAME) {"expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"}
         RDF::Literal::FALSE
       when left.to_s.downcase.include?(right.to_s.downcase) then RDF::Literal::TRUE
