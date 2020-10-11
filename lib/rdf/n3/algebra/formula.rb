@@ -222,10 +222,8 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(&block)
-      @solutions ||= begin
-        # If there are no solutions, create a single solution
-        RDF::Query::Solutions(RDF::Query::Solution.new)
-      end
+      # If there are no solutions, create a single solution
+      @solutions ||= RDF::Query::Solutions(RDF::Query::Solution.new)
       log_debug("formula #{graph_name} each") {SXP::Generator.string @solutions.to_sxp_bin}
 
       # Yield patterns by binding variables

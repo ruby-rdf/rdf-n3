@@ -33,7 +33,7 @@ module RDF::N3
     # @param [RDF::Resource] subject
     # @return [RDF::List, RDF::Resource] returns either the original resource, or a list based on that resource
     def self.try_list(subject, graph)
-      return subject unless subject.node? || subject.uri? && subject == RDF.nil
+      return subject unless subject && (subject.node? || subject.uri? && subject == RDF.nil)
       ln = RDF::List.new(subject: subject, graph: graph)
       return subject unless ln.valid?
 
@@ -563,7 +563,7 @@ module RDF::N3
       # Create a new list subject using a combination of the current subject and a hash of the binding values
       subj = "#{subject.id}_#{bindings.values.sort.hash}"
       values = to_a.map do |o|
-        o = o.evaluate(bindings, formulae: formulae, **options)
+        o = o.evaluate(bindings, formulae: formulae, **options) || o
         # Map graph names to graphs
         o.node? ? formulae.fetch(o, o) : o
       end

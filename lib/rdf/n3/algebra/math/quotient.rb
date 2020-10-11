@@ -24,7 +24,7 @@ module RDF::N3::Algebra::Math
     # @return [Boolean]
     # @see RDF::N3::ListOperator#validate
     def validate(list)
-      if super && list.all?(&:literal?) && list.length == 2
+      if super && list.all? {|le| le.is_a?(RDF::Literal)} && list.length == 2
         true
       else
         log_error(NAME) {"list is not a pair of literals: #{list.to_sxp}"}

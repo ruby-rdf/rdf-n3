@@ -14,6 +14,7 @@ module RDF::N3::Algebra::List
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         list = operand(0).evaluate(solution.bindings, formulae: formulae)
+        next unless list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
         object = formulae.fetch(object, object) if object.node?

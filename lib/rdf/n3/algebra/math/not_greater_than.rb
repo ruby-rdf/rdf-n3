@@ -3,9 +3,7 @@ module RDF::N3::Algebra::Math
   # True iff the subject is a string representation of a number which is NOT greater than the number of which the object is a string representation.
   #
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-greater-than
-  class NotGreaterThan < SPARQL::Algebra::Operator::Compare
-    include RDF::N3::Algebra::Builtin
-
+  class NotGreaterThan < GreaterThan
     NAME = :'<='
 
     ##
@@ -20,8 +18,7 @@ module RDF::N3::Algebra::Math
     #
     # @see RDF::Term#==
     def apply(term1, term2)
-      log_debug(NAME) { "term1: #{term1.to_sxp} <= term2: #{term2.to_sxp} ? #{(term1 <= term2).inspect}"}
-      RDF::Literal(term1 <= term2)
+      RDF::Literal(super != RDF::Literal::TRUE)
     end
   end
 end

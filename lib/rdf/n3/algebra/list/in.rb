@@ -19,6 +19,7 @@ module RDF::N3::Algebra::List
         subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
         list = operand(1).evaluate(solution.bindings, formulae: formulae)
+        next unless list
         # If it evaluated to a BNode, re-expand as a list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
 

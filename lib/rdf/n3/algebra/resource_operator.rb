@@ -72,7 +72,7 @@ module RDF::N3::Algebra
     # @param [RDF::Term] object
     # @return [Boolean]
     def valid?(subject, object)
-      true
+      subject.is_a?(RDF::Term) && object.is_a?(RDF::Term)
     end
 
     ##
