@@ -24,11 +24,12 @@ module RDF::N3::Algebra::Log
           repo << RDF::Reader.open(resource)
           content_hash = repo.hash # used as name of resulting formula
           RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.new(content_hash))
-        rescue IOError, RDF::ReaderError
+        rescue IOError, RDF::ReaderError => e
+          log_error(NAME) {"error loading #{resource}: #{e}"}
           nil
         end
       when :object
-        return nil unless resource.literal?
+        return nil unless resource.literal? || resource.variable?
         resource
       end
     end

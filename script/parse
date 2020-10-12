@@ -11,6 +11,8 @@ require 'open-uri'
 
 def run(input, **options)
   require 'profiler' if options[:profile]
+  parser_options = options[:parser_options]
+  parser_options[:base_uri] ||= File.expand_path(input.path)  if input.respond_to?(:path)
 
   reader_class = RDF::Reader.for(options[:input_format].to_sym)
   raise "Reader not found for #{options[:input_format]}" unless reader_class
@@ -21,8 +23,8 @@ def run(input, **options)
   if options[:think] || options[:rules]
     STDERR.puts "Reason" if $verbose
     # Parse into a new reasoner and evaluate
-    reader_class.new(input, **options[:parser_options].merge(logger: nil)) do |reader|
-      reasoner = RDF::N3::Reasoner.new(reader, **options[:parser_options])
+    reader_class.new(input, **parser_options.merge(logger: nil)) do |reader|
+      reasoner = RDF::N3::Reasoner.new(reader, **parser_options)
       reasoner.reason!(**options)
       repo = RDF::N3::Repository.new
       if options[:conclusions]
@@ -37,7 +39,7 @@ def run(input, **options)
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
     STDERR.puts "Parse nt/quiet" if $verbose
-    reader_class.new(input, **options[:parser_options]).each do |statement|
+    reader_class.new(input, **parser_options).each do |statement|
       num += 1
       if options[:errors] && statement.invalid?
         $stderr.puts "Invalid statement at #{r.lineno}: #{statement.inspect}"
@@ -49,19 +51,19 @@ def run(input, **options)
     end
   elsif options[:output_format] == :sxp
     STDERR.puts "Parse to SXP" if $verbose
-    reader_class.new(input, **options[:parser_options]) do |reader|
+    reader_class.new(input, **parser_options) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader)
       SXP::Generator.print(reasoner.to_sxp_bin)
     end
   elsif options[:output_format] == :inspect
     STDERR.puts "Parse to inspect" if $verbose
-    reader_class.new(input, **options[:parser_options]).each do |statement|
+    reader_class.new(input, **parser_options).each do |statement|
       num += 1
       options[:output].puts statement.inspect
     end
   else
     STDERR.puts "Parse to #{options[:output_format]}" if $verbose
-    reader = reader_class.new(input, **options[:parser_options])
+    reader = reader_class.new(input, **parser_options)
     repo = [].extend(RDF::Enumerable, RDF::Queryable)
     reader.each_statement {|st| repo << st}
     num = repo.count
@@ -92,7 +94,6 @@ logger.level = Logger::WARN
 logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
 
 parser_options = {
-  base_uri: "http://example.com",
   list_terms: true,
   logger: logger,
   validate: false,
@@ -159,7 +160,9 @@ opts.each do |opt, arg|
   when "--data"         then options[:data] = true
   when '--debug'        then logger.level = Logger::DEBUG
   when '--errors'       then options[:errors] = true
-  when '--execute'      then input = arg
+  when '--execute'
+    options[:base_uri] = "http://example.com/",
+    input = arg
   when '--format'       then options[:output_format] = arg.to_sym
   when "--help"         then usage()
   when '--info'         then logger.level = Logger::INFO
