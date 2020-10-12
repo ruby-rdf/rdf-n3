@@ -11,8 +11,10 @@ module RDF::N3::Algebra::List
     # Evaluates this operator using the given variable `bindings`.
     # If the first operand is a variable, it creates a solution for each element in the list.
     #
-    # @param [RDF::Queryable] queryable
+    # @param  [RDF::Queryable] queryable
+    #   the graph or repository to query
     # @param [RDF::Query::Solutions] solutions
+    #   solutions for chained queries
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|

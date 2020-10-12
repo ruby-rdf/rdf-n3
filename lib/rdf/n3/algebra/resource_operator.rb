@@ -9,15 +9,17 @@ module RDF::N3::Algebra
     ##
     # The operator takes a literal and provides a mechanism for subclasses to operate over (and validate) that argument.
     #
-    # @param [RDF::Queryable] queryable
+    # @param  [RDF::Queryable] queryable
+    #   the graph or repository to query
     # @param [RDF::Query::Solutions] solutions
+    #   solutions for chained queries
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
-        subject = formulae.fetch(subject, subject) if subject.node?
-        object = formulae.fetch(object, object) if object.node?
+        subject = formulae.fetch(subject, subject).dup if subject.node?
+        object = formulae.fetch(object, object).dup if object.node?
 
         log_debug(self.class.const_get(:NAME)) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
         next unless valid?(subject, object)

@@ -8,8 +8,10 @@ module RDF::N3::Algebra::List
     # Evaluates this operator using the given variable `bindings`.
     # If the last operand is a variable, it creates a solution for each element in the list.
     #
-    # @param [RDF::Queryable] queryable
+    # @param  [RDF::Queryable] queryable
+    #   the graph or repository to query
     # @param [RDF::Query::Solutions] solutions
+    #   solutions for chained queries
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
@@ -17,7 +19,7 @@ module RDF::N3::Algebra::List
         next unless list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
-        object = formulae.fetch(object, object) if object.node?
+        object = formulae.fetch(object, object).dup if object.node?
 
         log_debug(NAME) {"list: #{list.to_sxp}, object: #{object.to_sxp}"}
         unless list.list? && list.valid?

@@ -126,6 +126,7 @@ module RDF::N3
           log_depth {formula.execute(knowledge_base, **options)}
           knowledge_base << formula
           log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
+          log_debug("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
         end
         log_info("reasoner: think end") { "count: #{count}"}
       else
@@ -137,6 +138,7 @@ module RDF::N3
       end
 
       log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
+      log_debug("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
 
       # Add updates back to mutable, containg builtins and variables.
       @mutable << knowledge_base

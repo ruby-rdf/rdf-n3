@@ -20,7 +20,7 @@ module RDF::N3::Algebra::Log
       list.each do |f|
         form.operands.append(*f.operands)
       end
-      form
+      form.dup
     end
 
     ##

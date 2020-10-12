@@ -58,7 +58,7 @@ module RDF::N3::Algebra
             end
           when RDF::N3::List
             # Transform blank nodes denoting formulae into those formulae
-            term = term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
+            term = term.transform {|t| t.node? ? formulae.fetch(t, t).dup : t}
 
             # If we're in a quoted graph, transform blank node components into existential variables
             if graph_name && term.has_nodes?
@@ -93,16 +93,28 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Duplicate this formula, recursively, renaming graph names using hash function.
+    #
+    # @return [RDF::N3::Algebra::Formula]
+    def dup
+      new_ops = operands.map(&:dup)
+      graph_name = RDF::Node.intern(new_ops.hash)
+      that = self.class.new(*new_ops, graph_name: graph_name, formulae: formulae)
+      that.formulae[graph_name] = that
+      that
+    end
+
+    ##
     # Yields solutions from patterns and other operands. Solutions are created by evaluating each pattern and other sub-operand against `queryable`.
     #
     # When executing, blank nodes are turned into non-distinguished existential variables, noted with `$$`. These variables are removed from the returned solutions, as they can't be bound outside of the formula.
     #
     # @param  [RDF::Queryable] queryable
     #   the graph or repository to query
+    # @param [RDF::Query::Solutions] solutions
+    #   initial solutions for chained queries (RDF::Query::Solutions(RDF::Query::Solution.new))
     # @param  [Hash{Symbol => Object}] options
     #   any additional keyword options
-    # @option options [RDF::Query::Solutions] solutions
-    #   optional initial solutions for chained queries
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
       log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
@@ -119,7 +131,7 @@ module RDF::N3::Algebra
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
             # Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
-            value = formulae.fetch(value, value) if value.node?
+            value = formulae.fetch(value, value).dup if value.node?
             l = RDF::N3::List.try_list(value, queryable)
             value = l if l.constant?
             memo.merge(name => value)
@@ -192,9 +204,11 @@ module RDF::N3::Algebra
     #   options passed from query
     # @return [RDF::N3::List]
     # @see SPARQL::Algebra::Expression.evaluate
-    def evaluate(bindings, **options)
+    def evaluate(bindings, formulae:, **options)
       this = dup
-      this.solutions = RDF::Query::Solutions(bindings)
+      # Maintain formula relationships
+      formulae {|k, v| this.formulae[k] ||= v}
+     this.solutions = RDF::Query::Solutions(bindings)
       this
     end
 
@@ -250,10 +264,13 @@ module RDF::N3::Algebra
               elsif solution[o] && solution[o].formula?
                 form = solution[o]
                 # uses the graph_name of the formula, and yields statements from the formula
-                form.solutions = RDF::Query::Solutions(solution)
-                form.each do |stmt|
-                  stmt.graph_name = form.graph_name
-                  block.call(stmt)
+                log_depth do
+                  form.solutions = RDF::Query::Solutions(solution)
+                  form.each do |stmt|
+                    stmt.graph_name = form.graph_name
+                    log_debug("(formula add from var form)") {stmt.to_sxp}
+                    block.call(stmt)
+                  end
                 end
                 form.graph_name
               else
@@ -262,10 +279,15 @@ module RDF::N3::Algebra
             when RDF::N3::List
               o.variable? ? o.evaluate(solution.bindings, formulae: formulae) : o
             when RDF::N3::Algebra::Formula
-              # uses the graph_name of the formula, and yields statements from the formula
-              o.each do |stmt|
-                stmt.graph_name = o.graph_name
-                block.call(stmt)
+              # uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
+              log_depth do
+                o.solutions = RDF::Query::Solutions(solution)
+                o.each do |stmt|
+                  stmt.graph_name = o.graph_name
+                  log_debug("(formula add from form)") {stmt.to_sxp}
+                  #require 'byebug'; byebug if o.graph_name.to_s == '_:.form_0'
+                  block.call(stmt)
+                end
               end
               o.graph_name
             else
@@ -281,7 +303,7 @@ module RDF::N3::Algebra
             next
           end
 
-          #log_debug("(formula add)") {statement.to_sxp}
+          log_debug("(formula add)") {statement.to_sxp}
           block.call(statement)
         end
       end

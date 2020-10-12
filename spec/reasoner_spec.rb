@@ -19,6 +19,19 @@ describe "RDF::N3::Reasoner" do
   context "n3:log" do
     context "log:conclusion" do
       {
+        "conclusion-super-simple" => {
+          input: %(
+          {
+            {
+              {<a> <b> <c>} => {<test> a <SUCCESS> } .
+              <a> <b> <c>.
+            } log:conclusion ?y
+          } => { ?y a :TestResult }.
+          ),
+          expect: %(
+            { <test> a <SUCCESS> } a :TestResult .
+          )
+        },
         "conclusion-simple" => {
           input: %(
           {
@@ -26,7 +39,7 @@ describe "RDF::N3::Reasoner" do
             <a> <b> <c>.
           } a :TestRule.
         
-          { ?x a :TestRule; log:conclusion ?y }  => { ?y a :TestResult }.
+          { ?x a :TestRule; log:conclusion ?y } => { ?y a :TestResult }.
           ),
           expect: %(
             { <test> a <SUCCESS> } a :TestResult .
