@@ -78,6 +78,7 @@ module RDF::N3
         @formula_nodes = {}
         @label_uniquifier = "0"
         @bnodes = {}  # allocated bnodes by formula
+        @bn_labler = ".anon0"
         @variables = {}
 
         if options[:base_uri]
@@ -719,7 +720,7 @@ module RDF::N3
       debug("process_path", depth: @options[:depth]) {path.inspect}
 
       while pathtail
-        bnode = RDF::Node.new
+        bnode = bnode()
         pred = pathtail.is_a?(RDF::Term) ? pathtail : pathtail[:pathitem]
         if direction == :reverse
           add_statement("process_path(reverse)", bnode, pred, pathitem)
@@ -756,13 +757,14 @@ module RDF::N3
     end
 
     # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
+    # Unnnamed bnodes are created using an incrementing labeler for repeatability.
     def bnode(label = nil)
-      if label
-        fl = "#{label}_#{formulae.last ? formulae.last.id : 'bn_ground'}"
-        @bnodes[fl] ||= RDF::Node.new(fl)
-      else
-        RDF::Node.new
+      if label.nil?
+        label = @bn_labler
+        @bn_labler.succ!
       end
+      fl = "#{label}_#{formulae.last ? formulae.last.id : 'bn_ground'}"
+      @bnodes[fl] ||= RDF::Node.new(fl)
     end
 
     # If not in ground formula, note scope, and if existential
