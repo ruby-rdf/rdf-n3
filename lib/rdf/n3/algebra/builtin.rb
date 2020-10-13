@@ -31,5 +31,13 @@ module RDF::N3::Algebra
     # By default, operators do not yield statements
     def each(&block)
     end
+
+    ##
+    # The builtin hash is the hash of it's operands and NAME.
+    #
+    # @see RDF::Value#hash
+    def hash
+      ([self.class.const_get(:NAME)] + operands).hash
+    end
   end
 end

@@ -21,9 +21,11 @@ module RDF::N3::Algebra::Log
         return nil unless resource.literal? || resource.uri?
         begin
           repo = RDF::N3::Repository.new
-          repo << RDF::Reader.open(resource)
-          content_hash = repo.hash # used as name of resulting formula
-          RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.new(content_hash))
+          repo << RDF::Reader.open(resource, list_terms: true, **@options)
+          content_hash = repo.statements.hash # used as name of resulting formula
+          form = RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.intern(content_hash))
+          log_info(NAME) {"form hash (#{resource}): #{form.hash}"}
+          form
         rescue IOError, RDF::ReaderError => e
           log_error(NAME) {"error loading #{resource}: #{e}"}
           nil

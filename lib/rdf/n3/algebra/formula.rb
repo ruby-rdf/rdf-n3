@@ -16,7 +16,7 @@ module RDF::N3::Algebra
     # @return [RDF::Query]
     attr_accessor :query
 
-    NAME = [:formula]
+    NAME = :formula
 
     ##
     # Create a formula from an RDF::Enumerable (such as RDF::N3::Repository)

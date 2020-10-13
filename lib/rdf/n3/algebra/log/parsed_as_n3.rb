@@ -17,10 +17,12 @@ module RDF::N3::Algebra::Log
         return nil unless resource.literal?
         begin
           repo = RDF::N3::Repository.new
-          repo << RDF::N3::Reader.new(resource.to_s, **@options)
+          repo << RDF::N3::Reader.new(resource.to_s, list_terms: true, **@options)
           log_debug("logParsedAsN3") {SXP::Generator.string repo.statements.to_sxp_bin}
           content_hash = resource.hash # used as name of resulting formula
-          RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.intern(content_hash))
+          form = RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.intern(content_hash))
+          log_info(NAME) {"form hash (#{resource}): #{form.hash}"}
+          form
         rescue RDF::ReaderError
           nil
         end

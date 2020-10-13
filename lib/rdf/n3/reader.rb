@@ -551,7 +551,7 @@ module RDF::N3
       if @lexer.first === '{'
         prod(:formula, %(})) do
           @lexer.shift
-          node = RDF::Node.new(".form_#{unique_label}")
+          node = RDF::Node.intern(".form_#{unique_label}")
           formulae.push(node)
           formula_nodes[node] = true
           debug(:formula, depth: @options[:depth]) {"id: #{node}, depth: #{formulae.length}"}
@@ -764,7 +764,7 @@ module RDF::N3
         @bn_labler.succ!
       end
       fl = "#{label}_#{formulae.last ? formulae.last.id : 'bn_ground'}"
-      @bnodes[fl] ||= RDF::Node.new(fl)
+      @bnodes[fl] ||= RDF::Node.intern(fl)
     end
 
     # If not in ground formula, note scope, and if existential
