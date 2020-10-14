@@ -322,6 +322,11 @@ module RDF::N3::Algebra
     # @return [RDF::Resource]
     def graph_name; @options[:graph_name]; end
 
+    ##
+    # The URI of a formula is its graph name
+    # @return [RDF::URI]
+    alias_method :to_uri, :graph_name
+
     # Assign a graph name to this formula
     # @param [RDF::Resource] name
     # @return [RDF::Resource]
