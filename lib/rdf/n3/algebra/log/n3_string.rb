@@ -9,7 +9,7 @@ module RDF::N3::Algebra::Log
     #
     # @param [RDF::N3::List] resource
     # @return [RDF::Term]
-    def evaluate(resource, position: :subject)
+    def resolve(resource, position: :subject)
       case position
       when :subject
         return nil unless resource.formula?

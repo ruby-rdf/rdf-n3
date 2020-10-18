@@ -32,7 +32,7 @@ module RDF::N3::Algebra::Math
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       list.to_a.map(&:as_number).reduce(&:+) || RDF::Literal(0)  # Empty list sums to 0
     end
   end

@@ -24,13 +24,13 @@ module RDF::N3::Algebra
         log_debug(self.class.const_get(:NAME)) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
         next unless valid?(subject, object)
 
-        lhs = evaluate(subject, position: :subject)
+        lhs = resolve(subject, position: :subject)
         if lhs.nil?
           log_error(self.class.const_get(:NAME)) {"subject is invalid: #{subject.inspect}"}
           next
         end
 
-        rhs = evaluate(object, position: :object)
+        rhs = resolve(object, position: :object)
         if rhs.nil?
           log_error(self.class.const_get(:NAME)) {"object is invalid: #{object.inspect}"}
           next
@@ -57,13 +57,13 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Subclasses implement `evaluate`.
+    # Subclasses implement `resolve`.
     #
     # Returns nil if resource does not validate, given its position
     #
     # @param [RDF::Term] resource
     # @return [RDF::Term]
-    def evaluate(resource, position: :subject)
+    def resolve(resource, position: :subject)
       raise NotImplemented
     end
 

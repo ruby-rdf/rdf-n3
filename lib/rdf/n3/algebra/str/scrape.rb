@@ -11,7 +11,7 @@ module RDF::N3::Algebra::Str
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       input, regex = list.to_a
       md = Regexp.new(regex.to_s).match(input.to_s)
       RDF::Literal(md[1]) if md

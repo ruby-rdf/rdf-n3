@@ -27,7 +27,7 @@ module RDF::N3::Algebra
         log_debug(self.class.const_get(:NAME)) {"list: #{SXP::Generator.string(list.to_sxp_bin).gsub(/\s+/m, ' ')}, object: #{SXP::Generator.string(object.to_sxp_bin).gsub(/\s+/m, ' ')}"}
         next unless validate(list)
 
-        lhs = evaluate(list)
+        lhs = resolve(list)
 
         if object.variable?
           solution.merge(object.to_sym => lhs)
@@ -48,11 +48,11 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Subclasses implement `evaluate`.
+    # Subclasses implement `resolve`.
     #
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
-    def evaluate(list)
+    def resolve(list)
       raise NotImplemented
     end
 

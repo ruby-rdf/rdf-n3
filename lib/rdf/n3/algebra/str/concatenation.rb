@@ -13,7 +13,7 @@ module RDF::N3::Algebra::Str
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       RDF::Literal(list.to_a.map(&:canonicalize).join(""))
     end
   end

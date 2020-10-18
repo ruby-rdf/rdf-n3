@@ -8,7 +8,7 @@ module RDF::N3::Algebra::Str
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       format, *args = list.to_a.map(&:value)
       str = format % args
     end

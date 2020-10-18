@@ -11,7 +11,7 @@ module RDF::N3::Algebra::Str
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       format, *args = list.to_a.map(&:value)
       input, old_str, new_str = list.to_a
       RDF::Literal(input.to_s.gsub(old_str.to_s, new_str.to_s))

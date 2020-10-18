@@ -10,13 +10,13 @@ module RDF::N3::Algebra::List
     NAME = :listLast
 
     ##
-    # Evaluates this operator using the given variable `bindings`.
+    # Resolves this operator using the given variable `bindings`.
     # If the last operand is a variable, it creates a solution for each element in the list.
     #
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(list)
+    def resolve(list)
       list.last
     end
   end

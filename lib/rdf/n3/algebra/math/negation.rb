@@ -15,7 +15,7 @@ module RDF::N3::Algebra::Math
     # @param [:subject, :object] position
     # @return [RDF::Term]
     # @see RDF::N3::ResourceOperator#evaluate
-    def evaluate(resource, position:)
+    def resolve(resource, position:)
       case resource
       when RDF::Query::Variable
         resource

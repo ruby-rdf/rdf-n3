@@ -14,13 +14,13 @@ module RDF::N3::Algebra::Log
     # @param [RDF::N3::Algebra:Formula] resource
     # @return [RDF::N3::Algebra::Formula]
     # @see RDF::N3::ListOperator#evaluate
-    def evaluate(resource, position:)
+    def resolve(resource, position:)
       return resource unless position == :subject
 
       log_depth do
         reasoner = RDF::N3::Reasoner.new(resource, @options)
         conclusions = [].extend(RDF::Enumerable)
-        reasoner.execute(think: true) {|stmt| conclusions << stmt}
+        reasoner.execute(think: true, logger: false) {|stmt| conclusions << stmt}
 
         # The result is a formula containing the conclusions
         form = RDF::N3::Algebra::Formula.from_enumerable(conclusions).dup

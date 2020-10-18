@@ -11,7 +11,7 @@ module RDF::N3::Algebra::Time
     # @param [:subject, :object] position
     # @return [RDF::Term]
     # @see RDF::N3::ResourceOperator#evaluate
-    def evaluate(resource, position:)
+    def resolve(resource, position:)
       case position
       when :subject
         return nil unless resource.literal?
