@@ -208,7 +208,14 @@ module RDF::N3::Algebra
       this = dup
       # Maintain formula relationships
       formulae {|k, v| this.formulae[k] ||= v}
-     this.solutions = RDF::Query::Solutions(bindings)
+
+      # Bind solutions to formula
+      this.solutions = RDF::Query::Solutions(bindings)
+
+      # Replace operands with bound operands
+      this.operands = operands.map do |op|
+        op.evaluate(bindings, formulae: formulae, **options)
+      end
       this
     end
 

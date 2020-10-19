@@ -28,6 +28,25 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Evaluates the builtin using the given variable `bindings` by cloning the builtin replacing variables with their bindings recursively.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::N3::Algebra::Builtin]
+    #   Returns a new builtin with bound values.
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      args = operands.map { |operand| operand.evaluate(bindings, formulae: formulae, **options) }
+
+      # Replace operands with bound operands
+      this = dup
+      this.operands = args
+      this
+    end
+
+    ##
     # By default, operators do not yield statements
     def each(&block)
     end

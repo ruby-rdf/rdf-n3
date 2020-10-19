@@ -564,8 +564,6 @@ module RDF::N3
       subj = "#{subject.id}_#{bindings.values.sort.hash}"
       values = to_a.map do |o|
         o = o.evaluate(bindings, formulae: formulae, **options) || o
-        # Map graph names to graphs
-        o.node? ? formulae.fetch(o, o).dup : o
       end
       RDF::N3::List.new(subject: RDF::Node.intern(subj), values: values)
     end

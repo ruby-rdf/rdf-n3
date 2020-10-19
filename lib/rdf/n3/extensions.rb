@@ -52,6 +52,19 @@ module RDF
     def to_sxp
       to_sxp_bin.to_sxp
     end
+
+    ##
+    # As a statement is constant, this returns itself.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Statement]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      self
+    end
   end
 
   module Value
@@ -93,6 +106,19 @@ module RDF
     # @return [RDF::Literal::DateTime]
     def as_datetime
       RDF::Literal::DateTime.new(DateTime.now)
+    end
+
+    ##
+    # As a term is constant, this returns itself.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Term]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      self
     end
   end
 
@@ -149,6 +175,19 @@ module RDF
       label = "#{id}_#{scope ? scope.id : 'base'}_undext"
       RDF::Query::Variable.new(label, existential: true, distinguished: false)
     end
+
+    ##
+    # Blank node may refer to a formula.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Term]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      node? ? formulae.fetch(self, self) : self
+    end
   end
 
   class Query::Pattern
@@ -191,6 +230,25 @@ module RDF
       end
       true
     end
+
+    ##
+    # Evaluates the pattern using the given variable `bindings` by cloning the pattern replacing variables with their bindings recursively. If the resulting pattern is constant, it is cast as a statement.
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Statement]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      elements = self.to_quad.map do |term|
+        term.evaluate(bindings, formulae: formulae, **options)
+      end.compact.map do |term|
+        term.node? ? formulae.fetch(term, term) : term
+      end
+
+      self.class.from(elements)
+    end
   end
 
   class Query::Solution
@@ -232,6 +290,20 @@ module RDF
     def to_sxp
       to_s
     end
+
+    ##
+    # If variable is bound, replace with the bound value, otherwise, returns itself
+    #
+    # @param  [Hash{Symbol => RDF::Term}] bindings
+    #   a query solution containing zero or more variable bindings
+    # @param [Hash{Symbol => Object}] options ({})
+    #   options passed from query
+    # @return [RDF::Term]
+    # @see SPARQL::Algebra::Expression.evaluate
+    def evaluate(bindings, formulae:, **options)
+      value = bindings.has_key?(name) ? bindings[name] : self
+      value.node? ? formulae.fetch(value, value) : value
+    end
   end
 
   class SPARQL::Algebra::Operator
@@ -241,6 +313,14 @@ module RDF
     # @return [Hash{RDF::Resource => RDF::N3::Algebra::Formula}]
     def formulae
       @options.fetch(:formulae, {})
+    end
+
+    # Updates the operands for this operator.
+    #
+    # @param [Array] ary
+    # @return [Array]
+    def operands=(ary)
+      @operands = ary
     end
   end
 end
