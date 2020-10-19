@@ -4,7 +4,7 @@ module RDF::N3::Algebra::Math
   #
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-equal
   class NotEqualTo < EqualTo
-    NAME = :'!='
+    NAME = :mathNotEqualTo
 
     ##
     # The math:notEqualTo operator takes a pair of strings or numbers and determines if they are not the same numeric value.

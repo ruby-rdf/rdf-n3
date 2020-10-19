@@ -1,25 +1,32 @@
 module RDF::N3::Algebra::Str
   # True iff the subject string contains the object string, with the comparison done ignoring the difference between upper case and lower case characters.
-  class ContainsIgnoringCase < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Evaluatable
-    include RDF::N3::Algebra::Builtin
-
+  class ContainsIgnoringCase < RDF::N3::Algebra::ResourceOperator
     NAME = :strContainsIgnoringCase
 
     ##
-    # @param  [RDF::Literal] left
+    # Resolves inputs as lower-case strings.
+    #
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Literal]
+    # @see RDF::N3::ResourceOperator#evaluate
+    def resolve(resource, position:)
+      RDF::Literal(resource.to_s.downcase) if resource.term?
+    end
+
+    # Both subject and object are inputs.
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
+
+    ##
+    # @param  [String] left
     #   a literal
-    # @param  [RDF::Literal] right
+    # @param  [String] right
     #   a literal
     # @return [RDF::Literal::Boolean]
     def apply(left, right)
-      case
-      when !left.is_a?(RDF::Term) || !right.is_a?(RDF::Term) || !left.compatible?(right)
-        log_error(NAME) {"expected two RDF::Literal operands, but got #{left.inspect} and #{right.inspect}"}
-        RDF::Literal::FALSE
-      when left.to_s.downcase.include?(right.to_s.downcase) then RDF::Literal::TRUE
-      else RDF::Literal::FALSE
-      end
+      RDF::Literal(left.to_s.include?(right.to_s)) 
     end
   end
 end

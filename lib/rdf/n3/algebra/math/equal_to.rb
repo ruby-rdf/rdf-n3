@@ -16,13 +16,27 @@ module RDF::N3::Algebra::Math
   # * `$a2`: `xs:decimal` (or its derived types), `xs:float`, or `xs:double`  (see note on type promotion, and casting from string)
   #
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-equal
-  class EqualTo < SPARQL::Algebra::Operator::Compare
-    include RDF::N3::Algebra::Builtin
-
-    NAME = :'='
+  class EqualTo < RDF::N3::Algebra::ResourceOperator
+    NAME = :mathEqualTo
 
     ##
-    # The math:equalTo operator takes a pair of strings or numbers and determines if they are the same numeric value.
+    # Resolves inputs as numbers.
+    #
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
+    def resolve(resource, position:)
+      resource.as_number if resource.term?
+    end
+
+    # Both subject and object are inputs.
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
+
+    ##
+    # Returns TRUE if `term1` and `term2` are the same numeric value.
     #
     # @param  [RDF::Term] term1
     #   an RDF term
@@ -33,9 +47,7 @@ module RDF::N3::Algebra::Math
     #
     # @see RDF::Term#==
     def apply(term1, term2)
-      return RDF::Literal::FALSE unless term1.is_a?(RDF::Term) && term2.is_a?(RDF::Term)
-      log_debug(NAME) { "term1: #{term1.to_sxp} == term2: #{term2.to_sxp} ? #{(term1.as_number == term2.as_number).inspect}"}
-      RDF::Literal(term1.as_number == term2.as_number)
+      RDF::Literal(term1 == term2)
     end
   end
 end

@@ -3,10 +3,24 @@ module RDF::N3::Algebra::Math
   # True iff the subject is a string representation of a number which  is greater than the number of which the object is a string representation.
   #
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-greater-than
-  class GreaterThan < SPARQL::Algebra::Operator::Compare
-    include RDF::N3::Algebra::Builtin
+  class GreaterThan < RDF::N3::Algebra::ResourceOperator
+    NAME = :mathGreaterThan
 
-    NAME = :'>'
+    ##
+    # Resolves inputs as numbers.
+    #
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
+    def resolve(resource, position:)
+      resource.as_number if resource.term?
+    end
+
+    # Both subject and object are inputs.
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
 
     ##
     # Returns TRUE if `term1` is greater than `term2`.
@@ -20,9 +34,7 @@ module RDF::N3::Algebra::Math
     #
     # @see RDF::Term#==
     def apply(term1, term2)
-      return RDF::Literal::FALSE unless term1.is_a?(RDF::Term) && term2.is_a?(RDF::Term)
-      log_debug(NAME) { "term1: #{term1.to_sxp} > term2: #{term2.to_sxp} ? #{(term1.as_number > term2.as_number).inspect}"}
-      RDF::Literal(term1.as_number > term2.as_number)
+      RDF::Literal(term1 > term2)
     end
   end
 end

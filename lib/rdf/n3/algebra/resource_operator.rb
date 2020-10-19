@@ -40,6 +40,9 @@ module RDF::N3::Algebra
           solution.merge(object.to_sym => lhs)
         elsif subject.variable?
           solution.merge(subject.to_sym => rhs)
+        elsif respond_to?(:apply)
+          # Return the result applying subject and object
+          solution if apply(lhs, rhs) == RDF::Literal::TRUE
         elsif rhs != lhs
           nil
         else

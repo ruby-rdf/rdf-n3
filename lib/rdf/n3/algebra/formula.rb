@@ -99,7 +99,7 @@ module RDF::N3::Algebra
     def dup
       new_ops = operands.map(&:dup)
       graph_name = RDF::Node.intern(new_ops.hash)
-      that = self.class.new(*new_ops, graph_name: graph_name, formulae: formulae)
+      that = self.class.new(*new_ops, **@options.merge(graph_name: graph_name, formulae: formulae))
       that.formulae[graph_name] = that
       that
     end
@@ -117,8 +117,8 @@ module RDF::N3::Algebra
     #   any additional keyword options
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
-      log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
-      log_info("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
+      log_debug("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
+      log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
@@ -137,7 +137,7 @@ module RDF::N3::Algebra
             memo.merge(name => value)
           end)
         end
-        log_info("(formula query solutions)") { SXP::Generator.string(these_solutions.to_sxp_bin)}
+        log_debug("(formula query solutions)") { SXP::Generator.string(these_solutions.to_sxp_bin)}
         solutions.merge(these_solutions)
       end
 
@@ -157,12 +157,7 @@ module RDF::N3::Algebra
           last_op = nil
           ops.each do |op|
             log_debug("(formula built-in)") {SXP::Generator.string op.to_sxp_bin}
-            solutions = if op.executable?
-              op.execute(queryable, solutions: @solutions)
-            else # Evaluatable
-              @solutions.filter {|s| op.evaluate(s.bindings) == RDF::Literal::TRUE}
-            end
-            log_debug("(formula intermediate solutions)") {"after #{op.class.const_get(:NAME)}: " + SXP::Generator.string(solutions.to_sxp_bin)}
+            solutions = op.execute(queryable, solutions: @solutions)
             # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
             next if solutions.empty?
             last_op = op
@@ -181,22 +176,11 @@ module RDF::N3::Algebra
         end
       end
       log_info("(formula sub-op solutions)") {SXP::Generator.string @solutions.to_sxp_bin}
-
-      # Only return solutions with universal variables and distinguished existential variables.
-      # FIXME: also filter in-coming existential variables.
-      #unless undistinguished_vars.empty?
-      #  @solutions = if distinguished_vars.empty?
-      #    # No remaining variables, this only an empty solution
-      #    RDF::Query::Solutions(RDF::Query::Solution.new)
-      #  else
-      #    @solutions.dup.project(*distinguished_vars)
-      #  end
-      #end
       @solutions
     end
 
     ##
-    # Evaluates the formula using the given variable `bindings` by cloning the formula and setting the solutions to `bindings` so that `#each` will generate statements from those bindings.
+    # Evaluates the formula using the given variable `bindings` by cloning the formula replacing variables with their bindings recursively.
     #
     # @param  [Hash{Symbol => RDF::Term}] bindings
     #   a query solution containing zero or more variable bindings

@@ -1,10 +1,23 @@
 module RDF::N3::Algebra::Str
   # True iff the string is greater than the object when ordered according to Unicode(tm) code order.
-  class GreaterThan < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Evaluatable
-    include RDF::N3::Algebra::Builtin
-
+  class GreaterThan < RDF::N3::Algebra::ResourceOperator
     NAME = :strGreaterThan
+
+    ##
+    # The string:greaterThan compares subject with object as strings.
+    #
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
+    def resolve(resource, position:)
+      resource if resource.literal?
+    end
+
+    # Both subject and object are inputs.
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
 
     ##
     # @param  [RDF::Literal] left
