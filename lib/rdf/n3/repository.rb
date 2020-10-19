@@ -216,6 +216,7 @@ module RDF::N3
             []
           end
           ss.each do |s, ps|
+            next if s.is_a?(RDF::Query::Variable)
             ps = if predicate.nil? || predicate.is_a?(RDF::Query::Variable)
               ps
             elsif predicate.is_a?(RDF::N3::List)
@@ -229,7 +230,9 @@ module RDF::N3
               []
             end
             ps.each do |p, os|
+              next if p.is_a?(RDF::Query::Variable)
               os.each do |o, object_options|
+                next if o.is_a?(RDF::Query::Variable)
                 next unless object.nil? || object.eql?(o)
                 yield RDF::Statement.new(s, p, o, object_options.merge(graph_name: c.equal?(DEFAULT_GRAPH) ? nil : c))
               end

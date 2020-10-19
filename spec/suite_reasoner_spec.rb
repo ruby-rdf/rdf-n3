@@ -6,7 +6,7 @@ describe RDF::N3::Reader do
   describe "w3c n3 tests" do
     require_relative 'suite_helper'
     let(:logger) {RDF::Spec.logger}
-    before {logger.level = Logger::DEBUG}
+    before {logger.level = Logger::INFO}
 
     #after(:each) do |example|
     #  puts logger.to_s if
@@ -21,10 +21,13 @@ describe RDF::N3::Reader do
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
             when *%w{cwm_unify_unify1 cwm_includes_builtins
-                     cwm_includes_t10 cwm_includes_t11 cwm_includes_quantifiers_limited}
+                     cwm_includes_t10 cwm_includes_t11 cwm_includes_quantifiers_limited
+                     cwm_includes_conclusion_simple cwm_includes_conclusion}
               pending "log:includes etc."
-            when *%w{cwm_supports_simple cwm_string_roughly cwm_string_uriEncode}
+            when *%w{cwm_supports_simple cwm_string_roughly}
               pending "Uses unsupported builtin"
+            when *%w{cwm_string_uriEncode}
+              skip "Blows up"
             when *%w{cwm_list_builtin_generated_match}
               skip("List reification")
             end

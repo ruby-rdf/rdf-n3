@@ -29,8 +29,13 @@ describe "RDF::N3::Reasoner" do
           } => { ?y a :TestResult }.
           ),
           expect: %(
-            { <test> a <SUCCESS> } a :TestResult .
-          )
+            {
+              <a> <b> <c> .
+              <test> a <SUCCESS> .
+              {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
+            } a :TestResult .
+          ),
+          pending: true
         },
         "conclusion-simple" => {
           input: %(
@@ -42,12 +47,18 @@ describe "RDF::N3::Reasoner" do
           { ?x a :TestRule; log:conclusion ?y } => { ?y a :TestResult }.
           ),
           expect: %(
-            { <test> a <SUCCESS> } a :TestResult .
-          )
+            {
+              <a> <b> <c> .
+              <test> a <SUCCESS> .
+              {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
+            } a :TestResult .
+          ),
+          pending: true
         },
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
           result = reason(options[:input], data: false, filter: true)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -71,8 +82,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {data: false, filter: true}.merge(options)
           expected = parse(options[:expect])
-          result = reason(options[:input], data: false, filter: true)
+          result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
         end
       end
@@ -149,6 +162,7 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
           result = reason(options[:input])
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -160,7 +174,7 @@ describe "RDF::N3::Reasoner" do
       {
         "t1" => {
           input: %(
-            {{ :a :b :c } log:includes { :a :b :c }} log:implies { :test1 a :success } .
+            {{ :a :b :c } log:includes { :a :b :c }} => { :test1 a :success } .
           ),
           expect: %(
             :test1 a :success .
@@ -168,16 +182,53 @@ describe "RDF::N3::Reasoner" do
         },
         "t2" => {
           input: %(
-            { { <#theSky> <#is> <#blue> } log:includes {<#theSky> <#is> <#blue>} } log:implies { :test3 a :success } .
-            { { <#theSky> <#is> <#blue> } log:notIncludes {<#theSky> <#is> <#blue>} } log:implies { :test3_bis a :FAILURE } .
+            { { <#theSky> <#is> <#blue> } log:includes {<#theSky> <#is> <#blue>} } => { :test3 a :success } .
+            { { <#theSky> <#is> <#blue> } log:notIncludes {<#theSky> <#is> <#blue>} } => { :test3_bis a :FAILURE } .
           ),
           expect: %(
             :test3 a :success .
           )
         },
+        "quantifiers-limited-a1" => {
+          input: %(
+            {{ :foo :bar :baz } log:includes { :foo :bar :baz }}
+            => { :testa1 a :success } .
+          ),
+          expect: %(
+            :testa1 a :success .
+          )
+        },
+        #"quantifiers-limited-a2" => {
+        #  input: %(
+        #    {{ :foo :bar :baz } log:includes { @forSome :foo. :foo :bar :baz }}
+        #    => { :testa2 a :success } .
+        #  ),
+        #  expect: %(
+        #    :testa2 a :success .
+        #  ),
+        #  pending: "Variable substitution"
+        #},
+        #"quantifiers-limited-b2" => {
+        #  input: %(
+        #    {{ @forSome :foo. :foo :bar :baz } log:includes {@forSome :foo. :foo :bar :baz }}
+        #    => { :testb2 a :success } .
+        #  ),
+        #  expect: %(
+        #    :testb2 a :success .
+        #  ),
+        #  pending: "Variable substitution"
+        #},
+        #"quantifiers-limited-a1d" => {
+        #  input: %(
+        #    {{ :fee :bar :baz } log:includes { :foo :bar :baz }}
+        #    => { :testa1d a :FAILURE } .
+        #  ),
+        #  expect: %()
+        #},
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
           result = reason(options[:input])
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -227,8 +278,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {data: false, filter: true}.merge(options)
           expected = parse(options[:expect])
-          result = reason(options[:input], data: false, filter: true)
+          result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
         end
       end
@@ -247,6 +300,7 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
           result = reason(options[:input])
           n3str = RDF::N3::Writer.buffer {|writer| writer << result}
 
@@ -316,8 +370,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -374,8 +430,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -414,8 +472,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -435,11 +495,13 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           if options[:exception]
-            expect {reason(options[:input], filter: true)}.to raise_error options[:exception]
+            expect {reason(options[:input], **options)}.to raise_error options[:exception]
           else
             expected = parse(options[:expect])
-            expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+            expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
           end
         end
       end
@@ -466,8 +528,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -499,8 +563,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -526,8 +592,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -551,8 +619,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -586,8 +656,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -621,8 +693,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
 
@@ -742,12 +816,76 @@ describe "RDF::N3::Reasoner" do
             "3.1415926 + 3.1415926 = 6.2831852"     a :RESULT .
           )
         },
+        "Combinatorial test - worksWith": {
+          input: %(
+            "3.1415926" a :testValue.
+            3.1415926 a :testValue.
+            "1729" a :testValue.
+            1729 a :testValue.
+            "0" a :testValue.
+            0 a :testValue.
+            { ?x a :testValue. ?y a :testValue.
+              ?z is math:sum of (?x (?y ?x)!math:difference).
+              ?z math:equalTo ?y } => {?x :worksWith ?y}.
+          ),
+          expect: %(
+            0 a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+
+            "0" a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+
+            "3.1415926" a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+
+            3.1415926 a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+
+            1729 a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+
+            "1729" a :testValue;
+              :worksWith "1729",
+                1729,
+                0,
+                "3.1415926",
+                "0",
+                3.1415926 .
+          ),
+          filter: false, data: true
+        },
       }.each do |name, options|
         it name do
           pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -782,8 +920,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end
@@ -801,8 +941,10 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {filter: true}.merge(options)
           expected = parse(options[:expect])
-          expect(reason(options[:input], filter: true)).to be_equivalent_graph(expected, logger: logger)
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
       end
     end

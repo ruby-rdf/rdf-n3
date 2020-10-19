@@ -37,15 +37,20 @@ module RDF::N3::Algebra
         end
 
         if object.variable?
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
           solution.merge(object.to_sym => lhs)
         elsif subject.variable?
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(rhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
           solution.merge(subject.to_sym => rhs)
         elsif respond_to?(:apply)
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(apply(lhs, rhs).to_sxp_bin).gsub(/\s+/m, ' ')}"}
           # Return the result applying subject and object
           solution if apply(lhs, rhs) == RDF::Literal::TRUE
         elsif rhs != lhs
+          log_debug(self.class.const_get(:NAME)) {"result: false"}
           nil
         else
+          log_debug(self.class.const_get(:NAME)) {"result: true"}
           solution
         end
       end.compact)

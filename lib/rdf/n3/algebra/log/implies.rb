@@ -25,25 +25,25 @@ module RDF::N3::Algebra::Log
     def execute(queryable, solutions:, **options)
       @queryable = queryable
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
+        log_debug(NAME) {"solution: #{SXP::Generator.string solution.to_sxp_bin}"}
         subject = operand(0).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae)
-        log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
-        log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
+        log_info(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
+        log_info(NAME) {"object: #{SXP::Generator.string object.to_sxp_bin}"}
 
         # Nothing to do if variables aren't resolved.
         next unless subject && object
 
         solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
-        log_debug("(logImplies solutions pre-filter)") {SXP::Generator.string solns.to_sxp_bin}
 
         # filter solutions where not all variables in antecedant are bound.
         vars = subject.universal_vars
         solns = solns.filter do |soln|
           vars.all? {|v| soln.bound?(v)}
         end
-        log_info("(logImplies solutions)") {SXP::Generator.string solns.to_sxp_bin}
         solns
       end.flatten.compact)
+      log_info(NAME) {"solutions: #{SXP::Generator.string @solutions.to_sxp_bin}"}
 
       # Return original solutions, without bindings
       solutions
@@ -58,16 +58,20 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      log_debug {"logImplies each #{SXP::Generator.string @solutions.to_sxp_bin}"}
+      #super { |st|
+      #  log_debug {"logImplies super #{st.to_sxp}"}
+      #  block.call(st)
+      #}
 
       log_depth do
         @solutions.each do |solution|
+          log_debug("(logImplies each) solution") {SXP::Generator.string @solutions.to_sxp_bin}
           object = operand(1).evaluate(solution.bindings, formulae: formulae)
-          next unless object # shouldn't happen
+          log_info(("(logImplies each) object")) {SXP::Generator.string object.to_sxp_bin}
 
           object.solutions = RDF::Query::Solutions(solution)
 
-          # Yield statements into the default graph
+          # Yield inferred statements
           object.each do |statement|
             block.call(RDF::Statement.from(statement.to_quad, inferred: true))
           end

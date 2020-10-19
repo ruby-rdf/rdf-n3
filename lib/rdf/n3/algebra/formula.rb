@@ -122,7 +122,7 @@ module RDF::N3::Algebra
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
-      log_debug("(formula query)") { @query.patterns.to_sxp}
+      log_debug("(formula query)") { SXP::Generator.string(@query.patterns.to_sxp_bin)}
 
       solutions = if @query.patterns.empty?
         solutions
@@ -241,9 +241,6 @@ module RDF::N3::Algebra
         log_debug("(formula apply)") {solution.to_sxp}
         # Yield each variable statement which is constant after applying solution
         patterns.each do |pattern|
-          # Skip builtins
-          next if RDF::N3::Algebra.for(pattern.predicate)
-
           terms = {}
           [:subject, :predicate, :object].each do |part|
             terms[part] = case o = pattern.send(part)
@@ -276,7 +273,6 @@ module RDF::N3::Algebra
                 o.each do |stmt|
                   stmt.graph_name = o.graph_name
                   log_debug("(formula add from form)") {stmt.to_sxp}
-                  #require 'byebug'; byebug if o.graph_name.to_s == '_:.form_0'
                   block.call(stmt)
                 end
               end
@@ -332,16 +328,13 @@ module RDF::N3::Algebra
     alias_method :statements, :operands
 
     ##
-    # Patterns memoizer
-    #
-    # * Patterns exclude builtins.
-    # * Blank nodes are replaced with existential variables.
+    # Patterns memoizer, from the operands which are statements.
     def patterns
       # BNodes in statements are existential variables.
       @patterns ||= begin
         # Operations/Builtins are not statements.
         operands.
-          select {|op| op.is_a?(RDF::Statement) && !RDF::N3::Algebra.for(op.predicate)}.
+          select {|op| op.is_a?(RDF::Statement)}.
           map {|st| RDF::Query::Pattern.from(st)}
       end
     end

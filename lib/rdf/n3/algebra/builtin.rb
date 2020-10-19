@@ -47,8 +47,20 @@ module RDF::N3::Algebra
     end
 
     ##
-    # By default, operators do not yield statements
+    # By default, operators yield themselves and the operands, recursively.
     def each(&block)
+      log_depth do
+        subject, object = operands.map {|op| op.formula? ? op.graph_name : op}
+        block.call(RDF::Statement(subject, self.to_uri, object))
+        operands.each do |op|
+          next unless op.is_a?(Builtin)
+          op.each do |st|
+            # Maintain formula graph name for formula operands
+            st.graph_name ||= op.graph_name if op.formula?
+            block.call(st)
+          end
+        end
+      end
     end
 
     ##

@@ -30,10 +30,13 @@ module RDF::N3::Algebra
         lhs = resolve(list)
 
         if object.variable?
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
           solution.merge(object.to_sym => lhs)
         elsif object != lhs
+          log_debug(self.class.const_get(:NAME)) {"result: false"}
           nil
         else
+          log_debug(self.class.const_get(:NAME)) {"result: true"}
           solution
         end
       end.compact)

@@ -120,13 +120,17 @@ module RDF::N3
       if options[:think]
         count = -1
         log_info("reasoner: think start") { "count: #{count}"}
+        solutions = RDF::Query::Solutions(RDF::Query::Solution.new)
         while knowledge_base.count > count
           log_info("reasoner: think do") { "count: #{count}"}
           count = knowledge_base.count
-          log_depth {formula.execute(knowledge_base, **options)}
+          log_depth {formula.execute(knowledge_base, solutions: solutions, **options)}
           knowledge_base << formula
+          solutions = RDF::Query::Solutions(RDF::Query::Solution.new) if solutions.empty?
+          log_debug("reasoner: solutions") {SXP::Generator.string solutions.to_sxp_bin}
           log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
-          log_debug("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+          log_info("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+          @formula = nil # cause formula to be re-calculated from knowledge-base
         end
         log_info("reasoner: think end") { "count: #{count}"}
       else

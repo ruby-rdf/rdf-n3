@@ -183,43 +183,50 @@ options = {
   type: :all
 }
 
-opts = GetoptLong.new(
-  ["--level",           GetoptLong::REQUIRED_ARGUMENT],
-  ["--earl",            GetoptLong::NO_ARGUMENT],
-  ["--help", "-?",      GetoptLong::NO_ARGUMENT],
-  ["--live",            GetoptLong::NO_ARGUMENT],
-  ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT],
-  ["--quiet", "-q",     GetoptLong::NO_ARGUMENT],
-  ["--skip-slow", "-s", GetoptLong::NO_ARGUMENT],
-  ["--type",            GetoptLong::REQUIRED_ARGUMENT],
-  ["--validate",        GetoptLong::NO_ARGUMENT],
-  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT],
-)
+OPT_ARGS = [
+  ["--earl",            GetoptLong::NO_ARGUMENT, "Generate EARL report"],
+  ["--debug",           GetoptLong::NO_ARGUMENT, "Debugging output"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT, "print this message"],
+  ["--info",            GetoptLong::NO_ARGUMENT, "Show progress on execution"],
+  ["--live",            GetoptLong::NO_ARGUMENT, "Show live parsing results, not buffered"],
+  ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT, "Output to specified file"],
+  ["--quiet", "-q",     GetoptLong::NO_ARGUMENT, "Minimal output"],
+  ["--skip-slow", "-s", GetoptLong::NO_ARGUMENT, "Avoid files taking too much time"],
+  ["--type",            GetoptLong::REQUIRED_ARGUMENT, "Test type (`parser`, `reasoner`, or `all`)"],
+  ["--validate",        GetoptLong::NO_ARGUMENT, "Validate input"],
+  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT, "Verbose output"],
+]
 
-def help(**options)
-  puts "Usage: #{$0} [options] [test-number ...]"
-  puts "Options:"
-  puts "      --earl:               Generate EARL report"
-  puts "      --level:              Log level 0-5"
-  puts "      --live:               Show live parsing results, not buffered"
-  puts "      --ntriples:           Run N-Triples tests"
-  puts "      --output:             Output to specified file"
-  puts "      --quiet:              Minimal output"
-  puts "      --skip-slow:          Avoid files taking too much time"
-  puts "      --type:               Test type (`parser`, `reasoner`, or `all`)"
-  puts "      --validate:           Validate input"
-  puts "      --verbose:            Verbose processing"
-  puts "      --help,-?:            This message"
-  exit(0)
+def usage
+  STDERR.puts %{
+    n3 version #{RDF::N3::VERSION}
+    Run N3 tests.
+    
+    Usage: #{$0} [options] [test-number ...]
+  }.gsub(/^    /, '')
+  width = OPT_ARGS.map do |o|
+    l = o.first.length
+    l += o[1].length + 2 if o[1].is_a?(String)
+    l
+  end.max
+  OPT_ARGS.each do |o|
+    s = "  %-*s  " % [width, (o[1].is_a?(String) ? "#{o[0,2].join(', ')}" : o[0])]
+    s += o.last
+    STDERR.puts s
+  end
+  exit(1)
 end
+
+opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
 opts.each do |opt, arg|
   case opt
-  when '--help'             then help(**options)
-  when '--level'            then options[:level] = arg.to_i
+  when '--help'             then usage()
+  when '--debug'            then options[:level] = Logger::DEBUG
   when '--earl'
     options[:quiet] = options[:earl] = true
     options[:level] = Logger::FATAL
+  when '--info'             then options[:level] = Logger::INFO
   when '--live'             then options[:live] = true
   when '--output'           then options[:output] = File.open(arg, "w")
   when '--quiet'
