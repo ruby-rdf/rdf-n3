@@ -10,6 +10,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-subtract
   class Difference < RDF::N3::Algebra::ListOperator
     NAME = :mathDifference
+    URI = RDF::N3::Math.difference
 
     ##
     # The math:difference operator takes a pair of strings or numbers and calculates their difference.

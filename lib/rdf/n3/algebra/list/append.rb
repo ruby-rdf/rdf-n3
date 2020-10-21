@@ -8,6 +8,7 @@ module RDF::N3::Algebra::List
   # The object can be calculated as a function of the subject.
   class Append < RDF::N3::Algebra::ListOperator
     NAME = :listAppend
+    URI = RDF::N3::List.append
 
     ##
     # Resolves this operator using the given variable `bindings`.

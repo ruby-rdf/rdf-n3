@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the subject string contains the object string.
   class Contains < RDF::N3::Algebra::ResourceOperator
     NAME = :strContains
+    URI = RDF::N3::Str.contains
 
     ##
     # Resolves inputs as strings.

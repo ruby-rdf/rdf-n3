@@ -7,6 +7,7 @@ module RDF::N3::Algebra::Log
   # Note that the content-type of the information is not given and so must be known or guessed.
   class Content < RDF::N3::Algebra::ResourceOperator
     NAME = :logContent
+    URI = RDF::N3::Log.content
 
     ##
     # Reads the subject into the object.

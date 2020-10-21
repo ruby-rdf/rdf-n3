@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-seconds-from-dateTime
   class Second < RDF::N3::Algebra::ResourceOperator
     NAME = :timeSecond
+    URI = RDF::N3::Time.second
 
     ##
     # The time:second operator takes string or dateTime and extracts the seconds component.

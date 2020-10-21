@@ -6,6 +6,7 @@ module RDF::N3::Algebra::Str
   class Scrape < RDF::N3::Algebra::ListOperator
     include RDF::N3::Algebra::Builtin
     NAME = :strScrape
+    URI = RDF::N3::Str.scrape
 
     ##
     # @param [RDF::N3::List] list

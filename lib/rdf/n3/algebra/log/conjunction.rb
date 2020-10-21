@@ -4,9 +4,8 @@ module RDF::N3::Algebra::Log
   #
   # The subject is a list of formulae. The object, which can be generated, is a formula containing a copy of each of the formulae in the list on the left. A cwm built-in function.
   class Conjunction < RDF::N3::Algebra::ListOperator
-    include RDF::N3::Algebra::Builtin
-
     NAME = :logConjunction
+    URI = RDF::N3::Log.conjunction
 
     ##
     # Evaluates this operator by creating a new formula containing the triples from each of the formulae in the list.

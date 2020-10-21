@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-timezone-from-dateTime
   class Timezone < RDF::N3::Algebra::ResourceOperator
     NAME = :timeTimezone
+    URI = RDF::N3::Time.timeZone
 
     ##
     # The time:timeZone operator takes string or dateTime and extracts the timeZone component.

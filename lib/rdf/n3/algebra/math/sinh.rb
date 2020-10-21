@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Math
   # The subject is an angle expressed in radians. The object is calulated as the hyperbolic sine value of the subject.
   class SinH < RDF::N3::Algebra::ResourceOperator
     NAME = :mathSinH
+    URI = RDF::N3::Math.sinh
 
     ##
     # The math:sinh operator takes string or number and calculates its hyperbolic sine. The inverse hyperbolic sine of a concrete object can also calculate a variable subject.

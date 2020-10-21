@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-floor
   class Floor < RDF::N3::Algebra::ResourceOperator
     NAME = :mathFloor
+    URI = RDF::N3::Math.floor
 
     ##
     # The math:floor operator takes string or number and calculates its floor.

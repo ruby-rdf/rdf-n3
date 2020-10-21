@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the subject string is the NOT same as object string ignoring differences between upper and lower case.
   class NotEqualIgnoringCase < EqualIgnoringCase
     NAME = :strNotEqualIgnoringCase
+    URI = RDF::N3::Str.notEqualIgnoringCase
 
     ##
     # @param  [RDF::Literal] left

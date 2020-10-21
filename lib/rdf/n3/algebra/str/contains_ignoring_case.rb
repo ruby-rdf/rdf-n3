@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the subject string contains the object string, with the comparison done ignoring the difference between upper case and lower case characters.
   class ContainsIgnoringCase < RDF::N3::Algebra::ResourceOperator
     NAME = :strContainsIgnoringCase
+    URI = RDF::N3::Str.containsIgnoringCase
 
     ##
     # Resolves inputs as lower-case strings.

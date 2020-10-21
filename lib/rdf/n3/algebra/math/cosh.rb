@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Math
   # The subject is an angle expressed in radians. The object is calulated as the hyperbolic cosine value of the subject.
   class CosH < RDF::N3::Algebra::ResourceOperator
     NAME = :mathCosH
+    URI = RDF::N3::Math.cosh
 
     ##
     # The math:cosh operator takes string or number and calculates its hyperbolic cosine.  The inverse hyperbolic cosine of a concrete object can also calculate a variable subject.

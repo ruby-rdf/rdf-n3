@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-mod
   class Remainder < RDF::N3::Algebra::ListOperator
     NAME = :mathRemainder
+    URI = RDF::N3::Math.remainder
 
     ##
     # The math:remainder operator takes a pair of strings or numbers and calculates their remainder.

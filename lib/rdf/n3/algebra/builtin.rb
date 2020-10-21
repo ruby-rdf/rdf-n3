@@ -73,7 +73,7 @@ module RDF::N3::Algebra
 
     # The URI of this operator.
     def to_uri
-      Kernel.const_get('::' + self.class.to_s.split('::')[0..-2].join('::')).vocab + self.class.const_get(:NAME)
+      self.class.const_get(:URI)
     end
   end
 end

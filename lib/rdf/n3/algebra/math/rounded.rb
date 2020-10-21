@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Math
   # The object is calulated as the subject rounded to the nearest integer.
   class Rounded < RDF::N3::Algebra::ResourceOperator
     NAME = :mathRounded
+    URI = RDF::N3::Math.rounded
 
     ##
     # The math:rounded operator takes string or number rounds it to the next  integer.

@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-timezone-from-dateTime
   class InSeconds < RDF::N3::Algebra::ResourceOperator
     NAME = :timeInSeconds
+    URI = RDF::N3::Time.inSeconds
 
     ##
     # The time:inseconds operator takes may have either a bound subject or object.

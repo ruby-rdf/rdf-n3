@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-minutes-from-dateTime
   class Minute < RDF::N3::Algebra::ResourceOperator
     NAME = :timeMinute
+    URI = RDF::N3::Time.minute
 
     ##
     # The time:minute operator takes string or dateTime and extracts the minute component.

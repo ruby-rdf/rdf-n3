@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-less-than
   class LessThan < RDF::N3::Algebra::ResourceOperator
     NAME = :mathLessThan
+    URI = RDF::N3::Math.lessThan
 
     ##
     # Resolves inputs as numbers.

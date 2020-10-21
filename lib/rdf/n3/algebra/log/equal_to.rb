@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Log
   # True if the subject and object are the same RDF node (symbol or literal).  Do not confuse with owl:sameAs. A cwm built-in logical operator, RDF graph level.
   class EqualTo < RDF::N3::Algebra::ResourceOperator
     NAME = :logEqualTo
+    URI = RDF::N3::Log.equalTo
 
     ##
     # Resolves inputs as terms.

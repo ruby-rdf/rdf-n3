@@ -6,6 +6,7 @@ module RDF::N3::Algebra::Str
   class Replace < RDF::N3::Algebra::ListOperator
     include RDF::N3::Algebra::Builtin
     NAME = :strReplace
+    URI = RDF::N3::Str.replace
 
     ##
     # @param [RDF::N3::List] list

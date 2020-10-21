@@ -6,6 +6,7 @@ module RDF::N3::Algebra::List
   #     { 1 list:in  (  1 2 3 4 5 ) } => { :test4a a :SUCCESS }.
   class In < RDF::N3::Algebra::ListOperator
     NAME = :listIn
+    URI = RDF::N3::List.in
 
     ##
     # Evaluates this operator using the given variable `bindings`.

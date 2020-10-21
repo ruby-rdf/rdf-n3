@@ -1,6 +1,7 @@
 module RDF::N3::Algebra::Str
   class EqualIgnoringCase < RDF::N3::Algebra::ResourceOperator
     NAME = :strEqualIgnoringCase
+    URI = RDF::N3::Str.equalIgnoringCase
 
     ##
     # Resolves inputs as lower-case strings.

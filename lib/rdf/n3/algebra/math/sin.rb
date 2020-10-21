@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-math-sin
   class Sin < RDF::N3::Algebra::ResourceOperator
     NAME = :mathSin
+    URI = RDF::N3::Math.sin
 
     ##
     # The math:sin operator takes string or number and calculates its sine. The arc sine of a concrete object can also calculate a variable subject.

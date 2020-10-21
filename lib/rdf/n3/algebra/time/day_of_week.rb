@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Time
   # For a date-time, its time:dayOfWeek is the the day number within the week, Sunday being 0.
   class DayOfWeek < RDF::N3::Algebra::ResourceOperator
     NAME = :timeDayOfWeek
+    URI = RDF::N3::Time.dayOfWeek
 
     ##
     # The time:dayOfWeek operator takes string or dateTime and returns the 0-based day of the week.

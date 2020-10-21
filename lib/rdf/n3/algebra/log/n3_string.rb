@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Log
   # The subject formula, expressed as N3, gives this string.
   class N3String < RDF::N3::Algebra::ResourceOperator
     NAME = :logN3String
+    URI = RDF::N3::Log.n3String
 
     ##
     # Serializes the subject formula into an N3 string representation.

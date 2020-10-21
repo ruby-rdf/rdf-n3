@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the subject string ends with the object string.
   class EndsWith < RDF::N3::Algebra::ResourceOperator
     NAME = :strEndsWith
+    URI = RDF::N3::Str.endsWith
 
     ##
     # Resolves inputs as strings.

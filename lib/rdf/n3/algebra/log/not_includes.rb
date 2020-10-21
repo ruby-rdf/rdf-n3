@@ -7,11 +7,9 @@ module RDF::N3::Algebra::Log
   #
   # Related: See includes
   class NotIncludes < Includes
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::N3::Algebra::Builtin
-
     NAME = :logNotIncludes
+    URI = RDF::N3::Log.notIncludes
+
     ##
     # Uses log:includes and returns a solution if log:includes fails
     #

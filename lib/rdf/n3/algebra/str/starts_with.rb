@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the subject string starts with the object string.
   class StartsWith < RDF::N3::Algebra::ResourceOperator
     NAME = :strStartsWith
+    URI = RDF::N3::Str.startsWith
 
     ##
     # Resolves inputs as strings.

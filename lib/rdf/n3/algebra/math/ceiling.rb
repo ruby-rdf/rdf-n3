@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-ceiling
   class Ceiling < RDF::N3::Algebra::ResourceOperator
     NAME = :mathCeiling
+    URI = RDF::N3::Math.ceiling
 
     ##
     # The math:ceiling operator takes string or number and calculates its ceiling.

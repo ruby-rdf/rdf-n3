@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the string is greater than the object when ordered according to Unicode(tm) code order.
   class GreaterThan < RDF::N3::Algebra::ResourceOperator
     NAME = :strGreaterThan
+    URI = RDF::N3::Str.greaterThan
 
     ##
     # The string:greaterThan compares subject with object as strings.

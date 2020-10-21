@@ -3,6 +3,7 @@ module RDF::N3::Algebra::List
   # Iff the subject is a list and the object is in that list, then this is true.
   class Member < RDF::N3::Algebra::ListOperator
     NAME = :listMember
+    URI = RDF::N3::List.member
 
     ##
     # Evaluates this operator using the given variable `bindings`.

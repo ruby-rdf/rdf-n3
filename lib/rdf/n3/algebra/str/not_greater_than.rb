@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the string is NOT greater than the object when ordered according to Unicode(tm) code order.
   class NotGreaterThan < GreaterThan
     NAME = :strNotGreaterThan
+    URI = RDF::N3::Str.notGreaterThan
 
     ##
     # @param  [RDF::Literal] left

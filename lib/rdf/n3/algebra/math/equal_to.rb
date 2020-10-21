@@ -18,6 +18,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-equal
   class EqualTo < RDF::N3::Algebra::ResourceOperator
     NAME = :mathEqualTo
+    URI = RDF::N3::Math.equalTo
 
     ##
     # Resolves inputs as numbers.

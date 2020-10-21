@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-math-cos
   class Cos < RDF::N3::Algebra::ResourceOperator
     NAME = :mathCos
+    URI = RDF::N3::Math.cos
 
     ##
     # The math:cos operator takes string or number and calculates its cosine. The arc cosine of a concrete object can also calculate a variable subject.

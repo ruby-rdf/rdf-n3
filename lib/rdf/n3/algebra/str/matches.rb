@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Str
   # It is true iff the string matches the regexp.
   class Matches < RDF::N3::Algebra::ResourceOperator
     NAME = :strMatches
+    URI = RDF::N3::Str.matches
 
     ##
     # Resolves inputs as strings.

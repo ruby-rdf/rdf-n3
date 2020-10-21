@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-current-dateTime
   class GmTime < RDF::N3::Algebra::ResourceOperator
     NAME = :timeGmTime
+    URI = RDF::N3::Time.gmTime
 
     ##
     # The time:gmTime operator takes string or dateTime and returns current time formatted according to the subject.

@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # The subject string; the object is a regular expression in the perl, python style. It is true iff the string does NOT match the regexp.
   class NotMatches < Matches
     NAME = :strNotMatches
+    URI = RDF::N3::Str.notMatches
 
     ##
     # @param  [RDF::Literal] text

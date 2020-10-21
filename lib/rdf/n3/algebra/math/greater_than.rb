@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-greater-than
   class GreaterThan < RDF::N3::Algebra::ResourceOperator
     NAME = :mathGreaterThan
+    URI = RDF::N3::Math.greaterThan
 
     ##
     # Resolves inputs as numbers.

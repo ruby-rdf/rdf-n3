@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-math-exp
   class Exponentiation < RDF::N3::Algebra::ListOperator
     NAME = :mathExponentiation
+    URI = RDF::N3::Math.exponentiation
 
     ##
     # The math:difference operator takes a pair of strings or numbers and calculates the exponent.

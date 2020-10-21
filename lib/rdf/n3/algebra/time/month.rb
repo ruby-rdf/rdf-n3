@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-month-from-dateTime
   class Month < RDF::N3::Algebra::ResourceOperator
     NAME = :timeMonth
+    URI = RDF::N3::Time.month
 
     ##
     # The time:month operator takes string or dateTime and extracts the month component.

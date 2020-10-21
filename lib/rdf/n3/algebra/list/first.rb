@@ -8,6 +8,7 @@ module RDF::N3::Algebra::List
   # The object can be calculated as a function of the list.
   class First < RDF::N3::Algebra::ListOperator
     NAME = :listFirst
+    URI = RDF::N3::List.first
 
     ##
     # Resolves this operator using the given variable `bindings`.

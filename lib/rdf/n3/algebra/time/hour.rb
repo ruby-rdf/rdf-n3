@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-hours-from-dateTime
   class Hour < RDF::N3::Algebra::ResourceOperator
     NAME = :timeHour
+    URI = RDF::N3::Time.hour
 
     ##
     # The time:hour operator takes string or dateTime and extracts the hour component.

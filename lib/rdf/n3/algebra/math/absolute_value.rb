@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-abs
   class AbsoluteValue < RDF::N3::Algebra::ResourceOperator
     NAME = :mathAbsoluteValue
+    URI = RDF::N3::Math.absoluteValue
 
     ##
     # The math:absoluteValue operator takes string or number and calculates its absolute value.

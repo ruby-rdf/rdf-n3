@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Math
   # The subject is an angle expressed in radians. The object is calulated as the tangent value of the subject.
   class TanH < RDF::N3::Algebra::ResourceOperator
     NAME = :mathTanH
+    URI = RDF::N3::Math.tanh
 
     ##
     # The math:tanh operator takes string or number and calculates its hyperbolic tangent. The inverse hyperbolic tangent of a concrete object can also calculate a variable subject.

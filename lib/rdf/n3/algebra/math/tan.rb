@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-math-tan
   class Tan < RDF::N3::Algebra::ResourceOperator
     NAME = :mathTan
+    URI = RDF::N3::Math.tan
 
     ##
     # The math:tan operator takes string or number and calculates its tangent. The arc tangent of a concrete object can also calculate a variable subject.

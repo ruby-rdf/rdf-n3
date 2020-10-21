@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-day-from-dateTime
   class Day < RDF::N3::Algebra::ResourceOperator
     NAME = :timeDay
+    URI = RDF::N3::Time.day
 
     ##
     # The time:day operator takes string or dateTime and extracts the day component.

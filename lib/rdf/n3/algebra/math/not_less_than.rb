@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-less-than
   class NotLessThan < LessThan
     NAME = :mathNotLessThan
+    URI = RDF::N3::Math.notLessThan
 
     ##
     # Returns TRUE if `term1` is greater than or equal to `term2`.

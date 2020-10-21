@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-year-from-dateTime
   class Year < RDF::N3::Algebra::ResourceOperator
     NAME = :timeYear
+    URI = RDF::N3::Time.year
 
     ##
     # The time:year operator takes string or dateTime and extracts the year component.

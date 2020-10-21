@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-divide
   class Quotient < RDF::N3::Algebra::ListOperator
     NAME = :mathQuotient
+    URI = RDF::N3::Math.quotient
 
     ##
     # The math:quotient operator takes a pair of strings or numbers and calculates their quotient.

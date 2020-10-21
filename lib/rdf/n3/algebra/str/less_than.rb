@@ -2,6 +2,7 @@ module RDF::N3::Algebra::Str
   # True iff the string is less than the object when ordered according to Unicode(tm) code order.
   class LessThan < RDF::N3::Algebra::ResourceOperator
     NAME = :strLessThan
+    URI = RDF::N3::Str.lessThan
 
     ##
     # Resolves inputs as strings.

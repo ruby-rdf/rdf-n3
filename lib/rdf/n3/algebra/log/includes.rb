@@ -13,6 +13,7 @@ module RDF::N3::Algebra::Log
     include RDF::N3::Algebra::Builtin
 
     NAME = :logIncludes
+    URI = RDF::N3::Log.includes
 
     ##
     # Creates a repository constructed by evaluating the subject against queryable and queries object against that repository. Either retuns a single solution, or no solutions

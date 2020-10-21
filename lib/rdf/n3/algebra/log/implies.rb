@@ -11,6 +11,7 @@ module RDF::N3::Algebra::Log
     include RDF::N3::Algebra::Builtin
 
     NAME = :logImplies
+    URI = RDF::N3::Log.implies
 
     ##
     # Returns solutions from subject. Solutions are created by evaluating subject against `queryable`.

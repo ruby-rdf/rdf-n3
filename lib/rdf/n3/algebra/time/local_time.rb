@@ -5,6 +5,7 @@ module RDF::N3::Algebra::Time
   # @see https://www.w3.org/TR/xpath-functions/#func-current-dateTime
   class LocalTime < RDF::N3::Algebra::ResourceOperator
     NAME = :timeLocalTime
+    URI = RDF::N3::Time.localTime
 
     ##
     # The time:localTime operator takes string or dateTime and returns current time formatted according to the subject.

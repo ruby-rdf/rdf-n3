@@ -7,6 +7,7 @@ module RDF::N3::Algebra::Math
     include RDF::N3::Algebra::Builtin
 
     NAME = :mathNegation
+    URI = RDF::N3::Math.negation
 
     ##
     # The math:negation operator takes may have either a bound subject or object.

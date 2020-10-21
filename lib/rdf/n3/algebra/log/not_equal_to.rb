@@ -4,6 +4,7 @@ module RDF::N3::Algebra::Log
   class NotEqualTo < SPARQL::Algebra::Operator::SameTerm
     include RDF::N3::Algebra::Builtin
     NAME = :logNotEqualTo
+    URI = RDF::N3::Log.notEqualto
 
     ##
     # Returns `true` if the operands are not the same RDF term; returns

@@ -3,6 +3,7 @@ module RDF::N3::Algebra::Str
   class Format < RDF::N3::Algebra::ListOperator
     include RDF::N3::Algebra::Builtin
     NAME = :strFormat
+    URI = RDF::N3::Str.format
 
     ##
     # @param [RDF::N3::List] list

@@ -7,6 +7,7 @@ module RDF::N3::Algebra::Log
   # (Cwm knows how to go get a document and parse N3 and RDF/XML it in order to evaluate this. Other languages for web documents  may be defined whose N3 semantics are therefore also calculable, and so they could be added in due course. See for example GRDDL, RDFa, etc)
   class Semantics < RDF::N3::Algebra::ResourceOperator
     NAME = :logSemantics
+    URI = RDF::N3::Log.semantics
 
     ##
     # Parses the subject into a new formula.
