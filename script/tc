@@ -68,7 +68,9 @@ def run_tc(man, tc, **options)
       logger: logger
     }.merge(options)
 
-    reader = RDF::N3::Reader.new(tc.input, **options)
+    reader_options = options.dup
+    reader_options[:logger] = false if tc.reason?
+    reader = RDF::N3::Reader.new(tc.input, **reader_options)
 
     graph = RDF::N3::Repository.new
     result = nil

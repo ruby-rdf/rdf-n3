@@ -300,15 +300,18 @@ module RDF::N3
     def insert_to(data, statement)
       raise ArgumentError, "Statement #{statement.inspect} is incomplete" if statement.incomplete?
 
+      s, p, o, c = statement.to_quad
+      c ||= DEFAULT_GRAPH
       unless has_statement_in?(data, statement)
-        s, p, o, c = statement.to_quad
-        c ||= DEFAULT_GRAPH
-
         data          = data.has_key?(c)       ? data.dup       : data.merge(c => {})
         data[c]       = data[c].has_key?(s)    ? data[c].dup    : data[c].merge(s => {})
         data[c][s]    = data[c][s].has_key?(p) ? data[c][s].dup : data[c][s].merge(p => {})
         data[c][s][p] = data[c][s][p].merge(o => statement.options)
       end
+
+      # If statement is inferred, make sure that it is marked as inferred in the dataset.
+      data[c][s][p][o][:inferred] = true if statement.options[:inferred]
+
       data
     end
     
@@ -321,7 +324,7 @@ module RDF::N3
         g = DEFAULT_GRAPH unless supports?(:graph_name)
         g ||= DEFAULT_GRAPH
 
-        os   = data[g][s][p].dup.delete(o)
+        os   = data[g][s].dup.delete_if {|k,v| k == o}
         ps   = os.empty? ? data[g][s].dup.delete_if {|k,v| k == p} : data[g][s].merge(p => os)
         ss   = ps.empty? ? data[g].dup.delete_if    {|k,v| k == s} : data[g].merge(s => ps)
         return ss.empty? ? data.dup.delete_if       {|k,v| k == g} : data.merge(g => ss)

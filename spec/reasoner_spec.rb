@@ -21,12 +21,12 @@ describe "RDF::N3::Reasoner" do
       {
         "conclusion-super-simple" => {
           input: %(
-          {
             {
-              {<a> <b> <c>} => {<test> a <SUCCESS> } .
-              <a> <b> <c>.
-            } log:conclusion ?y
-          } => { ?y a :TestResult }.
+              {
+                {<a> <b> <c>} => {<test> a <SUCCESS> } .
+                <a> <b> <c>.
+              } log:conclusion ?y
+            } => { ?y a :TestResult }.
           ),
           expect: %(
             {
@@ -34,8 +34,7 @@ describe "RDF::N3::Reasoner" do
               <test> a <SUCCESS> .
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
-          ),
-          pending: true
+          )
         },
         "conclusion-simple" => {
           input: %(
@@ -53,14 +52,15 @@ describe "RDF::N3::Reasoner" do
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
           ),
-          pending: true
+          pending: "extra triple"
         },
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
+          options = {data: false, filter: true}.merge(options)
           pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
-          result = reason(options[:input], data: false, filter: true)
+          result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
         end
       end

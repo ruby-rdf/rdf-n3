@@ -42,7 +42,7 @@ module RDF::N3::Algebra::List
         else
           nil
         end
-      end.flatten.compact)
+      end.flatten.compact.uniq)
     end
   end
 end

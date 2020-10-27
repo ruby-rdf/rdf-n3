@@ -20,13 +20,11 @@ module RDF::N3::Algebra::Log
 
       log_depth do
         reasoner = RDF::N3::Reasoner.new(resource, @options)
-        conclusions = [].extend(RDF::Enumerable)
+        conclusions = RDF::N3::Repository.new
         reasoner.execute(think: true, logger: false) {|stmt| conclusions << stmt}
 
         # The result is a formula containing the conclusions
-        form = RDF::N3::Algebra::Formula.from_enumerable(conclusions).dup
-        log_info('(logConclusion result)') {SXP::Generator.string(form.to_sxp_bin).gsub(/\s+/m, ' ')}
-        form
+        RDF::N3::Algebra::Formula.from_enumerable(conclusions).dup
       end
     end
 
@@ -46,6 +44,19 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Term]
     def input_operand
       operands.first
+    end
+
+    ##
+    # Yields statements, and de-asserts `inferred` from the subject.
+    #
+    # @yield  [statement]
+    #   each matching statement
+    # @yieldparam  [RDF::Statement] solution
+    # @yieldreturn [void] ignored
+    def each(&block)
+      super do |stmt|
+        block.call(RDF::Statement.from(stmt.to_quad))
+      end
     end
   end
 end

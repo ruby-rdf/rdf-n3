@@ -99,6 +99,7 @@ module RDF::N3::Algebra
     def dup
       new_ops = operands.map(&:dup)
       graph_name = RDF::Node.intern(new_ops.hash)
+      log_debug("formula") {"dup: #{self.graph_name} to #{graph_name}"}
       that = self.class.new(*new_ops, **@options.merge(graph_name: graph_name, formulae: formulae))
       that.formulae[graph_name] = that
       that
@@ -189,6 +190,7 @@ module RDF::N3::Algebra
     # @return [RDF::N3::List]
     # @see SPARQL::Algebra::Expression.evaluate
     def evaluate(bindings, formulae:, **options)
+      return self if bindings.empty?
       this = dup
       # Maintain formula relationships
       formulae {|k, v| this.formulae[k] ||= v}
@@ -240,63 +242,67 @@ module RDF::N3::Algebra
 
         log_debug("(formula apply)") {solution.to_sxp}
         # Yield each variable statement which is constant after applying solution
-        patterns.each do |pattern|
-          terms = {}
-          [:subject, :predicate, :object].each do |part|
-            terms[part] = case o = pattern.send(part)
-            when RDF::Query::Variable
-              if solution[o] && solution[o].list?
-                solution[o].each_statement(&block)
-                # Bind the list subject, and emit list statements
-                solution[o].subject
-              elsif solution[o] && solution[o].formula?
-                form = solution[o]
-                # uses the graph_name of the formula, and yields statements from the formula
-                log_depth do
-                  form.solutions = RDF::Query::Solutions(solution)
-                  form.each do |stmt|
-                    stmt.graph_name = form.graph_name
-                    log_debug("(formula add from var form)") {stmt.to_sxp}
-                    block.call(stmt)
+        log_depth do
+          patterns.each do |pattern|
+            terms = {}
+            [:subject, :predicate, :object].each do |part|
+              terms[part] = case o = pattern.send(part)
+              when RDF::Query::Variable
+                if solution[o] && solution[o].list?
+                  solution[o].each_statement(&block)
+                  # Bind the list subject, and emit list statements
+                  solution[o].subject
+                elsif solution[o] && solution[o].formula?
+                  form = solution[o]
+                  # uses the graph_name of the formula, and yields statements from the formula
+                  log_depth do
+                    form.solutions = RDF::Query::Solutions(solution)
+                    log_debug("(formula from var form)") {form.graph_name.to_sxp}
+                    form.each do |stmt|
+                      stmt.graph_name ||= form.graph_name
+                      log_debug("(formula add from var form)") {stmt.to_sxp}
+                      block.call(stmt)
+                    end
                   end
+                  form.graph_name
+                else
+                  solution[o] || o
                 end
-                form.graph_name
-              else
-                solution[o]
-              end
-            when RDF::N3::List
-              o.variable? ? o.evaluate(solution.bindings, formulae: formulae) : o
-            when RDF::N3::Algebra::Formula
-              # uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
-              log_depth do
+              when RDF::N3::List
+                o.variable? ? o.evaluate(solution.bindings, formulae: formulae) : o
+              when RDF::N3::Algebra::Formula
+                # uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
+                log_debug("(formula from form)") {o.graph_name.to_sxp}
                 o.solutions = RDF::Query::Solutions(solution)
                 o.each do |stmt|
-                  stmt.graph_name = o.graph_name
+                  stmt.graph_name ||= o.graph_name
                   log_debug("(formula add from form)") {stmt.to_sxp}
                   block.call(stmt)
                 end
+                o.graph_name
+              else
+                o
               end
-              o.graph_name
-            else
-              o
             end
+
+            statement = RDF::Statement.from(terms)
+            log_debug("(formula add)") {statement.to_sxp}
+
+            block.call(statement)
           end
-
-          statement = RDF::Statement.from(terms)
-
-          # Sanity checking on statement
-          if statement.variable?
-            log_debug("(formula skip)") {statement.to_sxp}
-            next
-          end
-
-          log_debug("(formula add)") {statement.to_sxp}
-          block.call(statement)
         end
       end
 
       # statements from sub-operands
-      log_depth {sub_ops.each {|op| op.each(&block)}}
+      log_depth do
+        sub_ops.each do |op|
+          log_debug("(formula sub_op)") {SXP::Generator.string op.to_sxp_bin}
+          op.each do |stmt|
+            log_debug("(formula add from sub_op)") {stmt.to_sxp}
+            block.call(stmt)
+          end
+        end
+      end
     end
 
     # Set solutions
@@ -320,12 +326,6 @@ module RDF::N3::Algebra
     def graph_name=(name)
       @options[:graph_name] = name
     end
-
-    ##
-    # Statements are the operands
-    #
-    # @return [Array<RDF::Statement>]
-    alias_method :statements, :operands
 
     ##
     # Patterns memoizer, from the operands which are statements.
@@ -364,7 +364,7 @@ module RDF::N3::Algebra
     # Return the variables contained within this formula
     # @return [Array<RDF::Query::Variable>]
     def vars
-      (statements.vars + sub_ops.vars).flatten.compact
+      operands.vars.flatten.compact
     end
 
     ##

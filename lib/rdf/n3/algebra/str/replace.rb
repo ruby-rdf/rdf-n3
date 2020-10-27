@@ -24,7 +24,7 @@ module RDF::N3::Algebra::Str
     # @param [RDF::N3::List] list
     # @return [Boolean]
     def validate(list)
-      if super && list.length == 3
+      if super && list.length == 3 && list.to_a.all?(&:literal?)
         true
       else
         log_error(NAME) {"list must have exactly three entries: #{list.to_sxp}"}

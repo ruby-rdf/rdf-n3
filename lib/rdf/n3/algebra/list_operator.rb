@@ -6,6 +6,8 @@ module RDF::N3::Algebra
     include SPARQL::Algebra::Update
     include RDF::N3::Algebra::Builtin
 
+    NAME = :listOperator
+
     ##
     # The operator takes a list and provides a mechanism for subclasses to operate over (and validate) that list argument.
     #
@@ -39,7 +41,7 @@ module RDF::N3::Algebra
           log_debug(self.class.const_get(:NAME)) {"result: true"}
           solution
         end
-      end.compact)
+      end.compact.uniq)
     end
 
     ##

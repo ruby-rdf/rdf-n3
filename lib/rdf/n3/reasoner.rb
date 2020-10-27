@@ -117,37 +117,31 @@ module RDF::N3
       log_debug("reasoner: knowledge_base") {SXP::Generator.string(knowledge_base.statements.to_sxp_bin)}
 
       # If thinking, continuously execute until results stop growing
-      if options[:think]
-        count = -1
-        log_info("reasoner: think start") { "count: #{count}"}
-        solutions = RDF::Query::Solutions(RDF::Query::Solution.new)
-        while knowledge_base.count > count
-          log_info("reasoner: think do") { "count: #{count}"}
-          count = knowledge_base.count
-          log_depth {formula.execute(knowledge_base, solutions: solutions, **options)}
-          knowledge_base << formula
-          solutions = RDF::Query::Solutions(RDF::Query::Solution.new) if solutions.empty?
-          log_debug("reasoner: solutions") {SXP::Generator.string solutions.to_sxp_bin}
-          log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
-          log_info("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
-          @formula = nil # cause formula to be re-calculated from knowledge-base
-        end
-        log_info("reasoner: think end") { "count: #{count}"}
-      else
-        # Run one iteration
-        log_info("reasoner: rules start") { "count: #{count}"}
-        log_depth {formula.execute(knowledge_base, **options)}
+      count = -1
+      log_info("reasoner: start") { "count: #{count}"}
+      solutions = RDF::Query::Solutions(RDF::Query::Solution.new)
+      while knowledge_base.count > count
+        log_info("reasoner: do") { "count: #{count}"}
+        count = knowledge_base.count
+        log_depth {formula.execute(knowledge_base, solutions: solutions, **options)}
         knowledge_base << formula
-        log_info("reasoner: rules end") { "count: #{count}"}
+        solutions = RDF::Query::Solutions(RDF::Query::Solution.new) if solutions.empty?
+        log_debug("reasoner: solutions") {SXP::Generator.string solutions.to_sxp_bin}
+        log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
+        log_info("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+        @formula = nil # cause formula to be re-calculated from knowledge-base
+        unless options[:think]
+          count = knowledge_base.count
+          break
+        end
       end
-
-      log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
-      log_debug("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+      log_info("reasoner: end") { "count: #{count}"}
 
       # Add updates back to mutable, containg builtins and variables.
       @mutable << knowledge_base
 
-      block_given? ? conclusions(&block) : self
+      each(&block) if block_given?
+      self
     end
     alias_method :reason!, :execute
 
@@ -197,7 +191,7 @@ module RDF::N3
     alias_method :each_datum, :data
 
     ##
-    # Returns an enumerator for {#conclusions}.
+    # Returns an enumerator for {#data}.
     # FIXME: enum_for doesn't seem to be working properly
     # in JRuby 1.7, so specs are marked pending
     #

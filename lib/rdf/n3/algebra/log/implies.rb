@@ -59,12 +59,9 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(&block)
       @solutions ||= RDF::Query::Solutions.new
-      #super { |st|
-      #  log_debug {"logImplies super #{st.to_sxp}"}
-      #  block.call(st)
-      #}
-
       log_depth do
+        super
+
         @solutions.each do |solution|
           log_debug("(logImplies each) solution") {SXP::Generator.string @solutions.to_sxp_bin}
           object = operand(1).evaluate(solution.bindings, formulae: formulae)
@@ -73,7 +70,9 @@ module RDF::N3::Algebra::Log
           object.solutions = RDF::Query::Solutions(solution)
 
           # Yield inferred statements
+          #require 'byebug'; byebug if solution[:y]
           object.each do |statement|
+            log_debug(("(logImplies each) infer\s")) {statement.to_sxp}
             block.call(RDF::Statement.from(statement.to_quad, inferred: true))
           end
         end

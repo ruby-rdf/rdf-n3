@@ -25,7 +25,7 @@ module RDF::N3::Algebra::Math
   # @see https://www.w3.org/TR/xpath-functions/#func-numeric-add
   class Sum < RDF::N3::Algebra::ListOperator
     NAME = :mathSum
-    URI = RDF::N3::Math.sum
+    URI = RDF::N3::Math[:sum]
 
     ##
     # Evaluates to the sum of the list elements
