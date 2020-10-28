@@ -26,7 +26,8 @@ describe RDF::N3::Reader do
               pending "log:includes etc."
             when *%w{cwm_supports_simple cwm_string_roughly}
               pending "Uses unsupported builtin"
-            when *%w{cwm_string_uriEncode cwm_includes_quantifiers_limited}
+            when *%w{cwm_string_uriEncode cwm_includes_quantifiers_limited
+                     cwm_list_append}
               skip "Blows up"
             when *%w{cwm_list_builtin_generated_match}
               skip("List reification")
@@ -56,6 +57,10 @@ describe RDF::N3::Reader do
                   repo << reasoner.conclusions
                 elsif t.options["data"]
                   repo << reasoner.data
+                elsif t.options["strings"]
+                  t.logger.info "result:\n#{reasoner.strings}"
+                  expect(reasoner.strings).to produce(t.expected, t)
+                  next
                 else
                   repo << reasoner
                 end

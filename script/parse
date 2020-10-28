@@ -24,9 +24,9 @@ def run(input, **options)
     STDERR.puts "Reason" if $verbose
     # Parse into a new reasoner and evaluate
     reader_class.new(input, **parser_options.merge(logger: nil)) do |reader|
+      repo = RDF::N3::Repository.new
       reasoner = RDF::N3::Reasoner.new(reader, **parser_options)
       reasoner.reason!(**options)
-      repo = RDF::N3::Repository.new
       if options[:conclusions]
         repo << reasoner.conclusions
       elsif options[:data]
@@ -35,7 +35,14 @@ def run(input, **options)
         repo << reasoner
       end
       num = repo.count
-      options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
+      if options[:strings]
+        options[:output].puts reasoner.strings
+      else
+        options[:output].puts repo.dump(options[:output_format],
+                                        prefixes: reader.prefixes,
+                                        standard_prefixes: true,
+                                        logger: options[:logger])
+      end
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
     STDERR.puts "Parse nt/quiet" if $verbose
@@ -124,6 +131,7 @@ OPT_ARGS = [
   ["--profile", GetoptLong::NO_ARGUMENT, "Show an execution profile"],
   ["--quiet", GetoptLong::NO_ARGUMENT, "Do not show parser output"],
   ["--rules", GetoptLong::NO_ARGUMENT, "Run rules adding to the store"],
+  ["--strings", GetoptLong::NO_ARGUMENT, "Dump :s to stdout ordered by :k whereever { :k log:outputString :s }"],
   ["--think", GetoptLong::NO_ARGUMENT, "Run rules until until no more triples generated"],
   ["--uri", GetoptLong::REQUIRED_ARGUMENT, "Default base URI"],
   ["--validate", GetoptLong::NO_ARGUMENT, "Run parser in strict validation mode"],
@@ -173,6 +181,7 @@ opts.each do |opt, arg|
     options[:quiet] = true
     logger.level = Logger::FATAL
   when '--rules'        then options[:rules] = true
+  when '--strings'      then options[:strings] = true
   when '--think'        then options[:think] = true
   when '--uri'          then parser_options[:base_uri] = arg
   when '--validate'     then parser_options[:validate] = true

@@ -86,6 +86,7 @@ module Fixtures
         "options": {"@id": "test:options", "@type": "@id"},
         "result": {"@id": "mf:result", "@type": "@id"},
         "rules": {"@id": "test:rules", "@type": "xsd:boolean"},
+        "strings": {"@id": "test:strings", "@type": "xsd:boolean"},
         "think": {"@id": "test:think", "@type": "xsd:boolean"}
       },
       "@type": "mf:Manifest",

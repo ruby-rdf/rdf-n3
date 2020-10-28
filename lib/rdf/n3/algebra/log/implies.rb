@@ -37,6 +37,11 @@ module RDF::N3::Algebra::Log
 
         solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
 
+        # Execute object as well (typically used for log:outputString)
+        solns = solns.map do |soln|
+          log_depth {object.execute(queryable, solutions: RDF::Query::Solutions(soln), **options)}
+        end.flatten.compact
+
         # filter solutions where not all variables in antecedant are bound.
         vars = subject.universal_vars
         solns = solns.filter do |soln|

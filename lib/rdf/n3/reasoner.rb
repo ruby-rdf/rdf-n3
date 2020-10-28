@@ -60,7 +60,7 @@ module RDF::N3
     # @yieldreturn [void] ignored
     # @return [RDF::N3::Reasoner]
     def initialize(input, **options, &block)
-      @options = options
+      @options = options.merge(strings: {}) # for --strings and log:outputString
       @mutable = case input
       when RDF::Mutable then input
       when RDF::Enumerable then RDF::N3::Repository.new {|r| r << input}
@@ -242,6 +242,17 @@ module RDF::N3
       RDF::Queryable::Enumerator.new do |yielder|
         this.send(:each_conclusion) {|y| yielder << y}
       end
+    end
+
+    ##
+    # Returns the concatenated strings from log:outputString
+    #
+    # @return [String]
+    def strings
+      @options[:strings].
+        sort_by {|k, v| k}.
+        map {|(k,v)| v.join("")}.
+        join("")
     end
 
     ##

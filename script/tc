@@ -128,18 +128,28 @@ def run_tc(man, tc, **options)
         end
         result = "failed"
       end
-      STDERR.puts  "\nResult: #{repo.dump(:n3, base_uri: RDF::URI(tc.base).parent, standard_prefixes: true)}" if options[:verbose]
-
-      output_graph = RDF::N3::Repository.load(tc.result, base_uri: tc.base)
-
-      # Check against expanded triples from repo
-      expanded_repo = RDF::Repository.new do |r|
-        repo.each_expanded_statement do |st|
-          r << st
+      if options[:verbose]
+        if tc.options["strings"]
+          STDERR.puts  "\nResult: #{reasoner.strings}"
+        else
+          STDERR.puts  "\nResult: #{repo.dump(:n3, base_uri: RDF::URI(tc.base).parent, standard_prefixes: true)}"
         end
       end
 
-      result = expanded_repo.isomorphic_with?(output_graph) ? "passed" : "failed"
+      if tc.options["strings"]
+        result = reasoner.strings == tc.expected
+      else
+        output_graph = RDF::N3::Repository.load(tc.result, base_uri: tc.base)
+
+        # Check against expanded triples from repo
+        expanded_repo = RDF::Repository.new do |r|
+          repo.each_expanded_statement do |st|
+            r << st
+          end
+        end
+
+        result = expanded_repo.isomorphic_with?(output_graph) ? "passed" : "failed"
+      end
     else
       result ||= "passed"
     end
