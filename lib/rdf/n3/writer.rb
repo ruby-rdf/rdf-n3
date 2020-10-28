@@ -566,7 +566,7 @@ module RDF::N3
       when RDF::N3::Log.implies
         @output.write("=>")
       else
-        path(resource, :predicate)
+        log_depth {path(resource, :predicate)}
       end
     end
 
@@ -575,13 +575,15 @@ module RDF::N3
       log_debug("objectList") {objects.inspect}
       return if objects.empty?
 
-      objects.each_with_index do |obj, i|
-        if i > 0 && (formula?(obj, :object) || blankNodePropertyList?(obj, :object))
-          @output.write ", "
-        elsif i > 0
-          @output.write ",\n#{indent(4)}"
+      log_depth do
+        objects.each_with_index do |obj, i|
+          if i > 0 && (formula?(obj, :object) || blankNodePropertyList?(obj, :object))
+            @output.write ", "
+          elsif i > 0
+            @output.write ",\n#{indent(4)}"
+          end
+          path(obj, :object)
         end
-        path(obj, :object)
       end
     end
 
@@ -599,12 +601,14 @@ module RDF::N3
       return 0 if prop_list.empty?
 
       @output.write("\n#{indent(2)}") if properties.keys.length > 1 && from_bpl
-      prop_list.each_with_index do |prop, i|
-        begin
-          @output.write(";\n#{indent(2)}") if i > 0
-          predicate(prop)
-          @output.write(" ")
-          objectList(properties[prop])
+      log_depth do
+        prop_list.each_with_index do |prop, i|
+          begin
+            @output.write(";\n#{indent(2)}") if i > 0
+            predicate(prop)
+            @output.write(" ")
+            objectList(properties[prop])
+          end
         end
       end
       properties.keys.length

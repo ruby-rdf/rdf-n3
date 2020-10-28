@@ -83,7 +83,7 @@ describe RDF::Node do
     let(:node) {RDF::Node.intern("a")}
 
     it "returns itself if not bound" do
-      expect(node.evaluate({})).to eq node
+      expect(node.evaluate({}, formulae: {})).to eq node
     end
   end
 end
