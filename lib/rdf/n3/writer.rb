@@ -232,12 +232,6 @@ module RDF::N3
         nil
       end
 
-      # if resource is a variable (universal or extential), map to a shorter name
-      if (@universals + @existentials).include?(resource) &&
-         resource.to_s.match(/#([^_]+)_(?:(?:\.form[^_]+)_)?_ext$/)
-        pname = $1
-      end
-
       # Make sure pname is a valid pname
       if pname
         md = PNAME_LN.match(pname) || PNAME_NS.match(pname)
@@ -431,7 +425,7 @@ module RDF::N3
       @options[:prefixes] = {}  # Will define actual used when matched
       repo.each {|statement| preprocess_statement(statement)}
 
-      vars = repo.enum_term.to_a.uniq.select {|r| r.is_a?(RDF::Query::Variable)}
+      vars = repo.enum_term.to_a.uniq.select {|r| r.is_a?(RDF::Query::Variable) && !r.to_s.end_with?('_quick')}
       @universals = vars.reject(&:existential?)
       @existentials = vars - @universals
     end
@@ -529,7 +523,11 @@ module RDF::N3
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
       l = if resource.is_a?(RDF::Query::Variable)
-        format_term(RDF::URI(resource.name.to_s.sub(/_ext$/, '')))
+        if resource.to_s.end_with?('_quick')
+          '?' + RDF::URI(resource.name).fragment.sub(/_quick$/, '')
+        else
+          format_term(RDF::URI(resource.name.to_s.sub(/_ext$/, '')))
+        end
       elsif resource == RDF.nil
         "()"
       else

@@ -637,7 +637,7 @@ module RDF::N3
     end
 
     ##
-    # Read a quickVar
+    # Read a quickVar, having global scope.
     #
     #     [30] quickVar ::= QUICK_VAR_NAME
     #
@@ -647,13 +647,8 @@ module RDF::N3
         prod(:quickVar) do
           token = @lexer.shift
           value = token.value.sub('?', '')
-          var = find_var(value)
-          return var if var
-
-          # Create a new variable, scoped to the parent formula and add it to the variables list for the parent and this formula.
-          add_var_to_formula(formulae[-2], value,
-            add_var_to_formula(formulae.last, value,
-              univar(value, scope: @formulae[-2])))
+          iri = ns(nil, "#{value}_quick")
+          variables[nil][iri] ||= univar(iri, scope: nil)
         end
       end
     end

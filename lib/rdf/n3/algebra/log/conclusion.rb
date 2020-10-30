@@ -19,7 +19,7 @@ module RDF::N3::Algebra::Log
       return resource unless position == :subject
 
       log_depth do
-        reasoner = RDF::N3::Reasoner.new(resource, @options)
+        reasoner = RDF::N3::Reasoner.new(resource, **@options)
         conclusions = RDF::N3::Repository.new
         reasoner.execute(think: true, logger: false) {|stmt| conclusions << stmt}
 
