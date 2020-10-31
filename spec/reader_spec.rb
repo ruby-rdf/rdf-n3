@@ -220,7 +220,7 @@ describe "RDF::N3::Reader" do
       expect(graph.size).to eq 1
       statement = graph.statements.first
       expect(statement.subject).to be_a(RDF::Node)
-      expect(statement.subject.id).to match(/anon/)
+      expect(statement.subject.id).to match(/^b\d+/)
       expect(statement.predicate.to_s).to eq "http://example.org/property"
       expect(statement.object.to_s).to eq "http://example.org/resource2"
     end
@@ -231,7 +231,7 @@ describe "RDF::N3::Reader" do
       statement = graph.statements.first
       expect(statement.subject.to_s).to eq "http://example.org/resource2"
       expect(statement.predicate).to be_a(RDF::Node)
-      expect(statement.predicate.id).to match(/anon/)
+      expect(statement.predicate.id).to match(/^b\d+/)
       expect(statement.object.to_s).to eq "http://example.org/object"
     end
 
@@ -242,7 +242,7 @@ describe "RDF::N3::Reader" do
       expect(statement.subject.to_s).to eq "http://example.org/resource2"
       expect(statement.predicate.to_s).to eq "http://example.org/property"
       expect(statement.object).to be_a(RDF::Node)
-      expect(statement.object.id).to match(/anon/)
+      expect(statement.object.id).to match(/^b\d+/)
     end
 
     {
@@ -598,8 +598,8 @@ describe "RDF::N3::Reader" do
       it "should set absolute base (trailing /)" do
         n3 = %(@base <http://foo/bar/> . <> :a <b> . <#c> :d </e>.)
         nt = %(
-        <http://foo/bar/> <http://foo/bar/a> <http://foo/bar/b> .
-        <http://foo/bar/#c> <http://foo/bar/d> <http://foo/e> .
+        <http://foo/bar/> <http://foo/bar/#a> <http://foo/bar/b> .
+        <http://foo/bar/#c> <http://foo/bar/#d> <http://foo/e> .
         )
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
@@ -623,21 +623,20 @@ describe "RDF::N3::Reader" do
         <> :a <d>, <#e>.
         )
         nt = %(
-        <http://example.org/products/> <http://example.org/products/a> <http://example.org/products/b> .
-        <http://example.org/products/> <http://example.org/products/a> <http://example.org/products/#c> .
-        <http://example.org/products/prod123/> <http://example.org/products/prod123/a> <http://example.org/products/prod123/b> .
-        <http://example.org/products/prod123/> <http://example.org/products/prod123/a> <http://example.org/products/prod123/#c> .
-        <http://example.org/products/> <http://example.org/products/a> <http://example.org/products/d> .
-        <http://example.org/products/> <http://example.org/products/a> <http://example.org/products/#e> .
+        <http://example.org/products/> <http://example.org/products/#a> <http://example.org/products/b> .
+        <http://example.org/products/> <http://example.org/products/#a> <http://example.org/products/#c> .
+        <http://example.org/products/prod123/> <http://example.org/products/prod123/#a> <http://example.org/products/prod123/b> .
+        <http://example.org/products/prod123/> <http://example.org/products/prod123/#a> <http://example.org/products/prod123/#c> .
+        <http://example.org/products/> <http://example.org/products/#a> <http://example.org/products/d> .
+        <http://example.org/products/> <http://example.org/products/#a> <http://example.org/products/#e> .
         )
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
       end
 
       it "returns defined prefixes" do
         n3 = %(
-        @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+        @base <http://test/> .
         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-        @prefix : <http://test/> .
         :foo a rdfs:Class.
         :bar :d :c.
         :a :d :c.
@@ -645,9 +644,8 @@ describe "RDF::N3::Reader" do
         reader = RDF::N3::Reader.new(n3, validate: true)
         reader.each {|statement|}
         expect(reader.prefixes).to eq({
-          rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+          nil => "http://test/#",
           rdfs: "http://www.w3.org/2000/01/rdf-schema#",
-          nil => "http://test/"
         })
       end
     end
@@ -676,7 +674,7 @@ describe "RDF::N3::Reader" do
         )
         nt = %(
         <http://example.com/a> <http://example.com/ontolgies#b> <http://example.com/foo/bar#baz> .
-        <http://example.com/path/DFFERENT/a2> <http://example.com/path/DFFERENT/b2> <http://example.com/path/DFFERENT/foo/bar#baz2> .
+        <http://example.com/path/DFFERENT/a2> <http://example.com/path/DFFERENT/#b2> <http://example.com/path/DFFERENT/foo/bar#baz2> .
         <http://example.com/path/DFFERENT/d3> <http://example.com/path/DFFERENT/#b3> <http://example.com/path/DFFERENT/e3> .
         )
         expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(nt, about: "http://a/b", logger: logger, format: :n3)
@@ -1061,9 +1059,10 @@ describe "RDF::N3::Reader" do
         )
         result = parse(n3, repo: @repo, base_uri: "http://a/b")
         statements = result.statements
+        logger.debug('sxp') {SXP::Generator.string statements.to_sxp_bin}
         expect(statements.length).to produce(4, logger)
         # All three bnodes should be distinct
-        nodes_of_a = statements.map(&:to_a).flatten.select {|r| r.node? && r.to_s.start_with?('_:a')}
+        nodes_of_a = statements.map(&:to_a).flatten.select {|r| r.node? && !r.to_s.include?('_form')}
         expect(nodes_of_a.uniq.count).to produce(3, logger)
       end
 

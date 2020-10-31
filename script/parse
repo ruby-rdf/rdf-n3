@@ -127,6 +127,7 @@ OPT_ARGS = [
   ["--help", "-?", GetoptLong::NO_ARGUMENT, "print this message"],
   ["--input-format", GetoptLong::REQUIRED_ARGUMENT, "Format of the input file, defaults to n3"],
   ["--info", GetoptLong::NO_ARGUMENT, "Show progress on execution"],
+  ["--no-list-terms", GetoptLong::NO_ARGUMENT, "Use first/rest chain for lists"],
   ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT, "Save output to file"],
   ["--profile", GetoptLong::NO_ARGUMENT, "Show an execution profile"],
   ["--quiet", GetoptLong::NO_ARGUMENT, "Do not show parser output"],
@@ -175,6 +176,7 @@ opts.each do |opt, arg|
   when "--help"         then usage()
   when '--info'         then logger.level = Logger::INFO
   when '--input-format' then options[:input_format] = arg.to_sym
+  when '--no-list-terms' then parser_options[:list_terms] = false
   when '--output'       then options[:output] = File.open(arg, "w")
   when '--profile'      then options[:profile] = true
   when '--quiet'

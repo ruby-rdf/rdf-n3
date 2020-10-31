@@ -77,8 +77,9 @@ module RDF::N3
         @formulae = []
         @formula_nodes = {}
         @label_uniquifier = "0"
-        @bnodes = {}  # allocated bnodes by formula
-        @bn_labler = ".anon0"
+        @bnodes = {}
+        @bn_labler = @options[:anon_base].dup
+        @bn_mapper = {}
         @variables = {}
 
         if options[:base_uri]
@@ -251,7 +252,7 @@ module RDF::N3
             iri = @lexer.shift
             error("Expected IRIREF", production: :base, token: iri) unless iri === :IRIREF
             @options[:base_uri] = process_iri(iri.value[1..-2].gsub(/\s/, ''))
-            namespace(nil, base_uri.to_s.match?(%r{[#/]$}) ? base_uri : iri("#{base_uri}#"))
+            namespace(nil, base_uri.to_s.end_with?('#') ? base_uri : iri("#{base_uri}#"))
             error("base", "#{token} should be downcased") if token.value.start_with?('@') && token.value != '@base'
 
             if terminated
@@ -500,6 +501,7 @@ module RDF::N3
           @lexer.shift
           progress("blankNodePropertyList", depth: options[:depth], token: token)
           node = bnode
+          debug("blankNodePropertyList: subject", depth: options[:depth]) {node.to_sxp}
           read_predicateObjectList(node)
           error("blankNodePropertyList", "Expected closing ']'") unless @lexer.first === ']'
           @lexer.shift
@@ -551,7 +553,7 @@ module RDF::N3
       if @lexer.first === '{'
         prod(:formula, %(})) do
           @lexer.shift
-          node = RDF::Node.intern(".form_#{unique_label}")
+          node = RDF::Node.intern("_form_#{unique_label}")
           formulae.push(node)
           formula_nodes[node] = true
           debug(:formula, depth: @options[:depth]) {"id: #{node}, depth: #{formulae.length}"}
@@ -743,8 +745,6 @@ module RDF::N3
         error("process_pname", "Use of undefined prefix #{prefix.inspect}")
         ns(nil, name)
       else
-        #debug('process_pname(default_ns)', name, depth: @options[:depth])
-        namespace(nil, iri("#{base_uri}#")) unless prefix(nil)
         ns(nil, name)
       end
       debug('process_pname', depth: @options[:depth]) {iri.inspect}
@@ -754,18 +754,26 @@ module RDF::N3
     # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
     # Unnnamed bnodes are created using an incrementing labeler for repeatability.
     def bnode(label = nil)
-      if label.nil?
-        label = @bn_labler
-        @bn_labler.succ!
+      form_id = formulae.last ? formulae.last.id : '_bn_ground'
+      if label
+        # Return previously allocated blank node for.
+        @bn_mapper[form_id] ||= {}
+        return @bn_mapper[form_id][label] if @bn_mapper[form_id][label]
       end
-      fl = "#{label}_#{formulae.last ? formulae.last.id : 'bn_ground'}"
-      @bnodes[fl] ||= RDF::Node.intern(fl)
+
+      # Get a fresh label
+      @bn_labler.succ! while @bnodes[@bn_labler]
+
+      bn = RDF::Node.intern(@bn_labler.to_sym)
+      @bnodes[@bn_labler] = bn
+      @bn_mapper[form_id][label] = bn if label
+      bn
     end
 
     # If not in ground formula, note scope, and if existential
     def univar(label, scope:, existential: false)
       value = existential ? "#{label}_ext" : label
-      value = "#{value}_#{scope.id}" if scope
+      value = "#{value}#{scope.id}" if scope
       RDF::Query::Variable.new(value, existential: existential)
     end
 
@@ -829,9 +837,10 @@ module RDF::N3
 
     # Decode a PName
     def ns(prefix = nil, suffix = nil)
+      namespace(nil, iri("#{base_uri}#")) if prefix.nil? && !prefix(nil)
+
       base = prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
-      #debug("ns", depth: @options[:depth]) {"base: '#{base}', suffix: '#{suffix}'"}
       iri(base + suffix.to_s)
     end
 

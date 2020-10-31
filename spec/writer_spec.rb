@@ -116,10 +116,6 @@ describe RDF::N3::Writer do
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b [ex:c ex:d] .),
         regexp: [%r(^ex:a ex:b \[ex:c ex:d\] \.$)],
       },
-      "reuses BNode labels by default" => {
-        input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
-        regexp: [%r(^\s*_:a ex:b _:a \.$)]
-      },
       "standard prefixes" => {
         input: %(
           <a> a <http://xmlns.com/foaf/0.1/Person>;
@@ -326,11 +322,10 @@ describe RDF::N3::Writer do
           } =>  {  ?F a :result} .
         ),
         regexp: [
-          %r(@forAll <F> \.),
           %r[{\s+\(\s*{\s*:sky :color :blue \.\s+}\s+{]m,
           %r[{\s+:sky :color :green \.\s+}\s*\)]m,
-          %r[}\)\s+log:conjunction\s+<F>\s+\.\s+} =>]m,
-          %r[=>\s+{\s+<F> a :result \.\s*}]m
+          %r[}\)\s+log:conjunction\s+\?F\s+\.\s+} =>]m,
+          %r[=>\s+{\s+\?F a :result \.\s*}]m
         ]
       },
     }.each do |name, params|
@@ -544,7 +539,7 @@ describe RDF::N3::Writer do
       "implies" => {
         input: %({ _:x :is _:x } => {_:x :is _:x } .),
         regexp: [
-          %r({\s+_:x(\d*) :is _:x\1 \.\s+} => {\s+_:x(\d*) :is _:x\2 \.\s+} \.)m
+          %r({\s+_:b0 :is _:b0 \.\s+} => {\s+_:b1 :is _:b1 \.\s+} \.)m
         ]
       },
       "formula simple" => {
@@ -607,8 +602,8 @@ describe RDF::N3::Writer do
         ),
         regexp: [
           %r{\(17\) a :TestCase \.},
-          %r{\(<x>\) a :TestCase \.},
-          %r{<x> a :RESULT \.},
+          %r{\(?x\) a :TestCase \.},
+          %r{\?x a :RESULT \.},
         ]
       },
     }.each do |name, params|
@@ -637,8 +632,7 @@ describe RDF::N3::Writer do
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
-          %r(@forAll <o> \.),
-          %r(:s :p <o> \.),
+          %r(:s :p \?o \.),
         ]
       },
     }.each do |name, params|
@@ -685,7 +679,7 @@ describe RDF::N3::Writer do
                      cwm_list_unify5-ref.n3
                      cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
                      cwm_other_lists.n3   # empty list with extra properties
-                     cwm_includes_concat.n3 new_syntax_inverted_properties.n3
+                     new_syntax_inverted_properties.n3
                      cwm_other_dec-div.n3 cwm_syntax_sep-term.n3
                      )
               pending "Investigate"
@@ -707,7 +701,9 @@ describe RDF::N3::Writer do
             repo = parse(t.input, base_uri: t.base, logger: false)
             logger.info("sxp: #{SXP::Generator.string(repo.to_sxp_bin)}")
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
-            g2 = parse(n3, base_uri: t.base, logger: false)
+            g2 = parse(n3, validate: true, base_uri: t.base, logger: logger)
+            #require 'byebug'; byebug
+            expect(g2.count).to produce(repo.count, logger)
             expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
 
@@ -725,7 +721,7 @@ describe RDF::N3::Writer do
             format = detect_format(t.expected)
             repo = parse(t.expected, base_uri: t.base, format: format, logger: false)
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
-            g2 = parse(n3, base_uri: t.base, logger: false)
+            g2 = parse(n3, validate: true, base_uri: t.base, logger: false)
             expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
         end

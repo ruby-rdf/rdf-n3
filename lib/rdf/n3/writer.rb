@@ -498,7 +498,6 @@ module RDF::N3
         "pos: #{position}, " +
         "rc: #{ref_count(node)}"
       end
-      # return false if position == :subject && ref_count(node) > 0 # recursive lists
 
       @output.write("(")
       log_depth do
@@ -510,9 +509,8 @@ module RDF::N3
         list.each do |li|
           log_debug("(list first)") {"#{li}[#{position}]"}
           @output.write(" ") if index > 0
-          path(li, position)
+          path(li, :object)
           subject_done(li)
-          position = :object
           index += 1
         end
       end
@@ -625,12 +623,14 @@ module RDF::N3
     def blankNodePropertyList(resource, position)
       return false unless blankNodePropertyList?(resource, position)
 
-      log_debug("blankNodePropertyList") {resource.to_sxp}
-      subject_done(resource)
-      @output.write((position == :subject ? "\n#{indent}[" : '['))
-      num_props = log_depth {predicateObjectList(resource, true)}
-      @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :subject ? '] .' : ']'))
-      true
+      #log_depth do
+        log_debug("blankNodePropertyList") {resource.to_sxp}
+        subject_done(resource)
+        @output.write((position == :subject ? "\n#{indent}[" : '['))
+        num_props = log_depth {predicateObjectList(resource, true)}
+        @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :subject ? '] .' : ']'))
+        true
+      #end
     end
 
     # Can subject be represented as a formula?
@@ -729,14 +729,15 @@ module RDF::N3
         [statement.subject, statement.object].each do |resource|
           @formulae[resource] = true if
             resource.node? &&
-            (formula_names.include?(resource) || resource.id.start_with?('.form_'))
+            (formula_names.include?(resource) || resource.id.start_with?('_form_'))
 
-          # First-class list may have members which are formulae
+          # First-class list may have members which are formulae, and need reference counts
           if resource.list?
             resource.each_descendant do |term|
+              bump_reference(term)
               @formulae[term] = true if
                 term.node? &&
-                (formula_names.include?(term) || term.id.start_with?('.form_'))
+                (formula_names.include?(term) || term.id.start_with?('_form_'))
             end
           end
         end
