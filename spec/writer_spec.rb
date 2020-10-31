@@ -702,7 +702,6 @@ describe RDF::N3::Writer do
             logger.info("sxp: #{SXP::Generator.string(repo.to_sxp_bin)}")
             n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
             g2 = parse(n3, validate: true, base_uri: t.base, logger: logger)
-            #require 'byebug'; byebug
             expect(g2.count).to produce(repo.count, logger)
             expect(g2.isomorphic?(repo)).to produce(true, logger)
           end

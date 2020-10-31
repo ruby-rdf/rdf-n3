@@ -248,11 +248,7 @@ module RDF::N3::Algebra
             [:subject, :predicate, :object].each do |part|
               terms[part] = case o = pattern.send(part)
               when RDF::Query::Variable
-                if solution[o] && solution[o].list?
-                  solution[o].each_statement(&block)
-                  # Bind the list subject, and emit list statements
-                  solution[o].subject
-                elsif solution[o] && solution[o].formula?
+                if solution[o] && solution[o].formula?
                   form = solution[o]
                   # uses the graph_name of the formula, and yields statements from the formula
                   log_depth do
