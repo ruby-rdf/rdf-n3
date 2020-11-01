@@ -45,9 +45,10 @@ module RDF::N3::Algebra
           log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(rhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
           solution.merge(subject.to_sym => rhs)
         elsif respond_to?(:apply)
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(apply(lhs, rhs).to_sxp_bin).gsub(/\s+/m, ' ')}"}
+          res = apply(lhs, rhs)
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(res.to_sxp_bin).gsub(/\s+/m, ' ')}"}
           # Return the result applying subject and object
-          solution if apply(lhs, rhs) == RDF::Literal::TRUE
+          solution if res == RDF::Literal::TRUE
         elsif rhs != lhs
           log_debug(self.class.const_get(:NAME)) {"result: false"}
           nil

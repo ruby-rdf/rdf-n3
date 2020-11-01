@@ -11,7 +11,7 @@ module RDF::N3::Algebra::Str
     # @see RDF::N3::ListOperator#evaluate
     def resolve(list)
       format, *args = list.to_a.map(&:value)
-      str = format % args
+      str = RDF::Literal(format % args)
     end
   end
 end

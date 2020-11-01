@@ -623,14 +623,12 @@ module RDF::N3
     def blankNodePropertyList(resource, position)
       return false unless blankNodePropertyList?(resource, position)
 
-      #log_depth do
-        log_debug("blankNodePropertyList") {resource.to_sxp}
-        subject_done(resource)
-        @output.write((position == :subject ? "\n#{indent}[" : '['))
-        num_props = log_depth {predicateObjectList(resource, true)}
-        @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :subject ? '] .' : ']'))
-        true
-      #end
+      log_debug("blankNodePropertyList") {resource.to_sxp}
+      subject_done(resource)
+      @output.write((position == :subject ? "\n#{indent}[" : '['))
+      num_props = log_depth {predicateObjectList(resource, true)}
+      @output.write((num_props > 1 ? "\n#{indent(2)}" : "") + (position == :subject ? '] .' : ']'))
+      true
     end
 
     # Can subject be represented as a formula?
