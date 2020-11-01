@@ -20,8 +20,8 @@ module RDF::N3::Algebra
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
         subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
-        subject = formulae.fetch(subject, subject).dup if subject.node?
-        object = formulae.fetch(object, object).dup if object.node?
+        subject = formulae.fetch(subject, subject) if subject.node?
+        object = formulae.fetch(object, object) if object.node?
 
         log_debug(self.class.const_get(:NAME)) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
         next unless valid?(subject, object)

@@ -24,7 +24,7 @@ module RDF::N3::Algebra
         # If it evaluated to a BNode, re-expand as a list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
-        object = formulae.fetch(object, object).dup if object.node?
+        object = formulae.fetch(object, object) if object.node?
 
         log_debug(self.class.const_get(:NAME)) {"list: #{SXP::Generator.string(list.to_sxp_bin).gsub(/\s+/m, ' ')}, object: #{SXP::Generator.string(object.to_sxp_bin).gsub(/\s+/m, ' ')}"}
         next unless validate(list)

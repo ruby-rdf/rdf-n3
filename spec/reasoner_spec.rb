@@ -763,33 +763,6 @@ describe "RDF::N3::Reasoner" do
             9.5 :valueOf "(7 / 2) + ((7 % 2)^10000000) + 5 [should be 9.5]" .
           )
         },
-        "Combinatorial test - SumDifferenceFAILS": {
-          input: %(
-          "3.1415926" a :testValue.
-          3.1415926 a :testValue.
-          "1729" a :testValue.
-          1729 a :testValue.
-          "0" a :testValue.
-          0 a :testValue.
-          "1.0e7" a :testValue.
-          1.0e7 a :testValue.
-          { ?x a :testValue. ?y a :testValue.
-            ?z is math:sum of (?x (?y ?x)!math:difference).
-            ?z math:notEqualTo ?y } => {(?x ?y) :is :SumDifferenceFAILS}.
-          ),
-          expect: %(
-            @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-            @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
-            ("1.0e7" "3.1415926"^^xsd:decimal) <#is> <#SumDifferenceFAILS> .
-
-            ("1.0e7"^^xsd:double "3.1415926"^^xsd:decimal) <#is> <#SumDifferenceFAILS> .
-
-            ("1.0e7" "3.1415926") <#is> <#SumDifferenceFAILS> .
-
-            ("1.0e7"^^xsd:double "3.1415926") <#is> <#SumDifferenceFAILS> .
-          )
-        },
         "Combinatorial test - concatenation": {
           input: %(
           @prefix string: <http://www.w3.org/2000/10/swap/string#> .

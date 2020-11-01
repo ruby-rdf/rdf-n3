@@ -58,7 +58,7 @@ module RDF::N3::Algebra
             end
           when RDF::N3::List
             # Transform blank nodes denoting formulae into those formulae
-            term = term.transform {|t| t.node? ? formulae.fetch(t, t).dup : t}
+            term = term.transform {|t| t.node? ? formulae.fetch(t, t) : t}
 
             # If we're in a quoted graph, transform blank node components into existential variables
             if graph_name && term.has_nodes?
@@ -132,7 +132,7 @@ module RDF::N3::Algebra
         these_solutions.map! do |solution|
           RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
             # Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
-            value = formulae.fetch(value, value).dup if value.node?
+            value = formulae.fetch(value, value) if value.node?
             l = RDF::N3::List.try_list(value, queryable)
             value = l if l.constant?
             memo.merge(name => value)

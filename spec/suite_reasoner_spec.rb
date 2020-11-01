@@ -24,6 +24,8 @@ describe RDF::N3::Reader do
                      cwm_includes_t10 cwm_includes_t11
                      cwm_includes_conclusion_simple cwm_includes_conclusion}
               pending "log:includes etc."
+            when *%w{cwm_includes_t9br}
+              pending "extra triples in anticedent because solutions are applied."
             when *%w{cwm_supports_simple cwm_string_roughly}
               pending "Uses unsupported builtin"
             when *%w{cwm_string_uriEncode cwm_includes_quantifiers_limited
