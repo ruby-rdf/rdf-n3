@@ -44,7 +44,7 @@ module RDF::N3::Algebra::Log
 
         # filter solutions where not all variables in antecedant are bound.
         vars = subject.universal_vars
-        solns = solns.filter do |soln|
+        solns = solns.select do |soln|
           vars.all? {|v| soln.bound?(v)}
         end
         solns
