@@ -145,7 +145,10 @@ module RDF
     #
     # @return [RDF::Literal::DateTime]
     def as_datetime
-      mvalue = value.match?(%r(^\d{4}$)) ? "#{value}-" : value
+      return self if is_a?(RDF::Literal::DateTime)
+      mvalue = value
+      mvalue = "#{mvalue}-01" if mvalue.match?(%r(^\d{4}$))
+      mvalue = "#{mvalue}-01" if mvalue.match?(%r(^\d{4}-\d{2}$))
       RDF::Literal::DateTime.new(::DateTime.iso8601(mvalue), lexical: value)
     rescue
       RDF::Literal(0)
