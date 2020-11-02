@@ -18,7 +18,7 @@ module RDF::N3::Algebra::Log
       log_debug(NAME) {"list hash: #{form.graph_name}"}
 
       list.each do |f|
-        form.operands.append(*f.operands)
+        form.operands.push(*f.operands)
       end
       form.dup
     end
