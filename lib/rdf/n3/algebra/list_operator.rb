@@ -19,24 +19,25 @@ module RDF::N3::Algebra
     def execute(queryable, solutions:, **options)
       RDF::Query::Solutions(solutions.map do |solution|
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
-        list = operand(0).evaluate(solution.bindings, formulae: formulae)
-        next unless list
+        subject = operand(0).evaluate(solution.bindings, formulae: formulae)
+        next unless subject
         # If it evaluated to a BNode, re-expand as a list
-        list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
+        subject = RDF::N3::List.try_list(subject, queryable).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
         object = formulae.fetch(object, object) if object.node?
 
-        log_debug(self.class.const_get(:NAME)) {"list: #{SXP::Generator.string(list.to_sxp_bin).gsub(/\s+/m, ' ')}, object: #{SXP::Generator.string(object.to_sxp_bin).gsub(/\s+/m, ' ')}"}
-        next unless validate(list)
+        log_info(self.class.const_get(:NAME)) {"subject: #{SXP::Generator.string(subject.to_sxp_bin).strip}"}
+        log_info(self.class.const_get(:NAME)) {"object: #{SXP::Generator.string(object.to_sxp_bin).strip}"}
+        next unless validate(subject)
 
-        lhs = resolve(list)
+        lhs = resolve(subject)
         if lhs.nil?
-          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{list.inspect}"}
+          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{subject.inspect}"}
           next
         end
 
         if object.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).strip}"}
           solution.merge(object.to_sym => lhs)
         elsif object != lhs
           log_debug(self.class.const_get(:NAME)) {"result: false"}

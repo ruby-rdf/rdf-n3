@@ -136,6 +136,9 @@ module RDF::N3
         end
       end
       log_info("reasoner: end") { "count: #{count}"}
+      log_info("reasoner: formula") do
+        SXP::Generator.string RDF::N3::Algebra::Formula.from_enumerable(knowledge_base).to_sxp_bin
+      end
 
       # Add updates back to mutable, containg builtins and variables.
       @mutable << knowledge_base

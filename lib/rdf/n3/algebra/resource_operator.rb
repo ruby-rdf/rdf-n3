@@ -23,7 +23,8 @@ module RDF::N3::Algebra
         subject = formulae.fetch(subject, subject) if subject.node?
         object = formulae.fetch(object, object) if object.node?
 
-        log_debug(self.class.const_get(:NAME)) {"subject: #{subject.to_sxp}, object: #{object.to_sxp}"}
+        log_info(self.class.const_get(:NAME)) {"subject: #{SXP::Generator.string(subject.to_sxp_bin).strip}"}
+        log_info(self.class.const_get(:NAME)) {"object: #{SXP::Generator.string(object.to_sxp_bin).strip}"}
         next unless valid?(subject, object)
 
         lhs = resolve(subject, position: :subject)
@@ -39,14 +40,14 @@ module RDF::N3::Algebra
         end
 
         if object.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).strip}"}
           solution.merge(object.to_sym => lhs)
         elsif subject.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(rhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(rhs.to_sxp_bin).strip}"}
           solution.merge(subject.to_sym => rhs)
         elsif respond_to?(:apply)
           res = apply(lhs, rhs)
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(res.to_sxp_bin).gsub(/\s+/m, ' ')}"}
+          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(res.to_sxp_bin).strip}"}
           # Return the result applying subject and object
           solution if res == RDF::Literal::TRUE
         elsif rhs != lhs

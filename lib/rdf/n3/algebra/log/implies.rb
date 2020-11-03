@@ -71,7 +71,7 @@ module RDF::N3::Algebra::Log
         super
 
         solutions.each do |solution|
-          log_debug("(logImplies each) solution") {SXP::Generator.string @solutions.to_sxp_bin}
+          log_debug("(logImplies each) solution") {SXP::Generator.string solution.to_sxp_bin}
           object = operand(1).evaluate(solution.bindings, formulae: formulae)
           log_info(("(logImplies each) object")) {SXP::Generator.string object.to_sxp_bin}
 

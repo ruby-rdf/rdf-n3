@@ -118,7 +118,7 @@ module RDF::N3::Algebra
     #   any additional keyword options
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
-      log_debug("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
+      log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
       log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
 
       # Only query as patterns if this is an embedded formula
@@ -307,6 +307,7 @@ module RDF::N3::Algebra
     # @param [RDF::Resource] name
     # @return [RDF::Resource]
     def graph_name=(name)
+      formulae[name] = self
       @options[:graph_name] = name
     end
 

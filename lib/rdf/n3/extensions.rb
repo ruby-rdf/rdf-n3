@@ -42,7 +42,13 @@ module RDF
     # Transform Statement into an SXP
     # @return [Array]
     def to_sxp_bin
-      [(variable? ? :pattern : (has_graph? ? :quad : :triple)), subject, predicate, object, graph_name].compact
+      [ (has_graph? ? :quad : :triple),
+        (:inferred if inferred?),
+        subject,
+        predicate,
+        object,
+        graph_name
+      ].compact.map(&:to_sxp_bin)
     end
 
     ##
@@ -251,6 +257,17 @@ module RDF
       end
 
       self.class.from(elements)
+    end
+    # Transform Statement into an SXP
+    # @return [Array]
+    def to_sxp_bin
+      [ :pattern,
+        (:inferred if inferred?),
+        subject,
+        predicate,
+        object,
+        graph_name
+      ].compact.map(&:to_sxp_bin)
     end
   end
 
