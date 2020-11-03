@@ -17,7 +17,7 @@ module RDF::N3::Algebra
     #   solutions for chained queries
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
+      RDF::Query::Solutions(solutions.map do |solution|
         subject = operand(0).evaluate(solution.bindings, formulae: formulae) || operand(0)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
         subject = formulae.fetch(subject, subject) if subject.node?
@@ -28,13 +28,13 @@ module RDF::N3::Algebra
 
         lhs = resolve(subject, position: :subject)
         if lhs.nil?
-          log_error(self.class.const_get(:NAME)) {"subject is invalid: #{subject.inspect}"}
+          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{subject.inspect}"}
           next
         end
 
         rhs = resolve(object, position: :object)
         if rhs.nil?
-          log_error(self.class.const_get(:NAME)) {"object is invalid: #{object.inspect}"}
+          log_error(self.class.const_get(:NAME)) {"object evaluates to null: #{object.inspect}"}
           next
         end
 

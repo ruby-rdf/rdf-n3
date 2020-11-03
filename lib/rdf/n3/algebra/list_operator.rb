@@ -17,7 +17,7 @@ module RDF::N3::Algebra
     #   solutions for chained queries
     # @return [RDF::Query::Solutions]
     def execute(queryable, solutions:, **options)
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
+      RDF::Query::Solutions(solutions.map do |solution|
         # Might be a variable or node evaluating to a list in queryable, or might be a list with variables
         list = operand(0).evaluate(solution.bindings, formulae: formulae)
         next unless list
@@ -30,6 +30,10 @@ module RDF::N3::Algebra
         next unless validate(list)
 
         lhs = resolve(list)
+        if lhs.nil?
+          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{list.inspect}"}
+          next
+        end
 
         if object.variable?
           log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).gsub(/\s+/m, ' ')}"}
