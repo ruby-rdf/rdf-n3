@@ -4,7 +4,7 @@ require 'rdf/trig'
 
 describe "RDF::N3::Reasoner" do
   let(:logger) {RDF::Spec.logger}
-  before {logger.level = Logger::DEBUG}
+  before {logger.level = Logger::INFO}
 
   context "variables" do
     context "universals" do
@@ -30,34 +30,49 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             {
-              <a> <b> <c> .
-              <test> a <SUCCESS> .
-              {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
-            } a :TestResult .
-          )
-        },
-        "conclusion-simple" => {
-          input: %(
-          {
-            {<a> <b> <c>} => {<test> a <SUCCESS> } .
-            <a> <b> <c>.
-          } a :TestRule.
-        
-          { ?x a :TestRule; log:conclusion ?y } => { ?y a :TestResult }.
-          ),
-          expect: %(
+              {
+                {<a> <b> <c>} => {<test> a <SUCCESS> } .
+                <a> <b> <c>.
+              } log:conclusion ?y
+            } => { ?y a :TestResult }.
+
             {
               <a> <b> <c> .
               <test> a <SUCCESS> .
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
           ),
-          pending: "extra triple"
+          pending: "inferred triples in conclusion premis"
+        },
+        "conclusion-simple" => {
+          input: %(
+            {
+              {<a> <b> <c>} => {<test> a <SUCCESS> } .
+              <a> <b> <c>.
+            } a :TestRule.
+        
+            { ?x a :TestRule; log:conclusion ?y } => { ?y a :TestResult }.
+          ),
+          expect: %(
+            {
+              {<a> <b> <c>} => {<test> a <SUCCESS> } .
+              <a> <b> <c>.
+            } a :TestRule.
+        
+            { ?x a :TestRule; log:conclusion ?y } => { ?y a :TestResult }.
+
+            {
+              <a> <b> <c> .
+              <test> a <SUCCESS> .
+              {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
+            } a :TestResult .
+          ),
+          pending: "inferred triples in conclusion premis"
         },
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
-          options = {data: false, filter: true}.merge(options)
+          options = {data: false, filter: false}.merge(options)
           pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
           result = reason(options[:input], **options)

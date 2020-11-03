@@ -16,6 +16,8 @@ module RDF::N3::Algebra::Log
     ##
     # Returns solutions from subject. Solutions are created by evaluating subject against `queryable`.
     #
+    # Solutions are kept within this instance, and used for conclusions. Note that the evaluated solutions do not affect that of the invoking formula, as the solution spaces are disjoint.
+    #
     # @param  [RDF::Queryable] queryable
     #   the graph or repository to query
     # @param  [Hash{Symbol => Object}] options
@@ -62,21 +64,20 @@ module RDF::N3::Algebra::Log
     #   each matching statement
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
-    def each(&block)
-      @solutions ||= RDF::Query::Solutions.new
+    def each(solutions: RDF::Query::Solutions(), &block)
+      # Merge solutions in with those for the evaluation of this implication
+      solutions = Array(@solutions)
       log_depth do
         super
 
-        @solutions.each do |solution|
+        solutions.each do |solution|
           log_debug("(logImplies each) solution") {SXP::Generator.string @solutions.to_sxp_bin}
           object = operand(1).evaluate(solution.bindings, formulae: formulae)
           log_info(("(logImplies each) object")) {SXP::Generator.string object.to_sxp_bin}
 
-          object.solutions = RDF::Query::Solutions(solution)
-
           # Yield inferred statements
           #require 'byebug'; byebug if solution[:y]
-          object.each do |statement|
+          object.each(solutions: RDF::Query::Solutions(solution)) do |statement|
             log_debug(("(logImplies each) infer\s")) {statement.to_sxp}
             block.call(RDF::Statement.from(statement.to_quad, inferred: true))
           end

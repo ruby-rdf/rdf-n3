@@ -48,13 +48,15 @@ module RDF::N3::Algebra
 
     ##
     # By default, operators yield themselves and the operands, recursively.
-    def each(&block)
+    #
+    #  Pass in solutions to have quantifiers resolved to those solutions.
+    def each(solutions: RDF::Query::Solutions(), &block)
       log_depth do
         subject, object = operands.map {|op| op.formula? ? op.graph_name : op}
         block.call(RDF::Statement(subject, self.to_uri, object))
         operands.each do |op|
           next unless op.is_a?(Builtin)
-          op.each do |st|
+          op.each(solutions: solutions) do |st|
             # Maintain formula graph name for formula operands
             st.graph_name ||= op.graph_name if op.formula?
             block.call(st)

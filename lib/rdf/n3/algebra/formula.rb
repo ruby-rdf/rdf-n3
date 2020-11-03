@@ -143,7 +143,7 @@ module RDF::N3::Algebra
       end
 
       # Reject solutions which include variables as values
-      @solutions = solutions.dup.filter {|s| s.enum_value.none?(&:variable?)}
+      solutions.filter! {|s| s.enum_value.none?(&:variable?)}
 
       # Use our solutions for sub-ops
       # Join solutions from other operands
@@ -153,31 +153,31 @@ module RDF::N3::Algebra
       # * Re-calculate inputs with bound inputs after each built-in is run.
       log_depth do
         # Iterate over sub_ops using evaluation heuristic
-        ops = sub_ops.sort_by {|op| op.rank(@solutions)}
+        ops = sub_ops.sort_by {|op| op.rank(solutions)}
         while !ops.empty?
           last_op = nil
           ops.each do |op|
             log_debug("(formula built-in)") {SXP::Generator.string op.to_sxp_bin}
-            solutions = op.execute(queryable, solutions: @solutions)
+            these_solutions = op.execute(queryable, solutions: solutions)
             # If there are no solutions, try the next one, until we either run out of operations, or we have solutions
-            next if solutions.empty?
+            next if these_solutions.empty?
             last_op = op
-            @solutions = RDF::Query::Solutions(solutions)
+            solutions = RDF::Query::Solutions(these_solutions)
             break
           end
 
           # If there is no last_op, there are no solutions.
           unless last_op
-            @solutions = RDF::Query::Solutions.new
+            solutions = RDF::Query::Solutions.new
             break
           end
 
           # Remove op from list, and re-order remaining ops.
-          ops = (ops - [last_op]).sort_by {|op| op.rank(@solutions)}
+          ops = (ops - [last_op]).sort_by {|op| op.rank(solutions)}
         end
       end
-      log_info("(formula sub-op solutions)") {SXP::Generator.string @solutions.to_sxp_bin}
-      @solutions
+      log_info("(formula sub-op solutions)") {SXP::Generator.string solutions.to_sxp_bin}
+      solutions
     end
 
     ##
@@ -194,9 +194,6 @@ module RDF::N3::Algebra
       this = dup
       # Maintain formula relationships
       formulae {|k, v| this.formulae[k] ||= v}
-
-      # Bind solutions to formula
-      this.solutions = RDF::Query::Solutions(bindings)
 
       # Replace operands with bound operands
       this.operands = operands.map do |op|
@@ -228,13 +225,11 @@ module RDF::N3::Algebra
     #   each matching statement
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
-    def each(&block)
-      # If there are no solutions, create a single solution
-      @solutions ||= RDF::Query::Solutions(RDF::Query::Solution.new)
-      log_debug("formula #{graph_name} each") {SXP::Generator.string @solutions.to_sxp_bin}
+    def each(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
+      log_debug("formula #{graph_name} each") {SXP::Generator.string solutions.to_sxp_bin}
 
       # Yield patterns by binding variables
-      @solutions.each do |solution|
+      solutions.each do |solution|
         # Bind blank nodes to the solution when it doesn't contain a solution for an existential variable
         existential_vars.each do |var|
           solution[var.name] ||= RDF::Node.intern(var.name.to_s.sub(/^\$+/, ''))
@@ -252,9 +247,8 @@ module RDF::N3::Algebra
                   form = solution[o]
                   # uses the graph_name of the formula, and yields statements from the formula
                   log_depth do
-                    form.solutions = RDF::Query::Solutions(solution)
                     log_debug("(formula from var form)") {form.graph_name.to_sxp}
-                    form.each do |stmt|
+                    form.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
                       stmt.graph_name ||= form.graph_name
                       log_debug("(formula add from var form)") {stmt.to_sxp}
                       block.call(stmt)
@@ -269,8 +263,7 @@ module RDF::N3::Algebra
               when RDF::N3::Algebra::Formula
                 # uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
                 log_debug("(formula from form)") {o.graph_name.to_sxp}
-                o.solutions = RDF::Query::Solutions(solution)
-                o.each do |stmt|
+                o.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
                   stmt.graph_name ||= o.graph_name
                   log_debug("(formula add from form)") {stmt.to_sxp}
                   block.call(stmt)
@@ -293,18 +286,12 @@ module RDF::N3::Algebra
       log_depth do
         sub_ops.each do |op|
           log_debug("(formula sub_op)") {SXP::Generator.string op.to_sxp_bin}
-          op.each do |stmt|
+          op.each(solutions: solutions) do |stmt|
             log_debug("(formula add from sub_op)") {stmt.to_sxp}
             block.call(stmt)
           end
         end
       end
-    end
-
-    # Set solutions
-    # @param [RDF::Query::Solutions] solutions
-    def solutions=(solutions)
-      @solutions = solutions
     end
 
     # Graph name associated with this formula

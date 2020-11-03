@@ -53,7 +53,7 @@ module RDF::N3::Algebra::Log
     #   each matching statement
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
-    def each(&block)
+    def each(solutions:, &block)
       super do |stmt|
         block.call(RDF::Statement.from(stmt.to_quad))
       end

@@ -21,8 +21,7 @@ module RDF::N3::Algebra::Log
     #   optional initial solutions for chained queries
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
-      super
-      @solutions = solutions.empty? ? RDF::Query::Solutions(RDF::Query::Solution.new) : RDF::Query::Solutions.new
+      super.empty? ? RDF::Query::Solutions(RDF::Query::Solution.new) : RDF::Query::Solutions.new
     end
   end
 end

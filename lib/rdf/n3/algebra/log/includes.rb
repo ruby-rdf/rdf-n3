@@ -27,7 +27,7 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
       @queryable = queryable
-      @solutions = RDF::Query::Solutions(solutions.map do |solution|
+      RDF::Query::Solutions(solutions.map do |solution|
         subject = operand(0).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae)
         log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
