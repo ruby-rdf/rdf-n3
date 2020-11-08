@@ -1,9 +1,47 @@
-# Refinements on core RDF class behavior
-# @see ::RDF::Statement#valid?
-# @see ::RDF::Statement#invalid?
-# @see ::RDF::Statement#validate!
-# @see ::RDF::Query::Pattern#valid?
+# Refinements on core RDF class behavior for RDF::N3.
 module RDF::N3::Refinements
+  # @!parse
+  #   # Refinements on RDF::Term
+  #   module RDF::Term
+  #   ##
+  #   # As a term is constant, this returns itself.
+  #   #
+  #   # @param  [Hash{Symbol => RDF::Term}] bindings
+  #   #   a query solution containing zero or more variable bindings
+  #   # @param [Hash{Symbol => Object}] options ({})
+  #   #   options passed from query
+  #   # @return [RDF::Term]
+  #   # @see SPARQL::Algebra::Expression.evaluate
+  #   def evaluate(bindings, formulae: nil, **options); end
+  #   end
+  refine ::RDF::Term do
+    def evaluate(bindings, formulae:, **options)
+      self
+    end
+  end
+
+  # @!parse
+  #   # Refinements on RDF::Node
+  #   module RDF::Term
+  #     ##
+  #     # Blank node may refer to a formula.
+  #     #
+  #     # @param  [Hash{Symbol => RDF::Term}] bindings
+  #     #   a query solution containing zero or more variable bindings
+  #     # @param [Hash{Symbol => Object}] options ({})
+  #     #   options passed from query
+  #     # @return [RDF::Node, RDF::N3::Algebra::Formula]
+  #     # @see SPARQL::Algebra::Expression.evaluate
+  #     def evaluate(bindings, formulae:, **options); end
+  #   end
+  refine ::RDF::Node do
+    ##
+    # @return [RDF::Node, RDF::N3::Algebra::Formula]
+    def evaluate(bindings, formulae:, **options)
+      node? ? formulae.fetch(self, self) : self
+    end
+  end
+
   # @!parse
   #   # Refinements on RDF::Statement
   #   class ::RDF::Statement
@@ -19,6 +57,17 @@ module RDF::N3::Refinements
   #     # @return [RDF::Value] `self`
   #     # @raise  [ArgumentError] if the value is invalid
   #     def validate!; end
+  #
+  #     ##
+  #     # As a statement is constant, this returns itself.
+  #     #
+  #     # @param  [Hash{Symbol => RDF::Term}] bindings
+  #     #   a query solution containing zero or more variable bindings
+  #     # @param [Hash{Symbol => Object}] options ({})
+  #     #   options passed from query
+  #     # @return [RDF::Statement]
+  #     # @see SPARQL::Algebra::Expression.evaluate
+  #     def evaluate(bindings, formulae:, **options); end
   #   end
   refine ::RDF::Statement do
     ##
@@ -47,6 +96,12 @@ module RDF::N3::Refinements
       self
     end
     alias_method :validate, :validate!
+
+    ##
+    # @return [RDF::Statement]
+    def evaluate(bindings, formulae:, **options)
+      self
+    end
   end
 
   # @!parse
@@ -55,6 +110,17 @@ module RDF::N3::Refinements
   #     # Refines `#valid?` to allow literal subjects and BNode predicates.
   #     # @return [Boolean]
   #     def valid?; end
+  #
+  #     ##
+  #     # Evaluates the pattern using the given variable `bindings` by cloning the pattern replacing variables with their bindings recursively. If the resulting pattern is constant, it is cast as a statement.
+  #     #
+  #     # @param  [Hash{Symbol => RDF::Term}] bindings
+  #     #   a query solution containing zero or more variable bindings
+  #     # @param [Hash{Symbol => Object}] options ({})
+  #     #   options passed from query
+  #     # @return [RDF::Statement, RDF::N3::Algebra::Formula]
+  #     # @see SPARQL::Algebra::Expression.evaluate
+  #     def evaluate(bindings, formulae:, **options); end
   #   end
   refine ::RDF::Query::Pattern do
     ##
@@ -68,6 +134,40 @@ module RDF::N3::Refinements
       (has_graph?     ? (graph_name.resource? || graph_name.variable?) && graph_name.valid? : true)
     rescue NoMethodError
       false
+    end
+
+    # @return [RDF::Statement, RDF::N3::Algebra::Formula]
+    def evaluate(bindings, formulae:, **options)
+      elements = self.to_quad.map do |term|
+        term.evaluate(bindings, formulae: formulae, **options)
+      end.compact.map do |term|
+        term.node? ? formulae.fetch(term, term) : term
+      end
+
+      self.class.from(elements)
+    end
+  end
+
+  # @!parse
+  #   # Refinements on RDF::Query::Variable
+  #   class RDF::Query::Variable
+  #     ##
+  #     # If variable is bound, replace with the bound value, otherwise, returns itself
+  #     #
+  #     # @param  [Hash{Symbol => RDF::Term}] bindings
+  #     #   a query solution containing zero or more variable bindings
+  #     # @param [Hash{Symbol => Object}] options ({})
+  #     #   options passed from query
+  #     # @return [RDF::Term]
+  #     # @see SPARQL::Algebra::Expression.evaluate
+  #     def evaluate(bindings, formulae:, **options); end
+  #   end
+  refine ::RDF::Query::Variable do
+    ##
+    # @return [RDF::Term]
+    def evaluate(bindings, formulae:, **options)
+      value = bindings.has_key?(name) ? bindings[name] : self
+      value.node? ? formulae.fetch(value, value) : value
     end
   end
 
