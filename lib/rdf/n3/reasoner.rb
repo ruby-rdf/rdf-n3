@@ -129,6 +129,9 @@ module RDF::N3
         log_debug("reasoner: solutions") {SXP::Generator.string solutions.to_sxp_bin}
         log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
         log_info("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+        log_info("reasoner: formula") do
+          SXP::Generator.string RDF::N3::Algebra::Formula.from_enumerable(knowledge_base).to_sxp_bin
+        end
         @formula = nil # cause formula to be re-calculated from knowledge-base
         unless options[:think]
           count = knowledge_base.count
@@ -136,9 +139,6 @@ module RDF::N3
         end
       end
       log_info("reasoner: end") { "count: #{count}"}
-      log_info("reasoner: formula") do
-        SXP::Generator.string RDF::N3::Algebra::Formula.from_enumerable(knowledge_base).to_sxp_bin
-      end
 
       # Add updates back to mutable, containg builtins and variables.
       @mutable << knowledge_base

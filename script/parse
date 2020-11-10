@@ -40,6 +40,7 @@ def run(input, **options)
       else
         options[:output].puts repo.dump(options[:output_format],
                                         prefixes: reader.prefixes,
+                                        base_uri: reader.base_uri,
                                         standard_prefixes: true,
                                         logger: options[:logger])
       end
@@ -76,9 +77,13 @@ def run(input, **options)
     num = repo.count
     if options[:output_format] == :n3
       # Extra debugging
-      options[:logger].debug SXP::Generator.string(repo.to_sxp_bin)
+      options[:logger].debug SXP::Generator.string(repo.to_sxp_bin).strip
     end
-    options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
+    options[:output].puts repo.dump(options[:output_format],
+                                    prefixes: reader.prefixes,
+                                    base_uri: reader.base_uri,
+                                    standard_prefixes: true,
+                                    logger: options[:logger])
   end
   if options[:profile]
     Profiler__::stop_profile

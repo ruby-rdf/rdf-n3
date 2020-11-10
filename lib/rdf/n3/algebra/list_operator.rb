@@ -26,24 +26,24 @@ module RDF::N3::Algebra
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
         object = formulae.fetch(object, object) if object.node?
 
-        log_info(self.class.const_get(:NAME)) {"subject: #{SXP::Generator.string(subject.to_sxp_bin).strip}"}
-        log_info(self.class.const_get(:NAME)) {"object: #{SXP::Generator.string(object.to_sxp_bin).strip}"}
+        log_info(self.class.const_get(:NAME), "subject") {SXP::Generator.string(subject.to_sxp_bin).strip}
+        log_info(self.class.const_get(:NAME), "object") {SXP::Generator.string(object.to_sxp_bin).strip}
         next unless validate(subject)
 
         lhs = resolve(subject)
         if lhs.nil?
-          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{subject.inspect}"}
+          log_error(self.class.const_get(:NAME), "subject evaluates to null") {subject.inspect}
           next
         end
 
         if object.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).strip}"}
+          log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(lhs.to_sxp_bin).strip}
           solution.merge(object.to_sym => lhs)
         elsif object != lhs
-          log_debug(self.class.const_get(:NAME)) {"result: false"}
+          log_debug(self.class.const_get(:NAME), "result: false")
           nil
         else
-          log_debug(self.class.const_get(:NAME)) {"result: true"}
+          log_debug(self.class.const_get(:NAME), "result: true")
           solution
         end
       end.compact.uniq)

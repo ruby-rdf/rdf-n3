@@ -20,7 +20,7 @@ module RDF::N3::Algebra::List
         next unless list
         list = RDF::N3::List.try_list(list, queryable).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae) || operand(1)
-        object = formulae.fetch(object, object).dup if object.node?
+        object = formulae[object].deep_dup if object.node? && formulae.has_key?(object)
 
         log_debug(NAME) {"list: #{list.to_sxp}, object: #{object.to_sxp}"}
         unless list.list? && list.valid?

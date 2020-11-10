@@ -96,13 +96,14 @@ module RDF::N3::Algebra
     # Duplicate this formula, recursively, renaming graph names using hash function.
     #
     # @return [RDF::N3::Algebra::Formula]
-    def dup
-      new_ops = operands.map(&:dup)
+    def deep_dup
+      #new_ops = operands.map(&:dup)
+      new_ops = operands.map do |op|
+        op.deep_dup
+      end
       graph_name = RDF::Node.intern(new_ops.hash)
       log_debug("formula") {"dup: #{self.graph_name} to #{graph_name}"}
-      that = self.class.new(*new_ops, **@options.merge(graph_name: graph_name, formulae: formulae))
-      that.formulae[graph_name] = that
-      that
+      self.class.new(*new_ops, **@options.merge(graph_name: graph_name, formulae: formulae))
     end
 
     ##
@@ -226,7 +227,7 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
-      log_debug("formula #{graph_name} each") {SXP::Generator.string solutions.to_sxp_bin}
+      log_info("(formula each)") {SXP::Generator.string([self, solutions].to_sxp_bin)}
 
       # Yield patterns by binding variables
       solutions.each do |solution|

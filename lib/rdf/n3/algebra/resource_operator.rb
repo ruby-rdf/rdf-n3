@@ -23,38 +23,38 @@ module RDF::N3::Algebra
         subject = formulae.fetch(subject, subject) if subject.node?
         object = formulae.fetch(object, object) if object.node?
 
-        log_info(self.class.const_get(:NAME)) {"subject: #{SXP::Generator.string(subject.to_sxp_bin).strip}"}
-        log_info(self.class.const_get(:NAME)) {"object: #{SXP::Generator.string(object.to_sxp_bin).strip}"}
+        log_info(self.class.const_get(:NAME), "subject") {SXP::Generator.string(subject.to_sxp_bin).strip}
+        log_info(self.class.const_get(:NAME), "object") {SXP::Generator.string(object.to_sxp_bin).strip}
         next unless valid?(subject, object)
 
         lhs = resolve(subject, position: :subject)
         if lhs.nil?
-          log_error(self.class.const_get(:NAME)) {"subject evaluates to null: #{subject.inspect}"}
+          log_error(self.class.const_get(:NAME), "subject evaluates to null") {subject.inspect}
           next
         end
 
         rhs = resolve(object, position: :object)
         if rhs.nil?
-          log_error(self.class.const_get(:NAME)) {"object evaluates to null: #{object.inspect}"}
+          log_error(self.class.const_get(:NAME), "object evaluates to null") {object.inspect}
           next
         end
 
         if object.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(lhs.to_sxp_bin).strip}"}
+          log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(lhs.to_sxp_bin).strip}
           solution.merge(object.to_sym => lhs)
         elsif subject.variable?
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(rhs.to_sxp_bin).strip}"}
+          log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(rhs.to_sxp_bin).strip}
           solution.merge(subject.to_sym => rhs)
         elsif respond_to?(:apply)
           res = apply(lhs, rhs)
-          log_debug(self.class.const_get(:NAME)) {"result: #{SXP::Generator.string(res.to_sxp_bin).strip}"}
+          log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(res.to_sxp_bin).strip}
           # Return the result applying subject and object
           solution if res == RDF::Literal::TRUE
         elsif rhs != lhs
-          log_debug(self.class.const_get(:NAME)) {"result: false"}
+          log_debug(self.class.const_get(:NAME), "result: false")
           nil
         else
-          log_debug(self.class.const_get(:NAME)) {"result: true"}
+          log_debug(self.class.const_get(:NAME), "result: true")
           solution
         end
       end.compact.uniq)

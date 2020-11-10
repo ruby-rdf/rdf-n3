@@ -28,11 +28,11 @@ module RDF::N3::Algebra::Log
     def execute(queryable, solutions:, **options)
       @queryable = queryable
       @solutions = RDF::Query::Solutions(solutions.map do |solution|
-        log_debug(NAME) {"solution: #{SXP::Generator.string solution.to_sxp_bin}"}
+        log_debug(NAME, "solution") {SXP::Generator.string(solution.to_sxp_bin)}
         subject = operand(0).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae)
-        log_info(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
-        log_info(NAME) {"object: #{SXP::Generator.string object.to_sxp_bin}"}
+        log_info(NAME,  "subject") {SXP::Generator.string(subject.to_sxp_bin)}
+        log_info(NAME, "object") {SXP::Generator.string(object.to_sxp_bin)}
 
         # Nothing to do if variables aren't resolved.
         next unless subject && object
@@ -51,10 +51,18 @@ module RDF::N3::Algebra::Log
         end
         solns
       end.flatten.compact)
-      log_info(NAME) {"solutions: #{SXP::Generator.string @solutions.to_sxp_bin}"}
+      log_info(NAME) {SXP::Generator.string(@solutions.to_sxp_bin)}
 
       # Return original solutions, without bindings
       solutions
+    end
+
+    ##
+    # Clear out any cached solutions.
+    # This principaly is for log:conclusions
+    def clear_solutions
+      super
+      @solutions = nil
     end
 
     ##
@@ -68,18 +76,20 @@ module RDF::N3::Algebra::Log
       # Merge solutions in with those for the evaluation of this implication
       solutions = Array(@solutions)
       log_depth do
-        super
+        #operand(0).clear_solutions
+        super(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
 
         solutions.each do |solution|
-          log_debug("(logImplies each) solution") {SXP::Generator.string solution.to_sxp_bin}
+          log_info("(logImplies each) solution") {SXP::Generator.string solution.to_sxp_bin}
           object = operand(1).evaluate(solution.bindings, formulae: formulae)
-          log_info(("(logImplies each) object")) {SXP::Generator.string object.to_sxp_bin}
+          log_info("(logImplies each) object") {SXP::Generator.string object.to_sxp_bin}
 
           # Yield inferred statements
-          #require 'byebug'; byebug if solution[:y]
-          object.each(solutions: RDF::Query::Solutions(solution)) do |statement|
-            log_debug(("(logImplies each) infer\s")) {statement.to_sxp}
-            block.call(RDF::Statement.from(statement.to_quad, inferred: true))
+          log_depth do
+            object.each(solutions: RDF::Query::Solutions(solution)) do |statement|
+              log_debug(("(logImplies each) infer\s")) {statement.to_sxp}
+              block.call(RDF::Statement.from(statement.to_quad, inferred: true))
+            end
           end
         end
       end
