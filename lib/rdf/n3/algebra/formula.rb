@@ -245,17 +245,8 @@ module RDF::N3::Algebra
               terms[part] = case o = pattern.send(part)
               when RDF::Query::Variable
                 if solution[o] && solution[o].formula?
-                  form = solution[o]
-                  # uses the graph_name of the formula, and yields statements from the formula
-                  log_depth do
-                    log_debug("(formula from var form)") {form.graph_name.to_sxp}
-                    form.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
-                      stmt.graph_name ||= form.graph_name
-                      log_debug("(formula add from var form)") {stmt.to_sxp}
-                      block.call(stmt)
-                    end
-                  end
-                  form.graph_name
+                  log_info("(formula from var form)") {solution[o].graph_name.to_sxp}
+                  form_statements(solution[o], solution: solution, &block)
                 else
                   solution[o] || o
                 end
@@ -263,13 +254,8 @@ module RDF::N3::Algebra
                 o.variable? ? o.evaluate(solution.bindings, formulae: formulae) : o
               when RDF::N3::Algebra::Formula
                 # uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
-                log_debug("(formula from form)") {o.graph_name.to_sxp}
-                o.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
-                  stmt.graph_name ||= o.graph_name
-                  log_debug("(formula add from form)") {stmt.to_sxp}
-                  block.call(stmt)
-                end
-                o.graph_name
+                log_info("(formula from form)") {o.graph_name.to_sxp}
+                form_statements(o, solution: solution, &block)
               else
                 o
               end
@@ -280,16 +266,19 @@ module RDF::N3::Algebra
 
             block.call(statement)
           end
-        end
-      end
 
-      # statements from sub-operands
-      log_depth do
-        sub_ops.each do |op|
-          log_debug("(formula sub_op)") {SXP::Generator.string op.to_sxp_bin}
-          op.each(solutions: solutions) do |stmt|
-            log_debug("(formula add from sub_op)") {stmt.to_sxp}
-            block.call(stmt)
+          # statements from sub-operands
+          sub_ops.each do |op|
+            log_info("(formula sub_op)") {SXP::Generator.string [op, solution].to_sxp_bin}
+            op.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
+              log_debug("(formula add from sub_op)") {stmt.to_sxp}
+              block.call(stmt)
+              # Add statements for any term which is a formula
+              stmt.to_a.select(&:node?).map {|n| formulae[n]}.compact.each do |ef|
+                log_info("(formula from form)") {ef.graph_name.to_sxp}
+                form_statements(ef, solution: solution, &block)              
+              end
+            end
           end
         end
       end
@@ -395,6 +384,30 @@ module RDF::N3::Algebra
 
     def inspect
       sprintf("#<%s:%s(%d)>", self.class.name, self.graph_name, self.operands.count)
+    end
+
+  private
+    # Get statements from a sub-form
+    # @return [RDF::Resource] graph name of form
+    def form_statements(form, solution:, &block)
+      # uses the graph_name of the formula, and yields statements from the formula
+      log_depth do
+        form.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
+          stmt.graph_name ||= form.graph_name
+          log_debug("(form statements add)") {stmt.to_sxp}
+          block.call(stmt)
+          ## Recurse over embedded formulae
+          #stmt.to_a.select(&:node?).map {|n| formulae[n]}.compact.each do |ef|
+          #  log_debug("(formula from var form embedded)") {ef.graph_name.to_sxp}
+          #  ef.each(solutions: RDF::Query::Solutions(solution)) do |es|
+          #    es.graph_name ||= ef.graph_name
+          #    log_debug("(formula add from var form embedded)") {es.to_sxp}
+          #  end
+          #end
+        end
+      end
+
+      form.graph_name
     end
   end
 end
