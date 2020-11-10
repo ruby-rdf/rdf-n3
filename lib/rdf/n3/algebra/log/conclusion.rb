@@ -24,7 +24,11 @@ module RDF::N3::Algebra::Log
         reasoner.execute(think: true, logger: false) {|stmt| conclusions << stmt}
 
         # The result is a formula containing the conclusions
-        RDF::N3::Algebra::Formula.from_enumerable(conclusions).dup
+        form = RDF::N3::Algebra::Formula.from_enumerable(conclusions, **@options).deep_dup
+        form.clear_solutions
+
+        log_info("#{NAME} resolved") {SXP::Generator.string form.to_sxp_bin} 
+        form
       end
     end
 

@@ -66,6 +66,13 @@ module RDF::N3::Algebra
     end
 
     ##
+    # Clear out any cached solutions.
+    # This principaly is for log:conclusions
+    def clear_solutions
+      operands.each(&:clear_solutions)
+    end
+
+    ##
     # The builtin hash is the hash of it's operands and NAME.
     #
     # @see RDF::Value#hash

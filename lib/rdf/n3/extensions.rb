@@ -36,6 +36,13 @@ module RDF
     def to_sxp
       to_a.to_sxp_bin.to_sxp
     end
+
+    ##
+    # Clear out any cached solutions.
+    # This principaly is for log:conclusions
+    def clear_solutions
+      to_a.each(&:clear_solutions)
+    end
   end
 
   class Statement
@@ -58,6 +65,13 @@ module RDF
     def to_sxp
       to_sxp_bin.to_sxp
     end
+
+    ##
+    # Clear out any cached solutions.
+    # This principaly is for log:conclusions
+    def clear_solutions
+      to_a.each(&:clear_solutions)
+    end
   end
 
   module Value
@@ -75,6 +89,12 @@ module RDF
     # return [RDF::Query::Variable]
     def to_ndvar(scope)
       self
+    end
+
+    ##
+    # Clear out any cached solutions.
+    # Overriden by sub-classes.
+    def clear_solutions
     end
   end
 
@@ -251,8 +271,13 @@ module RDF
         RDF::Literal(0)
       end
 
+      def to_sxp_bin
+        prefix = distinguished? ? (existential? ? '$' : '?') : (existential? ? '$$' : '??')
+        unbound? ? "#{prefix}#{name}" : ["#{prefix}#{name}", value].to_sxp_bin
+      end
+
       def to_sxp
-        to_s
+        to_sxp_bin.to_sxp
       end
     end
   end
