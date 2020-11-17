@@ -120,7 +120,7 @@ module RDF::N3::Algebra
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)
       log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
-      log_debug("(formula bindings)") { solutions.bindings.map {|k,v| RDF::Query::Variable.new(k,v)}.to_sxp}
+      log_debug("(formula bindings)") { SXP::Generator.string solutions.to_sxp_bin}
 
       # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!

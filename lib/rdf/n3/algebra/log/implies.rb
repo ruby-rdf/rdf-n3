@@ -50,7 +50,7 @@ module RDF::N3::Algebra::Log
           vars.all? {|v| soln.bound?(v)}
         end
         solns
-      end.flatten.compact)
+      end.flatten.compact.uniq)
       log_info(NAME) {SXP::Generator.string(@solutions.to_sxp_bin)}
 
       # Return original solutions, without bindings
@@ -74,9 +74,9 @@ module RDF::N3::Algebra::Log
     # @yieldreturn [void] ignored
     def each(solutions: RDF::Query::Solutions(), &block)
       # Merge solutions in with those for the evaluation of this implication
-      solutions = Array(@solutions)
+      # Clear out solutions so they don't get remembered erroneously.
+      solutions, @solutions = Array(@solutions), nil
       log_depth do
-        #operand(0).clear_solutions
         super(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
 
         solutions.each do |solution|

@@ -41,8 +41,7 @@ describe "RDF::N3::Reasoner" do
               <test> a <SUCCESS> .
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
-          ),
-          pending: "inferred triples in conclusion premis"
+          )
         },
         "conclusion-simple" => {
           input: %(
@@ -66,8 +65,7 @@ describe "RDF::N3::Reasoner" do
               <test> a <SUCCESS> .
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
-          ),
-          pending: "inferred triples in conclusion premis"
+          )
         },
       }.each do |name, options|
         it name do

@@ -36,13 +36,6 @@ module RDF
     def to_sxp
       to_a.to_sxp_bin.to_sxp
     end
-
-    ##
-    # Clear out any cached solutions.
-    # This principaly is for log:conclusions
-    def clear_solutions
-      to_a.each(&:clear_solutions)
-    end
   end
 
   class Statement
@@ -65,13 +58,6 @@ module RDF
     def to_sxp
       to_sxp_bin.to_sxp
     end
-
-    ##
-    # Clear out any cached solutions.
-    # This principaly is for log:conclusions
-    def clear_solutions
-      to_a.each(&:clear_solutions)
-    end
   end
 
   module Value
@@ -89,12 +75,6 @@ module RDF
     # return [RDF::Query::Variable]
     def to_ndvar(scope)
       self
-    end
-
-    ##
-    # Clear out any cached solutions.
-    # Overriden by sub-classes.
-    def clear_solutions
     end
   end
 
