@@ -115,7 +115,7 @@ def run_tc(man, tc, **options)
 
       begin
         reasoner.execute(logger: logger, think: !!tc.options['think'])
-        if tc.options["filter"]
+        if tc.options["conclusions"]
           repo << reasoner.conclusions
         elsif tc.options["data"]
           repo << reasoner.data

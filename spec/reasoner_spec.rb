@@ -70,7 +70,7 @@ describe "RDF::N3::Reasoner" do
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
-          options = {data: false, filter: false}.merge(options)
+          options = {data: false, conclusions: false}.merge(options)
           pending(options[:pending]) if options[:pending]
           expected = parse(options[:expect])
           result = reason(options[:input], **options)
@@ -96,7 +96,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {data: false, filter: true}.merge(options)
+          options = {data: false, conclusions: true}.merge(options)
           expected = parse(options[:expect])
           result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -292,7 +292,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {data: false, filter: true}.merge(options)
+          options = {data: false, conclusions: true}.merge(options)
           expected = parse(options[:expect])
           result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -384,7 +384,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -444,7 +444,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -486,7 +486,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -509,7 +509,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           if options[:exception]
             expect {reason(options[:input], **options)}.to raise_error options[:exception]
           else
@@ -542,7 +542,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -577,7 +577,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -606,7 +606,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -633,7 +633,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -670,7 +670,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -707,7 +707,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -746,7 +746,7 @@ describe "RDF::N3::Reasoner" do
               end
               logger.info "input: #{input}"
               expected = parse(expect)
-              expect(reason(input, filter: true)).to be_equivalent_graph(expected, logger: logger)
+              expect(reason(input, conclusions: true)).to be_equivalent_graph(expected, logger: logger)
             end
           end
         end
@@ -863,12 +863,12 @@ describe "RDF::N3::Reasoner" do
                 "0",
                 3.1415926 .
           ),
-          filter: false, data: true
+          conclusions: false, data: true
         },
       }.each do |name, options|
         it name do
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           logger.info "input: #{options[:input]}"
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
@@ -907,7 +907,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -928,7 +928,7 @@ describe "RDF::N3::Reasoner" do
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {filter: true}.merge(options)
+          options = {conclusions: true}.merge(options)
           expected = parse(options[:expect])
           expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
         end
@@ -946,13 +946,13 @@ describe "RDF::N3::Reasoner" do
   end
 
   # Reason over input, returning a repo
-  def reason(input, base_uri: 'http://example.com/', filter: false, data: true, think: true, **options)
+  def reason(input, base_uri: 'http://example.com/', conclusions: false, data: true, think: true, **options)
     input = parse(input, list_terms: true, **options) if input.is_a?(String)
     reasoner = RDF::N3::Reasoner.new(input, base_uri:  base_uri, logger: logger)
     repo = RDF::N3:: Repository.new
 
     reasoner.execute(think: think)
-    if filter
+    if conclusions
       repo << reasoner.conclusions
     elsif data
       repo << reasoner.data

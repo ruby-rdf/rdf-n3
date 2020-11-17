@@ -53,7 +53,7 @@ describe RDF::N3::Reader do
             if t.positive_test?
               begin
                 reasoner.execute(logger: t.logger, think: !!t.options['think'])
-                if t.options["filter"]
+                if t.options["conclusions"]
                   repo << reasoner.conclusions
                 elsif t.options["data"]
                   repo << reasoner.data
