@@ -69,6 +69,7 @@ module RDF::N3
     # 29t
     BASE                 = /@?base/ui.freeze
     QUICK_VAR_NAME       = /\?#{PN_LOCAL}/.freeze
+    QUANTIFIED_VAR_NAME  = /\$#{PN_LOCAL}/.freeze
 
     # 161s
     WS                   = /(?:\s|(?:#[^\n\r]*))+/um.freeze

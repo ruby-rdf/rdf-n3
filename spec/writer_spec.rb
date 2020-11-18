@@ -615,18 +615,32 @@ describe RDF::N3::Writer do
 
   describe "variables" do
     {
-      "@forAll": {
+      "@forAll (URI)": {
         input: %(@forAll :o. :s :p :o .),
         regexp: [
           %r(@forAll :o \.),
           %r(:s :p :o \.),
         ]
       },
-      "@forSome": {
+      "@forAll (var)": {
+        input: %(@forAll $o. :s :p $o .),
+        regexp: [
+          %r(@forAll \$o \.),
+          %r(:s :p \$o \.),
+        ]
+      },
+      "@forSome (URI)": {
         input: %(@forSome :o. :s :p :o .),
         regexp: [
           %r(@forSome :o \.),
           %r(:s :p :o \.),
+        ]
+      },
+      "@forSome (var)": {
+        input: %(@forSome $o. :s :p $o .),
+        regexp: [
+          %r(@forSome \$o \.),
+          %r(:s :p \$o \.),
         ]
       },
       "?o": {

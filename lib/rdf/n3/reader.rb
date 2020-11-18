@@ -192,6 +192,7 @@ module RDF::N3
     terminal(:BASE,                             BASE)
     terminal(:LANGTAG,                          LANGTAG)
     terminal(:QUICK_VAR_NAME,                   QUICK_VAR_NAME,                  unescape:  true)
+    terminal(:QUANTIFIED_VAR_NAME,              QUANTIFIED_VAR_NAME,             unescape:  true)
 
   private
     ##
@@ -419,6 +420,7 @@ module RDF::N3
           pathtail[:pathitem] = prod(:pathItem) do
             read_iri ||
             read_blankNode ||
+            read_quantifiedVar ||
             read_quickVar ||
             read_collection ||
             read_blankNodePropertyList ||
@@ -639,16 +641,34 @@ module RDF::N3
     end
 
     ##
+    # Read a quantifiedVar.
+    #
+    #     [30] quantifiedVar ::= QUANTIFIED_VAR_NAME
+    #
+    # @param [Boolean] existential. Set if called for either `@forSome` or `@forAll`. Otherwise, it will have been cached.
+    # @return [RDF::Query::Variable]
+    def read_quantifiedVar(existential: false)
+      if @lexer.first.type == :QUANTIFIED_VAR_NAME
+        prod(:quantifiedVar) do
+          token = @lexer.shift
+          value = token.value[1..-1]
+          iri = ns(nil, "#{value}_quant")
+          variables[formulae.last][iri] ||= univar(iri, scope: formulae.last, existential: existential)
+        end
+      end
+    end
+
+    ##
     # Read a quickVar, having global scope.
     #
-    #     [30] quickVar ::= QUICK_VAR_NAME
+    #     [31] quickVar ::= QUICK_VAR_NAME
     #
     # @return [RDF::Query::Variable]
     def read_quickVar
       if @lexer.first.type == :QUICK_VAR_NAME
         prod(:quickVar) do
           token = @lexer.shift
-          value = token.value.sub('?', '')
+          value = token.value[1..-1]
           iri = ns(nil, "#{value}_quick")
           variables[nil][iri] ||= univar(iri, scope: nil)
         end
@@ -658,19 +678,20 @@ module RDF::N3
     ##
     # Read a list of IRIs
     #
-    #     [27] iriList ::= iri ( ',' iri )*
+    #     [27] varList ::= (iri | quantifiedVar) ( ',' (iri | quantifiedVar) )*
     #
+    # @param [Boolean] existential. Set if called for either `@forSome` or `@forAll`. Otherwise, it will have been cached.
     # @return [Array<RDF::URI>] the list of IRIs
-    def read_irilist
-      iris = []
-      prod(:iriList, %{,}) do
-        while iri = read_iri
-          iris << iri
+    def read_varList(existential: false)
+      vars = []
+      prod(:varlist, %{,}) do
+        while var = read_quantifiedVar(existential: existential) || read_iri
+          vars << var
           break unless @lexer.first === ','
           @lexer.shift while @lexer.first === ','
         end
       end
-      iris
+      vars
     end
 
     ##
@@ -690,12 +711,16 @@ module RDF::N3
     def read_uniext
       if %w(@forSome @forAll).include?(@lexer.first.value)
         token = @lexer.shift
-        prod(token === '@forAll' ? :universal : :existential) do
-          iri_list = read_irilist 
-          iri_list.each do |iri|
+        uniext = token === '@forAll' ? :universal : :existential
+        prod(uniext) do
+          var_list = read_varList(existential: uniext == :existential)
+          var_list.each do |label|
+            log_warn(
+              "[DEPRECATION] The use of IRIs as quantified variables is deprecated; use the '$var' form instead."
+            ) if label.iri?
             # Note, this might re-create an equivalent variable already defined in this formula, and replaces an equivalent variable that may have been defined in the parent formula.
-            var = univar(iri, scope: formulae.last, existential: token === '@forSome')
-            add_var_to_formula(formulae.last, iri, var)
+            var = univar(label, scope: formulae.last, existential: uniext == :existential)
+            add_var_to_formula(formulae.last, label, var)
           end
         end
       end
@@ -772,8 +797,8 @@ module RDF::N3
 
     # If not in ground formula, note scope, and if existential
     def univar(label, scope:, existential: false)
-      value = existential ? "#{label}_ext" : label
-      value = "#{value}#{scope.id}" if scope
+      return label if label.is_a?(RDF::Query::Variable)
+      value = scope ? "#{label}#{scope.id}" : label
       RDF::Query::Variable.new(value, existential: existential)
     end
 

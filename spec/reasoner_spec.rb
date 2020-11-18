@@ -108,9 +108,9 @@ describe "RDF::N3::Reasoner" do
       {
         "r1" => {
           input: %(
-            @forAll :a, :b.
+            @forAll $a, $b.
             ( "one"  "two" ) a :whatever.
-            { (:a :b) a :whatever } log:implies { :a a :SUCCESS. :b a :SUCCESS }.
+            { ($a $b) a :whatever } log:implies { $a a :SUCCESS. $b a :SUCCESS }.
           ),
           expect: %(
             ( "one"  "two" ) a :whatever.
@@ -213,7 +213,7 @@ describe "RDF::N3::Reasoner" do
         },
         #"quantifiers-limited-a2" => {
         #  input: %(
-        #    {{ :foo :bar :baz } log:includes { @forSome :foo. :foo :bar :baz }}
+        #    {{ :foo :bar :baz } log:includes { @forSome $foo. $foo :bar :baz }}
         #    => { :testa2 a :success } .
         #  ),
         #  expect: %(
@@ -223,7 +223,7 @@ describe "RDF::N3::Reasoner" do
         #},
         #"quantifiers-limited-b2" => {
         #  input: %(
-        #    {{ @forSome :foo. :foo :bar :baz } log:includes {@forSome :foo. :foo :bar :baz }}
+        #    {{ @forSome $foo. $foo :bar :baz } log:includes {@forSome $foo. $foo :bar :baz }}
         #    => { :testb2 a :success } .
         #  ),
         #  expect: %(
@@ -264,7 +264,7 @@ describe "RDF::N3::Reasoner" do
             @prefix log: <http://www.w3.org/2000/10/swap/log#>.
             @prefix : <#>.
 
-            @forAll :F.
+            @forAll $F.
 
             {"""     @prefix : <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#> .
                  @prefix crypto: <http://www.w3.org/2000/10/swap/crypto#> .
@@ -275,7 +275,7 @@ describe "RDF::N3::Reasoner" do
                 :foo     :credential <access-tina-cert.n3>;
                      :forDocument <http://www.w3.org/Member>;
                      :junk "32746213462187364732164732164321" .
-            """ log:parsedAsN3 :F} log:implies { :F a :result }.
+            """ log:parsedAsN3 $F} log:implies { $F a :result }.
           ),
           expect: %(
             @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .

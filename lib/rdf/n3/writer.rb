@@ -335,13 +335,25 @@ module RDF::N3
       # Universals and extentials at top-level
       unless @universals.empty?
         log_debug("start_document: universals") { @universals.inspect}
-        terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
+        terms = @universals.map do |v|
+          if v.to_s.include?('_quant')
+            '$' + RDF::URI(v.name).fragment.sub(/_quant$/, '').sub(/_ext$/, '')
+          else
+            format_uri(RDF::URI(v.name.to_s.sub(/_ext$/, '')))
+          end
+        end
         @output.write("@forAll #{terms.join(', ')} .\n") 
       end
 
       unless @existentials.empty?
         log_debug("start_document: existentials") { @existentials.inspect}
-        terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s.sub(/_ext$/, '')))}
+        terms = @existentials.map do |v|
+          if v.to_s.include?('_quant')
+            '$' + RDF::URI(v.name).fragment.sub(/_quant$/, '').sub(/_ext$/, '')
+          else
+            format_uri(RDF::URI(v.name.to_s.sub(/_ext$/, '')))
+          end
+        end
         @output.write("@forSome #{terms.join(', ')} .\n") 
       end
     end
@@ -523,6 +535,8 @@ module RDF::N3
       l = if resource.is_a?(RDF::Query::Variable)
         if resource.to_s.end_with?('_quick')
           '?' + RDF::URI(resource.name).fragment.sub(/_quick$/, '')
+        elsif resource.to_s.include?('_quant')
+          '$' + RDF::URI(resource.name).fragment.sub(/_quant$/, '')
         else
           format_term(RDF::URI(resource.name.to_s.sub(/_ext$/, '')))
         end

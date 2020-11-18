@@ -490,8 +490,18 @@ describe "RDF::N3::Reader" do
     end
 
     context "patterns" do
-      it "substitutes variable for URI with @forAll" do
+      it "warns of deprecation on @forAll with URIs" do
         n3 = %(@forAll :x . :x :y :z .)
+        g = parse(n3, base_uri: "http://a/b")
+        statement = g.statements.first
+        expect(statement.subject).to be_variable
+        expect(statement.predicate.to_s).to eq "http://a/b#y"
+        expect(statement.object.to_s).to eq "http://a/b#z"
+        expect(logger.to_s).to include("[DEPRECATION]")
+      end
+
+      it "substitutes variable for variable with @forAll" do
+        n3 = %(@forAll $x . $x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
@@ -499,8 +509,8 @@ describe "RDF::N3::Reader" do
         expect(statement.object.to_s).to eq "http://a/b#z"
       end
 
-      it "substitutes variable for URIs with @forAll" do
-        n3 = %(@forAll :x, :y, :z . :x :y :z .)
+      it "substitutes variable for variables with @forAll" do
+        n3 = %(@forAll $x, $y, $z . $x $y $z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
@@ -522,8 +532,18 @@ describe "RDF::N3::Reader" do
         expect(statement.subject).not_to equal statement.object
       end
 
-      it "substitutes node for URI with @forSome" do
+      it "warns of deprecation on @forSome with URIs" do
         n3 = %(@forSome :x . :x :y :z .)
+        g = parse(n3, base_uri: "http://a/b")
+        statement = g.statements.first
+        expect(statement.subject).to be_variable
+        expect(statement.predicate.to_s).to eq "http://a/b#y"
+        expect(statement.object.to_s).to eq "http://a/b#z"
+        expect(logger.to_s).to include("[DEPRECATION]")
+      end
+
+      it "substitutes node for variable with @forSome" do
+        n3 = %(@forSome $x . $x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable, logger.to_s
@@ -531,8 +551,8 @@ describe "RDF::N3::Reader" do
         expect(statement.object.to_s).to eq "http://a/b#z"
       end
 
-      it "substitutes node for URIs with @forSome" do
-        n3 = %(@forSome :x, :y, :z . :x :y :z .)
+      it "substitutes node for variables with @forSome" do
+        n3 = %(@forSome $x, $y, $z . $x $y $z .)
         g = parse(n3, base_uri: "http://a/b")
         statement = g.statements.first
         expect(statement.subject).to be_variable
