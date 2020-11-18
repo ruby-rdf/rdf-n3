@@ -9,13 +9,19 @@ module RDF::N3::Algebra::Str
     URI = RDF::N3::Str.concatenation
 
     ##
-    # The string:concatenation operator takes a list of terms evaluating to strings and either binds the result of concatenating them to the output variable, removes a solution that does equal.
+    # The string:concatenation operator takes a list of terms cast to strings and either binds the result of concatenating them to the output variable, removes a solution that does equal the literal object.
+    #
+    # List entries are stringified using {SPARQL::Algebra::Expression.cast}.
     #
     # @param [RDF::N3::List] list
     # @return [RDF::Term]
     # @see RDF::N3::ListOperator#evaluate
     def resolve(list)
-      RDF::Literal(list.to_a.map(&:canonicalize).join(""))
+      RDF::Literal(
+        list.to_a.map do |o|
+          SPARQL::Algebra::Expression.cast(RDF::XSD.string, o)
+        end.join("")
+      )
     end
   end
 end

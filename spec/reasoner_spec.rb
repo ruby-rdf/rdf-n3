@@ -285,14 +285,14 @@ describe "RDF::N3::Reasoner" do
               <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#foo> <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#credential> <http://example.com/access-tina-cert.n3>;
                 <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#forDocument> <http://www.w3.org/Member>;
                 <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#junk> "32746213462187364732164732164321" .
-            } a <#result> .
+            } a <http://example.com/#result> .
           )
         }
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"
           pending(options[:pending]) if options[:pending]
-          options = {data: false, conclusions: true}.merge(options)
+          options = {data: false, conclusions: true, base_uri: 'http://example.com/'}.merge(options)
           expected = parse(options[:expect])
           result = reason(options[:input], **options)
           expect(result).to be_equivalent_graph(expected, logger: logger, format: :n3)
@@ -878,6 +878,80 @@ describe "RDF::N3::Reasoner" do
   end
 
   context "n3:string" do
+    context "string:concatenation" do
+      {
+        "string": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {("foo" "bar") string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "foobar" .)
+        },
+        "integer": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {(1 01) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "11" .)
+        },
+        "decimal": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {(0.0 1.0 2.5 -2.5) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "012.5-2.5" .)
+        },
+        "boolean": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+            {(
+              true
+              false
+              "0"^^xsd:boolean
+             ) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "truefalsefalse" .)
+        },
+        "float": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+            {(
+              "0E1"^^xsd:float
+              "1E0"^^xsd:float
+              "1.25"^^xsd:float 
+              "-7.875"^^xsd:float
+             ) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "011.25-7.875" .)
+        },
+        "double": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {(0E1 1E0 1.23E3) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "011230" .)
+        },
+        "IRI": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            {(:a " " :b) string:concatenation ?x} => {:test :is ?x}.
+          ),
+          expect: %(:test :is "http://example.org/a http://example.org/b" .),
+          base_uri: "http://example.org/"
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {conclusions: true}.merge(options)
+          expected = parse(options[:expect], base_uri: options[:base_uri])
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
     context "string:startsWith" do
       {
         "literal starts with literal" => {
@@ -946,9 +1020,9 @@ describe "RDF::N3::Reasoner" do
   end
 
   # Reason over input, returning a repo
-  def reason(input, base_uri: 'http://example.com/', conclusions: false, data: true, think: true, **options)
-    input = parse(input, list_terms: true, **options) if input.is_a?(String)
-    reasoner = RDF::N3::Reasoner.new(input, base_uri:  base_uri, logger: logger)
+  def reason(input, base_uri: nil, conclusions: false, data: true, think: true, **options)
+    input = parse(input, list_terms: true, base_uri: base_uri, **options) if input.is_a?(String)
+    reasoner = RDF::N3::Reasoner.new(input, logger: logger, base_uri: base_uri)
     repo = RDF::N3:: Repository.new
 
     reasoner.execute(think: think)

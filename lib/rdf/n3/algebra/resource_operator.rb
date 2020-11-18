@@ -97,7 +97,7 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Returns a literal for the numeric argument, with doubles canonicalized using a lower-case 'e'.
+    # Returns a literal for the numeric argument.
     def as_literal(object)
       case object
       when Float
