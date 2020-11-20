@@ -40,15 +40,15 @@ module RDF::N3::Algebra::Log
         solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
 
         # Execute object as well (typically used for log:outputString)
-        solns = solns.map do |soln|
+        solns.each do |soln|
           log_depth {object.execute(queryable, solutions: RDF::Query::Solutions(soln), **options)}
-        end.flatten.compact
+        end
 
         # filter solutions where not all variables in antecedant are bound.
         vars = subject.universal_vars
-        solns = solns.select do |soln|
+        solns = RDF::Query::Solutions(solns.to_a.select do |soln|
           vars.all? {|v| soln.bound?(v)}
-        end
+        end)
         solns
       end.flatten.compact.uniq)
       log_info(NAME) {SXP::Generator.string(@solutions.to_sxp_bin)}

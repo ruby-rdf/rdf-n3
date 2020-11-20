@@ -28,23 +28,23 @@ module RDF::N3::Algebra::Log
     def execute(queryable, solutions:, **options)
       @queryable = queryable
       RDF::Query::Solutions(solutions.map do |solution|
+        log_debug(NAME, "solution") {SXP::Generator.string(solution.to_sxp_bin)}
         subject = operand(0).evaluate(solution.bindings, formulae: formulae)
         object = operand(1).evaluate(solution.bindings, formulae: formulae)
-        log_debug(NAME) {"subject: #{SXP::Generator.string subject.to_sxp_bin}"}
-        log_debug(NAME) {"object: #{SXP::Generator.string operand(1).to_sxp_bin}"}
+        log_info(NAME,  "subject") {SXP::Generator.string(subject.to_sxp_bin)}
+        log_info(NAME, "object") {SXP::Generator.string(object.to_sxp_bin)}
 
         # Nothing to do if variables aren't resolved.
         next unless subject && object
 
         solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
-        log_debug("(logIncludes solutions pre-filter)") {SXP::Generator.string solns.to_sxp_bin}
 
         # filter solutions where not all variables in antecedant are bound.
         vars = subject.universal_vars
         solns = solns.filter do |solution|
           vars.all? {|v| solution.bound?(v)}
         end
-        log_debug("(logIncludes subject)") {SXP::Generator.string solns.to_sxp_bin}
+        log_info("(logIncludes subject)") {SXP::Generator.string solns.to_sxp_bin}
         next if solns.empty?
 
         repo = RDF::N3::Repository.new << subject
@@ -57,7 +57,7 @@ module RDF::N3::Algebra::Log
         solns = solns.filter do |soln|
           vars.all? {|v| soln.bound?(v)}
         end
-        log_debug("(logIncludes object)") {SXP::Generator.string solns.to_sxp_bin}
+        log_info("(logIncludes object)") {SXP::Generator.string solns.to_sxp_bin}
         solns
       end.flatten.compact)
     end

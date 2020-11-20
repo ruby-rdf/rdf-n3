@@ -130,17 +130,23 @@ module RDF::N3::Algebra
         solutions
       else
         these_solutions = queryable.query(@query, solutions: solutions, **options)
-        these_solutions.map! do |solution|
-          RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
-            # Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
-            value = formulae.fetch(value, value) if value.node?
-            l = RDF::N3::List.try_list(value, queryable)
-            value = l if l.constant?
-            memo.merge(name => value)
-          end)
+        if these_solutions.empty?
+          # Pattern doesn't match, so there can be no solutions
+          log_debug("(formula query solutions)") { SXP::Generator.string([].to_sxp_bin)}
+          return RDF::Query::Solutions.new
+        else
+          these_solutions.map! do |solution|
+            RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
+              # Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
+              value = formulae.fetch(value, value) if value.node?
+              l = RDF::N3::List.try_list(value, queryable)
+              value = l if l.constant?
+              memo.merge(name => value)
+            end)
+          end
+          log_debug("(formula query solutions)") { SXP::Generator.string(these_solutions.to_sxp_bin)}
+          solutions.merge(these_solutions)
         end
-        log_debug("(formula query solutions)") { SXP::Generator.string(these_solutions.to_sxp_bin)}
-        solutions.merge(these_solutions)
       end
 
       # Reject solutions which include variables as values
