@@ -4,7 +4,7 @@ require 'rdf/trig'
 
 describe "RDF::N3::Reasoner" do
   let(:logger) {RDF::Spec.logger}
-  before {logger.level = Logger::INFO}
+  before {logger.level = Logger::DEBUG}
 
   context "variables" do
     context "universals" do
@@ -941,6 +941,15 @@ describe "RDF::N3::Reasoner" do
           expect: %(:test :is "http://example.org/a http://example.org/b" .),
           base_uri: "http://example.org/"
         },
+        "test13g": {
+          input: %(
+            @prefix string: <http://www.w3.org/2000/10/swap/string#>.
+            { "" log:equalTo [ is string:concatenation of () ]  } => {:test13g a :success}.
+          ),
+          expect: %(
+            :test13g a :success .
+          )
+        }
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"

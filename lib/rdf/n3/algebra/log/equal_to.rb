@@ -28,7 +28,7 @@ module RDF::N3::Algebra::Log
     #   a literal
     # @return [RDF::Literal::Boolean]
     def apply(left, right)
-      left.sameTerm?(right)
+      RDF::Literal(left.sameTerm?(right))
     end
   end
 end
