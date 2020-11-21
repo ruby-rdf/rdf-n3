@@ -133,7 +133,7 @@ module RDF::N3::Algebra
         if these_solutions.empty?
           # Pattern doesn't match, so there can be no solutions
           log_debug("(formula query solutions)") { SXP::Generator.string([].to_sxp_bin)}
-          return RDF::Query::Solutions.new
+          RDF::Query::Solutions.new
         else
           these_solutions.map! do |solution|
             RDF::Query::Solution.new(solution.to_h.inject({}) do |memo, (name, value)|
@@ -148,6 +148,8 @@ module RDF::N3::Algebra
           solutions.merge(these_solutions)
         end
       end
+
+      return solutions if solutions.empty?
 
       # Reject solutions which include variables as values
       solutions.filter! {|s| s.enum_value.none?(&:variable?)}
