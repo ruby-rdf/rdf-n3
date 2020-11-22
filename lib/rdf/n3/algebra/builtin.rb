@@ -48,7 +48,7 @@ module RDF::N3::Algebra
     #
     #  Pass in solutions to have quantifiers resolved to those solutions.
     def each(solutions: RDF::Query::Solutions(), &block)
-      log_info("(#{self.class.const_get(:NAME)} each)")
+      log_debug("(#{self.class.const_get(:NAME)} each)")
       log_depth do
         subject, object = operands.map {|op| op.formula? ? op.graph_name : op}
         block.call(RDF::Statement(subject, self.to_uri, object))

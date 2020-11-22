@@ -235,7 +235,7 @@ module RDF::N3::Algebra
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
     def each(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
-      log_info("(formula each)") {SXP::Generator.string([self, solutions].to_sxp_bin)}
+      log_debug("(formula each)") {SXP::Generator.string([self, solutions].to_sxp_bin)}
 
       # Yield patterns by binding variables
       solutions.each do |solution|
@@ -277,13 +277,13 @@ module RDF::N3::Algebra
 
           # statements from sub-operands
           sub_ops.each do |op|
-            log_info("(formula sub_op)") {SXP::Generator.string [op, solution].to_sxp_bin}
+            log_debug("(formula sub_op)") {SXP::Generator.string [op, solution].to_sxp_bin}
             op.each(solutions: RDF::Query::Solutions(solution)) do |stmt|
               log_debug("(formula add from sub_op)") {stmt.to_sxp}
               block.call(stmt)
               # Add statements for any term which is a formula
               stmt.to_a.select(&:node?).map {|n| formulae[n]}.compact.each do |ef|
-                log_info("(formula from form)") {ef.graph_name.to_sxp}
+                log_debug("(formula from form)") {ef.graph_name.to_sxp}
                 form_statements(ef, solution: solution, &block)              
               end
             end

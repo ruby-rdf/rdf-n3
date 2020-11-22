@@ -58,6 +58,8 @@ module RDF
     def to_sxp
       to_sxp_bin.to_sxp
     end
+
+    def executable?; false; end
   end
 
   module Value

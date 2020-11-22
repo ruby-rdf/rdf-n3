@@ -4,7 +4,7 @@ require 'rdf/trig'
 
 describe "RDF::N3::Reasoner" do
   let(:logger) {RDF::Spec.logger}
-  before {logger.level = Logger::DEBUG}
+  before {logger.level = Logger::INFO}
 
   context "variables" do
     context "universals" do
@@ -199,8 +199,7 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             :test1 a :success .
-          ),
-          pending: "broken after not matching non-existant patterns"
+          )
         },
         "t2" => {
           input: %(
@@ -210,8 +209,7 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             :test3 a :success .
-          ),
-          pending: "broken after not matching non-existant patterns"
+          )
         },
         "quantifiers-limited-a1" => {
           input: %(
@@ -221,39 +219,47 @@ describe "RDF::N3::Reasoner" do
           ),
           expect: %(
             :testa1 a :success .
-          ),
-          pending: "broken after not matching non-existant patterns"
+          )
         },
-        #"quantifiers-limited-a2" => {
-        #  input: %(
-        #    @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-        #    {{ :foo :bar :baz } log:includes { @forSome :foo. :foo :bar :baz }}
-        #    => { :testa2 a :success } .
-        #  ),
-        #  expect: %(
-        #    :testa2 a :success .
-        #  ),
-        #  pending: "Variable substitution"
-        #},
-        #"quantifiers-limited-b2" => {
-        #  input: %(
-        #    @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-        #    {{ @forSome :foo. :foo :bar :baz } log:includes {@forSome :foo. :foo :bar :baz }}
-        #    => { :testb2 a :success } .
-        #  ),
-        #  expect: %(
-        #    :testb2 a :success .
-        #  ),
-        #  pending: "Variable substitution"
-        #},
-        #"quantifiers-limited-a1d" => {
-        #  input: %(
-        #    @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-        #    {{ :fee :bar :baz } log:includes { :foo :bar :baz }}
-        #    => { :testa1d a :FAILURE } .
-        #  ),
-        #  expect: %()
-        #},
+        "quantifiers-limited-a2" => {
+          input: %(
+            @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+            {{ :foo :bar :baz } log:includes { @forSome :foo. :foo :bar :baz }}
+            => { :testa2 a :success } .
+          ),
+          expect: %(
+            :testa2 a :success .
+          )
+        },
+        "quantifiers-limited-b2" => {
+          input: %(
+            @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+            {{ @forSome :foo. :foo :bar :baz } log:includes {@forSome :foo. :foo :bar :baz }}
+            => { :testb2 a :success } .
+          ),
+          expect: %(
+            :testb2 a :success .
+          )
+        },
+        "quantifiers-limited-a1d" => {
+          input: %(
+            @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+            {{ :fee :bar :baz } log:includes { :foo :bar :baz }}
+            => { :testa1d a :FAILURE } .
+          ),
+          expect: %()
+        },
+        "t10b" => {
+          input: %(
+            @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+            { {:theSky :is :blue} log:includes { :theSky :is ?x}   } log:implies { :fred :favoriteColor ?x  } .
+            { :fred :favoriteColor :blue } log:implies { :test10b a :success}.
+          ),
+          expect: %(
+            :fred :favoriteColor :blue.
+            :test10b a :success.
+          )
+        }
       }.each do |name, options|
         it name do
           logger.info "input: #{options[:input]}"

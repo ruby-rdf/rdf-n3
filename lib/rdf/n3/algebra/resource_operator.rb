@@ -49,7 +49,18 @@ module RDF::N3::Algebra
           res = apply(lhs, rhs)
           log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(res.to_sxp_bin).strip}
           # Return the result applying subject and object
-          solution if res == RDF::Literal::TRUE
+          #require 'byebug'; byebug
+          case res
+          when RDF::Literal::TRUE
+            solution
+          when RDF::Literal::FALSE
+            nil
+          when RDF::Query::Solution
+            solution.merge(res)
+          else
+            log_error(self.class.const_get(:NAME), "unexpected result type")
+            nil
+          end
         elsif rhs != lhs
           log_debug(self.class.const_get(:NAME), "result: false")
           nil

@@ -7,59 +7,64 @@ module RDF::N3::Algebra::Log
   # Variable substitution is applied recursively to nested compound terms such as formulae, lists and sets.
   #
   # (Understood natively by cwm when in in the antecedent of a rule. You can use this to peer inside nested formulae.)
-  class Includes < SPARQL::Algebra::Operator::Binary
-    include SPARQL::Algebra::Query
-    include SPARQL::Algebra::Update
-    include RDF::N3::Algebra::Builtin
-
+  class Includes < RDF::N3::Algebra::ResourceOperator
     NAME = :logIncludes
     URI = RDF::N3::Log.includes
 
     ##
-    # Creates a repository constructed by evaluating the subject against queryable and queries object against that repository. Either retuns a single solution, or no solutions
+    # Both subject and object must be formulae.
     #
-    # @param  [RDF::Queryable] queryable
-    #   the graph or repository to query
-    # @param  [Hash{Symbol => Object}] options
-    #   any additional keyword options
-    # @option options [RDF::Query::Solutions] solutions
-    #   optional initial solutions for chained queries
-    # @return [RDF::Solutions] distinct solutions
-    def execute(queryable, solutions:, **options)
-      @queryable = queryable
-      RDF::Query::Solutions(solutions.map do |solution|
-        log_debug(NAME, "solution") {SXP::Generator.string(solution.to_sxp_bin)}
-        subject = operand(0).evaluate(solution.bindings, formulae: formulae)
-        object = operand(1).evaluate(solution.bindings, formulae: formulae)
-        log_info(NAME,  "subject") {SXP::Generator.string(subject.to_sxp_bin)}
-        log_info(NAME, "object") {SXP::Generator.string(object.to_sxp_bin)}
+    # @param [RDF::Term] resource
+    # @param [:subject, :object] position
+    # @return [RDF::Term]
+    # @see RDF::N3::ResourceOperator#evaluate
+    def resolve(resource, position:)
+      resource if resource.formula?
+    end
 
-        # Nothing to do if variables aren't resolved.
-        next unless subject && object
+    # Both subject and object are inputs.
+    def input_operand
+      RDF::N3::List.new(values: operands)
+    end
 
-        solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
-
-        # filter solutions where not all variables in antecedant are bound.
-        vars = subject.universal_vars
-        solns = solns.filter do |solution|
-          vars.all? {|v| solution.bound?(v)}
+    ##
+    # Creates a repository constructed by substituting variables and in that subject with known IRIs and queries object against that repository. Either retuns a single solution, or no solutions.
+    #
+    # @note this does allow object to have variables not in the subject, if they could have been substituted away.
+    #
+    # @param  [RDF::N3::Algebra::Formula] subject
+    #   a formula
+    # @param  [RDF::N3::Algebra::Formula] object
+    #   a formula
+    # @return [RDF::Literal::Boolean]
+    def apply(subject, object)
+      subject_var_map = subject.variables.values.inject({}) {|memo, v| memo.merge(v => RDF::URI(v.name))}
+      object_vars = object.variables.keys
+      log_debug(NAME,  "subject var map") {SXP::Generator.string(subject_var_map.to_sxp_bin)}
+      log_debug(NAME, "object vars") {SXP::Generator.string(object_vars.to_sxp_bin)}
+      # create a queryable from subject, replacing variables with IRIs for thsoe variables.
+      queryable = RDF::Repository.new do |r|
+        log_depth do
+          subject.each do |stmt|
+            parts = stmt.to_quad.map do |part|
+              part.is_a?(RDF::Query::Variable) ? subject_var_map.fetch(part) : part
+            end
+            r << RDF::Statement.from(parts)
+          end
         end
-        log_info("(logIncludes subject)") {SXP::Generator.string solns.to_sxp_bin}
-        next if solns.empty?
+      end
 
-        repo = RDF::N3::Repository.new << subject
+      # Query object against subject
+      solns = log_depth {queryable.query(object, **@options)}
+      log_info("(#{NAME} solutions)") {SXP::Generator.string solns.to_sxp_bin}
 
-        # Query object against repo
-        solns = log_depth {object.execute(repo, solutions: solns, **options)}
-
-        # filter solutions where not all variables in antecedant are bound.
-        vars = object.universal_vars
-        solns = solns.filter do |soln|
-          vars.all? {|v| soln.bound?(v)}
-        end
-        log_info("(logIncludes object)") {SXP::Generator.string solns.to_sxp_bin}
-        solns
-      end.flatten.compact)
+      if !solns.empty? && (object_vars - solns.variable_names).empty?
+        # Return solution
+        solns.first
+      else
+        # Return false,
+        RDF::Literal::FALSE
+      end
     end
   end
 end

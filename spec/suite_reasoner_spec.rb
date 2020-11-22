@@ -21,8 +21,7 @@ describe RDF::N3::Reader do
           specify "#{t.name}: #{t.comment}" do
             case t.id.split('#').last
             when *%w{cwm_unify_unify1 cwm_unify_unify2 cwm_includes_builtins
-                     cwm_includes_t1 cwm_includes_t3 cwm_includes_t9br
-                     cwm_includes_t10 cwm_includes_t11
+                     cwm_includes_t11
                      cwm_includes_conclusion_simple cwm_includes_conclusion}
               pending "log:includes etc."
             when *%w{cwm_supports_simple cwm_string_roughly}

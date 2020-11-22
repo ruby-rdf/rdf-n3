@@ -25,7 +25,7 @@ module RDF::N3::Algebra::Log
           repo << RDF::Reader.open(resource, **@options.merge(list_terms: true, base_uri: resource, logger: false))
           content_hash = repo.statements.hash # used as name of resulting formula
           form = RDF::N3::Algebra::Formula.from_enumerable(repo, graph_name: RDF::Node.intern(content_hash))
-          log_info(NAME) {"form hash (#{resource}): #{form.hash}"}
+          log_debug(NAME) {"form hash (#{resource}): #{form.hash}"}
           form
         rescue IOError, RDF::ReaderError => e
           log_error(NAME) {"error loading #{resource}: #{e}"}
