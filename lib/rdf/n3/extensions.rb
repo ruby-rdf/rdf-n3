@@ -38,30 +38,6 @@ module RDF
     end
   end
 
-  class Statement
-    # Transform Statement into an SXP
-    # @return [Array]
-    def to_sxp_bin
-      [ (has_graph? ? :quad : :triple),
-        (:inferred if inferred?),
-        subject,
-        predicate,
-        object,
-        graph_name
-      ].compact.map(&:to_sxp_bin)
-    end
-
-    ##
-    # Returns an S-Expression (SXP) representation
-    #
-    # @return [String]
-    def to_sxp
-      to_sxp_bin.to_sxp
-    end
-
-    def executable?; false; end
-  end
-
   module Value
     ##
     # Returns `true` if `self` is a {RDF::N3::Algebra::Formula}.
@@ -135,20 +111,6 @@ module RDF
     rescue
       RDF::Literal(0)
     end
-
-    class Double
-      ##
-      # Returns the SXP representation of this object.
-      #
-      # @return [String]
-      def to_sxp
-        case
-          when nan? then 'nan.0'
-          when infinite? then (infinite? > 0 ? '+inf.0' : '-inf.0')
-          else canonicalize.to_s.downcase
-        end
-      end
-    end
   end
 
   class Node
@@ -203,18 +165,6 @@ module RDF
         end
         true
       end
-
-      # Transform Statement into an SXP
-      # @return [Array]
-      def to_sxp_bin
-        [ :triple,
-          (:inferred if inferred?),
-          subject,
-          predicate,
-          object,
-          graph_name
-        ].compact.map(&:to_sxp_bin)
-      end
     end
 
     class Solution
@@ -227,14 +177,6 @@ module RDF
           distinguished = !k.to_s.end_with?('undext')
           Query::Variable.new(k, v, existential: existential, distinguished: distinguished).to_sxp_bin
         end
-      end
-
-      ##
-      # Returns an S-Expression (SXP) representation
-      #
-      # @return [String]
-      def to_sxp
-        to_sxp_bin.to_sxp
       end
     end
 
@@ -251,15 +193,6 @@ module RDF
       # @return [RDF::Literal::Numeric]
       def as_number
         RDF::Literal(0)
-      end
-
-      def to_sxp_bin
-        prefix = distinguished? ? (existential? ? '$' : '?') : (existential? ? '$$' : '??')
-        unbound? ? "#{prefix}#{name}" : ["#{prefix}#{name}", value].to_sxp_bin
-      end
-
-      def to_sxp
-        to_sxp_bin.to_sxp
       end
     end
   end
