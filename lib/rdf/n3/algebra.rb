@@ -45,6 +45,12 @@ module RDF::N3
       def vocab; RDF::N3::Math.to_uri; end
       module_function :vocab
       autoload :AbsoluteValue,        'rdf/n3/algebra/math/absolute_value'
+      autoload :ACos,                 'rdf/n3/algebra/math/acos'
+      autoload :ASin,                 'rdf/n3/algebra/math/asin'
+      autoload :ATan,                 'rdf/n3/algebra/math/atan'
+      autoload :ACosH,                'rdf/n3/algebra/math/acosh'
+      autoload :ASinH,                'rdf/n3/algebra/math/asinh'
+      autoload :ATanH,                'rdf/n3/algebra/math/atanh'
       autoload :Ceiling,              'rdf/n3/algebra/math/ceiling'
       autoload :Cos,                  'rdf/n3/algebra/math/cos'
       autoload :CosH,                 'rdf/n3/algebra/math/cosh'
@@ -131,6 +137,13 @@ module RDF::N3
         RDF::N3::Log.supports             => NotImplemented,
 
         RDF::N3::Math.absoluteValue       => Math.const_get(:AbsoluteValue),
+        RDF::N3::Math.acos                => Math.const_get(:ACos),
+        RDF::N3::Math.asin                => Math.const_get(:ASin),
+        RDF::N3::Math.atan                => Math.const_get(:ATan),
+        RDF::N3::Math.acosh               => Math.const_get(:ACosH),
+        RDF::N3::Math.asinh               => Math.const_get(:ASinH),
+        RDF::N3::Math.atanh               => Math.const_get(:ATanH),
+        RDF::N3::Math.ceiling             => Math.const_get(:Ceiling),
         RDF::N3::Math.ceiling             => Math.const_get(:Ceiling),
         RDF::N3::Math.cos                 => Math.const_get(:Cos),
         RDF::N3::Math.cosh                => Math.const_get(:CosH),
