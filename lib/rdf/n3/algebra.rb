@@ -59,7 +59,6 @@ module RDF::N3
       autoload :Exponentiation,       'rdf/n3/algebra/math/exponentiation'
       autoload :Floor,                'rdf/n3/algebra/math/floor'
       autoload :GreaterThan,          'rdf/n3/algebra/math/greater_than'
-      autoload :IntegerQuotient,      'rdf/n3/algebra/math/integer_quotient'
       autoload :LessThan,             'rdf/n3/algebra/math/less_than'
       autoload :Negation,             'rdf/n3/algebra/math/negation'
       autoload :NotEqualTo,           'rdf/n3/algebra/math/not_equal_to'
@@ -152,7 +151,6 @@ module RDF::N3
         RDF::N3::Math.exponentiation      => Math.const_get(:Exponentiation),
         RDF::N3::Math.floor               => Math.const_get(:Floor),
         RDF::N3::Math.greaterThan         => Math.const_get(:GreaterThan),
-        RDF::N3::Math.integerQuotient     => Math.const_get(:IntegerQuotient),
         RDF::N3::Math.lessThan            => Math.const_get(:LessThan),
         RDF::N3::Math.negation            => Math.const_get(:Negation),
         RDF::N3::Math.notEqualTo          => Math.const_get(:NotEqualTo),

@@ -103,7 +103,6 @@ Reasoning is discussed in the [Design Issues][] document.
   * `math:exponentiation`   (See {RDF::N3::Algebra::Math::Exponentiation})
   * `math:floor`            (See {RDF::N3::Algebra::Math::Floor})
   * `math:greaterThan`      (See {RDF::N3::Algebra::Math::GreaterThan})
-  * `math:integerQuotient`  (See {RDF::N3::Algebra::Math::IntegerQuotient})
   * `math:lessThan`         (See {RDF::N3::Algebra::Math::LessThan})
   * `math:negation`         (See {RDF::N3::Algebra::Math::Negation})
   * `math:notEqualTo`       (See {RDF::N3::Algebra::Math::NotEqualTo})
