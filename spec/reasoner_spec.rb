@@ -66,7 +66,7 @@ describe "RDF::N3::Reasoner" do
               {<a> <b> <c> .} => {<test> a <SUCCESS> .} .
             } a :TestResult .
           ),
-          pending: "broken after not matching non-existant patterns"
+          #pending: "broken after not matching non-existant patterns"
         },
       }.each do |name, options|
         it name do

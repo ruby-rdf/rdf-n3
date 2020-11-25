@@ -15,12 +15,14 @@ module RDF::N3::Algebra::Log
     # @see RDF::N3::ListOperator#evaluate
     def resolve(list)
       form = RDF::N3::Algebra::Formula.new(graph_name: RDF::Node.intern(list.hash)) 
-      log_debug(NAME) {"list hash: #{form.graph_name}"}
+      log_debug(NAME, "list hash") {form.graph_name}
 
       list.each do |f|
         form.operands.push(*f.operands)
       end
-      form.dup
+      form = form.dup
+      log_info(NAME, "result") {SXP::Generator.string form.to_sxp_bin}
+      form
     end
 
     ##

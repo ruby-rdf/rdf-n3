@@ -122,11 +122,10 @@ module RDF::N3::Algebra
       log_info("formula #{graph_name}") {SXP::Generator.string operands.to_sxp_bin}
       log_debug("(formula bindings)") { SXP::Generator.string solutions.to_sxp_bin}
 
-      # Only query as patterns if this is an embedded formula
       @query ||= RDF::Query.new(patterns).optimize!
-      log_debug("(formula query)") { SXP::Generator.string(@query.patterns.to_sxp_bin)}
+      log_info("(formula query)") { SXP::Generator.string(@query.to_sxp_bin)}
 
-      solutions = if @query.patterns.empty?
+      solutions = if @query.empty?
         solutions
       else
         these_solutions = queryable.query(@query, solutions: solutions, **options)
@@ -232,12 +231,12 @@ module RDF::N3::Algebra
     #
     # @yield  [statement]
     #   each matching statement
-    # @yieldparam  [RDF::Statement] solution
+    # @yieldparam  [RDF::Statement] statement
     # @yieldreturn [void] ignored
     def each(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
       log_debug("(formula each)") {SXP::Generator.string([self, solutions].to_sxp_bin)}
 
-      # Yield patterns by binding variables
+      # Yield statements by binding variables
       solutions.each do |solution|
         # Bind blank nodes to the solution when it doesn't contain a solution for an existential variable
         existential_vars.each do |var|
@@ -247,10 +246,10 @@ module RDF::N3::Algebra
         log_debug("(formula apply)") {solution.to_sxp}
         # Yield each variable statement which is constant after applying solution
         log_depth do
-          patterns.each do |pattern|
+          n3statements.each do |statement|
             terms = {}
             [:subject, :predicate, :object].each do |part|
-              terms[part] = case o = pattern.send(part)
+              terms[part] = case o = statement.send(part)
               when RDF::Query::Variable
                 if solution[o] && solution[o].formula?
                   log_info("(formula from var form)") {solution[o].graph_name.to_sxp}
@@ -292,6 +291,30 @@ module RDF::N3::Algebra
       end
     end
 
+    ##
+    # Yields each pattern which is not a builtin
+    #
+    # @yield  [pattern]
+    #   each matching pattern
+    # @yieldparam  [RDF::Query::Pattern] pattern
+    # @yieldreturn [void] ignored
+    def each_pattern(&block)
+      n3statements.each do |statement|
+        terms = {}
+        [:subject, :predicate, :object].each do |part|
+          terms[part] = case o = statement.send(part)
+          when RDF::N3::Algebra::Formula
+            form_statements(o, solution: RDF::Query::Solution.new(), &block)
+          else
+            o
+          end
+        end
+
+        pattern = RDF::Query::Pattern.from(terms)
+        block.call(pattern)
+      end
+    end
+
     # Graph name associated with this formula
     # @return [RDF::Resource]
     def graph_name; @options[:graph_name]; end
@@ -310,15 +333,25 @@ module RDF::N3::Algebra
     end
 
     ##
-    # Patterns memoizer, from the operands which are statements.
-    def patterns
+    # Statements memoizer, from the operands which are statements.
+    #
+    # Statements may include embedded formulae.
+    def n3statements
       # BNodes in statements are existential variables.
-      @patterns ||= begin
+      @n3statements ||= begin
         # Operations/Builtins are not statements.
         operands.
-          select {|op| op.is_a?(RDF::Statement)}.
-          map {|st| RDF::Query::Pattern.from(st)}
+          select {|op| op.is_a?(RDF::Statement)}
       end
+    end
+
+    ##
+    # Patterns memoizer, from the operands which are statements and not builtins.
+    #
+    # Expands statements containing formulae into their statements.
+    def patterns
+      # BNodes in statements are existential variables.
+      @patterns ||= enum_for(:each_pattern).to_a
     end
 
     ##
@@ -404,14 +437,6 @@ module RDF::N3::Algebra
           stmt.graph_name ||= form.graph_name
           log_debug("(form statements add)") {stmt.to_sxp}
           block.call(stmt)
-          ## Recurse over embedded formulae
-          #stmt.to_a.select(&:node?).map {|n| formulae[n]}.compact.each do |ef|
-          #  log_debug("(formula from var form embedded)") {ef.graph_name.to_sxp}
-          #  ef.each(solutions: RDF::Query::Solutions(solution)) do |es|
-          #    es.graph_name ||= ef.graph_name
-          #    log_debug("(formula add from var form embedded)") {es.to_sxp}
-          #  end
-          #end
         end
       end
 
