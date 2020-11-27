@@ -189,8 +189,11 @@ Formulae are typically used to query the knowledge-base, which is set from the b
 Blank nodes associated with rdf:List statements used as part of a built-in are made _non-distinguished_ existential variables, and patters containing these variables become optional. If they are not bound as part of the query, the implicitly are bound as the original blank nodes defined within the formula, which allows for both constant list arguments, list arguments that contain variables, or arguments which are variables expanding to lists.
 
 ## Dependencies
+* [Ruby](https://ruby-lang.org/) (>= 2.4)
 * [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.1, >= 3.1.4)
 * [EBNF][EBNF gem] (~> 2.1)
+* [SPARQL][SPARQL gem] (~> 3.1)
+* [SXP][SXP gem] (~> 1.1)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-rdf/rdf-n3)
@@ -255,17 +258,19 @@ see <https://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 * <https://github.com/ruby-rdf/rdf-n3>
 * <https://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
-[RDF.rb]:       https://ruby-rdf.github.com/rdf
-[EBNF gem]:     https://ruby-rdf.github.com/ebnf
-[RDF::Turtle]:  https://ruby-rdf.github.com/rdf-turtle/
-[Design Issues]: https://www.w3.org/DesignIssues/Notation3.html "Notation-3 Design Issues"
-[Team Submission]: https://www.w3.org/TeamSubmission/n3/
-[Turtle]:       https://www.w3.org/TR/turtle/
-[N-Triples]:    https://www.w3.org/TR/n-triples/
-[YARD]:         https://yardoc.org/
-[YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:              https://unlicense.org/#unlicensing-contributions
+[RDF::Turtle]:            https://ruby-rdf.github.com/rdf-turtle/
+[Design Issues]:        https://www.w3.org/DesignIssues/Notation3.html "Notation-3 Design Issues"
+[Team Submission]:  https://www.w3.org/TeamSubmission/n3/
+[Turtle]:                     https://www.w3.org/TR/turtle/
+[N-Triples]:               https://www.w3.org/TR/n-triples/
+[YARD]:                   https://yardoc.org/
+[YARD-GS]:            https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:                    https://unlicense.org/#unlicensing-contributions
 [SPARQL S-Expressions]: https://jena.apache.org/documentation/notes/sse.html
 [W3C N3 Community Group]: https://www.w3.org/community/n3-dev/
-[N3]:           https://w3c.github.io/N3/spec/
-[PEG]:          https://en.wikipedia.org/wiki/Parsing_expression_grammar
+[N3]:                       https://w3c.github.io/N3/spec/
+[PEG]:                    https://en.wikipedia.org/wiki/Parsing_expression_grammar
+[RDF.rb]:                https://ruby-rdf.github.com/rdf
+[EBNF gem]:         https://ruby-rdf.github.com/ebnf
+[SPARQL gem]:     https://ruby-rdf.github.com/sparql
+[SXP gem]:            https://ruby-rdf.github.com/sxp
