@@ -27,5 +27,71 @@ module RDF::N3
     def self.symbols
       [:n3, :notation3]
     end
+
+    ##
+    # Hash of CLI commands appropriate for this format
+    # @return [Hash{Symbol => Hash}]
+    def self.cli_commands
+      {
+        reason: {
+          description: "Reason over formulae.",
+          help: "reason\nPerform Notation-3 reasoning.",
+          parse: false,
+          help: "reason [--think] file",
+          # Only shows when input and output format set
+          filter: {format: :n3},  
+          repository: RDF::N3::Repository.new,
+          lambda: ->(argv, **options) do
+            repository = options[:repository]
+            result_repo = RDF::N3::Repository.new
+            RDF::CLI.parse(argv, format: :n3, list_terms: true, **options) do |reader|
+              reasoner = RDF::N3::Reasoner.new(reader, **options)
+              reasoner.reason!(**options)
+              if options[:conclusions]
+                result_repo << reasoner.conclusions
+              elsif options[:data]
+                result_repo << reasoner.data
+              else
+                result_repo << reasoner
+              end
+            end
+
+            # Replace input repository with results
+            repository.clear!
+            repository << result_repo
+          end,
+          options: [
+            RDF::CLI::Option.new(
+              symbol: :conclusions,
+              datatype: TrueClass,
+              control: :checkbox,
+              use: :optional,
+              on: ["--conclusions"],
+              description: "Exclude formulae and statements in the original dataset."),
+            RDF::CLI::Option.new(
+              symbol: :data,
+              datatype: TrueClass,
+              control: :checkbox,
+              use: :optional,
+              on: ["--data"],
+              description: "Only results from default graph, excluding formulae or variables."),
+            RDF::CLI::Option.new(
+              symbol: :strings,
+              datatype: TrueClass,
+              control: :checkbox,
+              use: :optional,
+              on: ["--strings"],
+              description: "Returns the concatenated strings from log:outputString."),
+            RDF::CLI::Option.new(
+              symbol: :think,
+              datatype: TrueClass,
+              control: :checkbox,
+              use: :optional,
+              on: ["--think"],
+              description: "Continuously execute until results stop growing."),
+          ]
+        },
+      }
+    end
   end
 end

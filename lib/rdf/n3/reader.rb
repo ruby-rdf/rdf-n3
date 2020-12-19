@@ -45,6 +45,21 @@ module RDF::N3
     attr_reader :variables
 
     ##
+    # N3 Reader options
+    # @see http://www.rubydoc.info/github/ruby-rdf/rdf/RDF/Reader#options-class_method
+    def self.options
+      super + [
+        RDF::CLI::Option.new(
+          symbol: :list_terms,
+          datatype: TrueClass,
+          default: true,
+          control: :checkbox,
+          on: ["--list-terms CONTEXT"],
+          description: "Use native collections (lists), not first/rest ladder.")
+      ]
+    end
+
+    ##
     # Initializes the N3 reader instance.
     #
     # @param  [IO, File, String] input
