@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
-      ALLOW_FAILURES: ${{ endsWith(matrix.ruby, 'head') }}
     strategy:
       fail-fast: false
       matrix:
@@ -31,7 +30,7 @@ jobs:
           - 2.5
           - 2.6
           - 2.7
-          - ruby-head
+          #- ruby-head # Commented out until net-http-persistent is updaated
           - jruby
     steps:
       - name: Clone repository
@@ -43,5 +42,5 @@ jobs:
       - name: Install dependencies
         run: bundle install --jobs 4 --retry 3
       - name: Run tests
-        run: bundle exec rspec spec || $ALLOW_FAILURES
+        run: bundle exec rspec spec
  
