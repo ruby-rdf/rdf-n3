@@ -35,9 +35,8 @@ module RDF::N3
       {
         reason: {
           description: "Reason over formulae.",
-          help: "reason\nPerform Notation-3 reasoning.",
+          help: "reason [--think] file\nPerform Notation-3 reasoning.",
           parse: false,
-          help: "reason [--think] file",
           # Only shows when input and output format set
           filter: {format: :n3},  
           repository: RDF::N3::Repository.new,

@@ -2,8 +2,9 @@
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
 [![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
-[![Build Status](https://travis-ci.org/ruby-rdf/rdf-n3.png?branch=master)](https://travis-ci.org/ruby-rdf/rdf-n3)
-[![Coverage Status](https://coveralls.io/repos/ruby-rdf/rdf-n3/badge.svg)](https://coveralls.io/r/ruby-rdf/rdf-n3)
+[![Build Status](https://github.com/ruby-rdf/rdf-n3/workflows/CI/badge.svg?branch=develop)](https://github.com/ruby-rdf/rdf-n3/actions?query=workflow%3ACI)
+[![Coverage Status](https://coveralls.io/repos/ruby-rdf/rdf-n3/badge.svg)](https://coveralls.io/github/ruby-rdf/rdf-n3)
+[![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
 
 ## Description
 RDF::N3 is an Notation-3 parser and reasoner for Ruby using the [RDF.rb][RDF.rb] library suite.
