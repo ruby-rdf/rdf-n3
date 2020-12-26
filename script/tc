@@ -1,0 +1,278 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+$:.unshift(File.expand_path("../../lib", __FILE__))
+require "bundler/setup"
+require 'logger'
+require 'rdf/turtle'
+require 'rdf/isomorphic'
+require File.expand_path("../../spec/spec_helper", __FILE__)
+require File.expand_path("../../spec/suite_helper", __FILE__)
+require 'getoptlong'
+
+ASSERTOR = "https://greggkellogg.net/foaf#me"
+RUN_TIME = Time.now
+
+def earl_preamble(**options)
+  options[:output].write File.read(File.expand_path("../../etc/doap#{'-ntriples' if options[:ntriples]}.ttl", __FILE__))
+  options[:output].puts %(
+<> foaf:primaryTopic <https://rubygems.org/gems/rdf#{'-turtle' unless options[:ntriples]}> ;
+  dc:issued "#{RUN_TIME.xmlschema}"^^xsd:dateTime ;
+  foaf:maker <#{ASSERTOR}> .
+
+<#{ASSERTOR}> a foaf:Person, earl:Assertor;
+  foaf:name "Gregg Kellogg";
+  foaf:title "Implementor";
+  foaf:homepage <https://greggkellogg.net/> .
+)
+
+  options[:output].puts %(
+<https://rubygems.org/gems/rdf-n3>
+  doap:release <https://github.com/ruby-rdf/rdf-n3/tree/#{RDF::N3::VERSION}> .
+
+<https://github.com/ruby-rdf/rdf-n3/tree/#{RDF::N3::VERSION}> a doap:Version;
+  doap:name "rdf-n3-#{RDF::N3::VERSION}";
+  doap:created "#{File.mtime(File.expand_path('../../VERSION', __FILE__)).strftime('%Y-%m-%d')}"^^xsd:date;
+  doap:revision "#{RDF::N3::VERSION}" .
+)
+end
+
+def run_tc(man, tc, **options)
+  case options[:type]
+  when :parser
+    return if tc.reason?
+  when :reasoner
+    return unless tc.reason?
+  end
+
+  STDERR.write "test #{tc.name} "
+
+  if options[:verbose]
+    STDERR.puts "\nTestCase: #{tc.inspect}"
+    STDERR.puts "\nInput:\n" + tc.input 
+    STDERR.puts "\nExpected:\n" + tc.expected if tc.result && tc.positive_test?
+  end
+  
+  return if tc.approval == "rdft:Rejected"
+
+  logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
+  logger.level = options[:level]
+  logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
+
+  start = Time.now
+
+  begin
+    STDERR.puts "open #{tc.action}" if options[:verbose]
+    options = {
+      validate:  true,
+      logger: logger
+    }.merge(options)
+
+    reader_options = options.dup
+    reader_options[:logger] = false if tc.reason?
+    reader = RDF::N3::Reader.open(tc.action, **reader_options)
+
+    graph = RDF::N3::Repository.new
+    result = nil
+
+    if !options[:slow] && tc.slow?
+      result = "untested"
+    elsif tc.positive_test?
+      begin
+        graph << reader
+      rescue Exception => e
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
+        result = "failed"
+      end
+    else
+      begin
+        graph << reader
+        STDERR.puts "Expected exception" if options[:verbose]
+        result = "failed"
+      rescue RDF::ReaderError
+        result = "passed"
+      end
+    end
+
+    secs = Time.new - start
+
+    if tc.evaluate? && result.nil?
+      begin
+        result_repo = RDF::N3::Repository.load(tc.result)
+        result = graph.isomorphic_with?(result_repo) ? "passed" : "failed"
+      rescue Exception => e
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
+        result = "failed"
+      end
+    elsif tc.reason? && result.nil?
+      reasoner = RDF::N3::Reasoner.new(graph, **options)
+
+      repo = RDF::N3::Repository.new
+
+      begin
+        reasoner.execute(logger: logger, think: !!tc.options['think'])
+        if tc.options["conclusions"]
+          repo << reasoner.conclusions
+        elsif tc.options["data"]
+          repo << reasoner.data
+        else
+          repo << reasoner
+        end
+      rescue Exception => e
+        if options[:verbose]
+          STDERR.puts "Unexpected exception: #{e.inspect}\n#{e.backtrace.join("\n")}"
+        end
+        result = "failed"
+      end
+      if options[:verbose]
+        if tc.options["strings"]
+          STDERR.puts  "\nResult: #{reasoner.strings}"
+        else
+          STDERR.puts  "\nResult: #{repo.dump(:n3, base_uri: tc.base, standard_prefixes: true)}"
+        end
+      end
+
+      if tc.options["strings"]
+        result = reasoner.strings == tc.expected
+      else
+        result_repo = RDF::N3::Repository.load(tc.result)
+
+        # Check against expanded triples from repo
+        expanded_repo = RDF::Repository.new do |r|
+          repo.each_expanded_statement do |st|
+            r << st
+          end
+        end
+
+        result = expanded_repo.isomorphic_with?(result_repo) ? "passed" : "failed"
+      end
+    else
+      result ||= "passed"
+    end
+
+  rescue Exception => e
+    STDERR.puts "#{"exception:" unless options[:quiet]}: #{e}"
+    return if options[:quiet]
+    STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  end
+
+  STDERR.puts options[:logger] if options[:verbose] && !options[:live]
+
+  if options[:earl]
+    options[:output].puts %{
+[ a earl:Assertion;
+  earl:assertedBy <#{ASSERTOR}>;
+  earl:subject <https://rubygems.org/gems/rdf-n3>;
+  earl:test <#{tc.id}>;
+  earl:result [
+    a earl:TestResult;
+    earl:outcome earl:#{result};
+    dc:date "#{RUN_TIME.xmlschema}"^^xsd:dateTime];
+  earl:mode earl:automatic ] .
+}
+  end
+
+  options[:results][result] ||= 0
+  options[:results][result] += 1
+
+  STDERR.puts "#{"test result:" unless options[:quiet]} #{result} #{"(#{secs} seconds)" unless options[:quiet] || secs < 1}."
+end
+
+options = {
+  level: Logger::WARN,
+  list_terms: true,
+  output:  STDOUT,
+  results: {},
+  slow: true,  # Run slow tests by default
+  type: :all
+}
+
+OPT_ARGS = [
+  ["--earl",            GetoptLong::NO_ARGUMENT, "Generate EARL report"],
+  ["--debug",           GetoptLong::NO_ARGUMENT, "Debugging output"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT, "print this message"],
+  ["--info",            GetoptLong::NO_ARGUMENT, "Show progress on execution"],
+  ["--live",            GetoptLong::NO_ARGUMENT, "Show live parsing results, not buffered"],
+  ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT, "Output to specified file"],
+  ["--quiet", "-q",     GetoptLong::NO_ARGUMENT, "Minimal output"],
+  ["--skip-slow", "-s", GetoptLong::NO_ARGUMENT, "Avoid files taking too much time"],
+  ["--type",            GetoptLong::REQUIRED_ARGUMENT, "Test type (`parser`, `reasoner`, or `all`)"],
+  ["--validate",        GetoptLong::NO_ARGUMENT, "Validate input"],
+  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT, "Verbose output"],
+]
+
+def usage
+  STDERR.puts %{
+    n3 version #{RDF::N3::VERSION}
+    Run N3 tests.
+    
+    Usage: #{$0} [options] [test-number ...]
+  }.gsub(/^    /, '')
+  width = OPT_ARGS.map do |o|
+    l = o.first.length
+    l += o[1].length + 2 if o[1].is_a?(String)
+    l
+  end.max
+  OPT_ARGS.each do |o|
+    s = "  %-*s  " % [width, (o[1].is_a?(String) ? "#{o[0,2].join(', ')}" : o[0])]
+    s += o.last
+    STDERR.puts s
+  end
+  exit(1)
+end
+
+opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'             then usage()
+  when '--debug'            then options[:level] = Logger::DEBUG
+  when '--earl'
+    options[:quiet] = options[:earl] = true
+    options[:level] = Logger::FATAL
+  when '--info'             then options[:level] = Logger::INFO
+  when '--live'             then options[:live] = true
+  when '--output'           then options[:output] = File.open(arg, "w")
+  when '--quiet'
+    options[:quiet] = true
+    options[:level] = Logger::FATAL
+  when '--skip-slow'        then options[:slow] = false
+  when '--type'
+    unless %w(parser reasoner all).include?(arg)
+      STDERR.puts "unknown test type: #{options[:type]}"
+      help(**options)
+    end
+    options[:type] = arg.to_sym
+  when '--validate'         then options[:validate] = true
+  when '--verbose'          then options[:verbose] = true
+  end
+end
+
+manifests = %w(
+  tests/N3Tests/manifest.ttl
+  tests/TurtleTests/manifest.ttl
+  tests/N3Tests/manifest-reasoner.ttl
+  tests/N3Tests/manifest-extended.ttl
+).map {|r| "https://w3c.github.io/N3/#{r}"}
+
+earl_preamble(**options) if options[:earl]
+
+begin
+  manifests.each do |man|
+    Fixtures::SuiteTest::Manifest.open(man) do |m|
+      m.entries.each do |tc|
+        next unless ARGV.empty? || ARGV.any? {|n| tc.property('@id').match?(/#{n}/) || tc.property('action').match?(/#{n}/)}
+        run_tc(man, tc, **options.merge(list_terms: !man.include?("TurtleTests")))
+      end
+    end
+  end
+rescue Interrupt => e
+  STDERR.puts "(interrupt)"
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  exit 1
+end
+
+options[:results].each {|k, v| puts "#{k}: #{v}"}

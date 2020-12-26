@@ -11,6 +11,8 @@ require 'open-uri'
 
 def run(input, **options)
   require 'profiler' if options[:profile]
+  parser_options = options[:parser_options]
+  parser_options[:base_uri] ||= File.expand_path(input.path)  if input.respond_to?(:path)
 
   reader_class = RDF::Reader.for(options[:input_format].to_sym)
   raise "Reader not found for #{options[:input_format]}" unless reader_class
@@ -18,12 +20,13 @@ def run(input, **options)
   start = Time.new
   num = 0
   Profiler__::start_profile if options[:profile]
-  if options[:think]
+  if options[:think] || options[:rules]
+    STDERR.puts "Reason" if $verbose
     # Parse into a new reasoner and evaluate
-    reader_class.new(input, options[:parser_options].merge(logger: nil)) do |reader|
-      reasoner = RDF::N3::Reasoner.new(reader, options[:parser_options])
-      reasoner.reason!(options)
-      repo = RDF::Repository.new
+    reader_class.new(input, **parser_options.merge(logger: nil)) do |reader|
+      repo = RDF::N3::Repository.new
+      reasoner = RDF::N3::Reasoner.new(reader, **parser_options)
+      reasoner.reason!(**options)
       if options[:conclusions]
         repo << reasoner.conclusions
       elsif options[:data]
@@ -32,10 +35,19 @@ def run(input, **options)
         repo << reasoner
       end
       num = repo.count
-      options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
+      if options[:strings]
+        options[:output].puts reasoner.strings
+      else
+        options[:output].puts repo.dump(options[:output_format],
+                                        prefixes: reader.prefixes,
+                                        base_uri: reader.base_uri,
+                                        standard_prefixes: true,
+                                        logger: options[:logger])
+      end
     end
   elsif options[:output_format] == :ntriples || options[:quiet]
-    reader_class.new(input, options[:parser_options]).each do |statement|
+    STDERR.puts "Parse nt/quiet" if $verbose
+    reader_class.new(input, **parser_options).each do |statement|
       num += 1
       if options[:errors] && statement.invalid?
         $stderr.puts "Invalid statement at #{r.lineno}: #{statement.inspect}"
@@ -46,20 +58,32 @@ def run(input, **options)
       end
     end
   elsif options[:output_format] == :sxp
-    reader_class.new(input, options[:parser_options]) do |reader|
+    STDERR.puts "Parse to SXP" if $verbose
+    reader_class.new(input, **parser_options) do |reader|
       reasoner = RDF::N3::Reasoner.new(reader)
       SXP::Generator.print(reasoner.to_sxp_bin)
     end
   elsif options[:output_format] == :inspect
-    reader_class.new(input, options[:parser_options]).each do |statement|
+    STDERR.puts "Parse to inspect" if $verbose
+    reader_class.new(input, **parser_options).each do |statement|
       num += 1
       options[:output].puts statement.inspect
     end
   else
-    reader = reader_class.new(input, options[:parser_options])
-    repo = RDF::Repository.new << reader
+    STDERR.puts "Parse to #{options[:output_format]}" if $verbose
+    reader = reader_class.new(input, **parser_options)
+    repo = [].extend(RDF::Enumerable, RDF::Queryable)
+    reader.each_statement {|st| repo << st}
     num = repo.count
-    options[:output].puts repo.dump(options[:output_format], prefixes: reader.prefixes, standard_prefixes: true, logger: options[:logger])
+    if options[:output_format] == :n3
+      # Extra debugging
+      options[:logger].debug SXP::Generator.string(repo.to_sxp_bin).strip
+    end
+    options[:output].puts repo.dump(options[:output_format],
+                                    prefixes: reader.prefixes,
+                                    base_uri: reader.base_uri,
+                                    standard_prefixes: true,
+                                    logger: options[:logger])
   end
   if options[:profile]
     Profiler__::stop_profile
@@ -68,29 +92,31 @@ def run(input, **options)
   puts
   secs = Time.new - start
   puts "Parsed #{num} statements in #{secs} seconds @ #{num/secs} statements/second."
+rescue RDF::ReaderError => e
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  exit(1)
 rescue Exception => e
-  fname = input.respond_to?(:path) ? input.path : "-stdin-"
-  STDERR.puts("Error in #{fname}: #{e.message}")
+  STDERR.puts "Error: #{e}"
   STDERR.puts "Backtrace: " + e.backtrace.join("\n  ")
-  raise e
+  exit(1)
 end
 
 logger = Logger.new(STDERR)
 logger.level = Logger::WARN
-logger.formatter = lambda {|severity, datetime, progname, msg| "#{severity}: #{msg}\n"}
+logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
 
 parser_options = {
-  base_uri: "http://example.com",
+  list_terms: true,
   logger: logger,
   validate: false,
 }
 
 options = {
-  parser_options: parser_options,
+  input_format: :n3,
   logger: logger,
   output: STDOUT,
   output_format: :n3,
-  input_format: :n3,
+  parser_options: parser_options,
 }
 input = nil
 
@@ -106,14 +132,16 @@ OPT_ARGS = [
   ["--help", "-?", GetoptLong::NO_ARGUMENT, "print this message"],
   ["--input-format", GetoptLong::REQUIRED_ARGUMENT, "Format of the input file, defaults to n3"],
   ["--info", GetoptLong::NO_ARGUMENT, "Show progress on execution"],
+  ["--no-list-terms", GetoptLong::NO_ARGUMENT, "Use first/rest chain for lists"],
   ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT, "Save output to file"],
   ["--profile", GetoptLong::NO_ARGUMENT, "Show an execution profile"],
   ["--quiet", GetoptLong::NO_ARGUMENT, "Do not show parser output"],
   ["--rules", GetoptLong::NO_ARGUMENT, "Run rules adding to the store"],
+  ["--strings", GetoptLong::NO_ARGUMENT, "Dump :s to stdout ordered by :k whereever { :k log:outputString :s }"],
   ["--think", GetoptLong::NO_ARGUMENT, "Run rules until until no more triples generated"],
   ["--uri", GetoptLong::REQUIRED_ARGUMENT, "Default base URI"],
   ["--validate", GetoptLong::NO_ARGUMENT, "Run parser in strict validation mode"],
-  #["--verbose", GetoptLong::NO_ARGUMENT, "Verbose output"],
+  ["--verbose", GetoptLong::NO_ARGUMENT, "Verbose output"],
 ]
 
 def usage
@@ -146,20 +174,24 @@ opts.each do |opt, arg|
   when "--data"         then options[:data] = true
   when '--debug'        then logger.level = Logger::DEBUG
   when '--errors'       then options[:errors] = true
-  when '--execute'      then input = arg
+  when '--execute'
+    options[:base_uri] = "http://example.com/",
+    input = arg
   when '--format'       then options[:output_format] = arg.to_sym
   when "--help"         then usage()
   when '--info'         then logger.level = Logger::INFO
   when '--input-format' then options[:input_format] = arg.to_sym
+  when '--no-list-terms' then parser_options[:list_terms] = false
   when '--output'       then options[:output] = File.open(arg, "w")
   when '--profile'      then options[:profile] = true
   when '--quiet'
     options[:quiet] = true
     logger.level = Logger::FATAL
   when '--rules'        then options[:rules] = true
+  when '--strings'      then options[:strings] = true
   when '--think'        then options[:think] = true
   when '--uri'          then parser_options[:base_uri] = arg
-  when '--validate'     then parser_options[:debug] ||= 1
+  when '--validate'     then parser_options[:validate] = true
   when '--verbose'      then $verbose = true
   end
 end

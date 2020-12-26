@@ -7,6 +7,12 @@ require 'rdf/trig'
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
 
+  #after(:each) do |example|
+  #  puts logger.to_s if
+  #    example.exception &&
+  #    !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  #end
+
   it_behaves_like 'an RDF::Writer' do
     let(:writer) {RDF::N3::Writer.new(StringIO.new)}
   end
@@ -38,7 +44,7 @@ describe RDF::N3::Writer do
         regexp: [ %r(^@base <http://a/> \.$), %r(^<b> <c> <d> \.$)],
         base_uri: "http://a/"
       },
-      "qname URIs with prefix" => {
+      "pname URIs with prefix" => {
         input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
         regexp: [
           %r(^@prefix ex: <http://example.com/> \.$),
@@ -46,7 +52,7 @@ describe RDF::N3::Writer do
         ],
         prefixes: {ex: "http://example.com/"}
       },
-      "qname URIs with empty prefix" => {
+      "pname URIs with empty prefix" => {
         input: %(<http://example.com/b> <http://example.com/c> <http://example.com/d> .),
         regexp:  [
           %r(^@prefix : <http://example.com/> \.$),
@@ -55,7 +61,7 @@ describe RDF::N3::Writer do
         prefixes: {"" => "http://example.com/"}
       },
       # see example-files/arnau-registered-vocab.rb
-      "qname URIs with empty suffix" => {
+      "pname URIs with empty suffix" => {
         input: %(<http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> <http://xmlns.com/foaf/0.1/> .),
         regexp:  [
           %r(^@prefix foaf: <http://xmlns.com/foaf/0.1/> \.$),
@@ -110,10 +116,6 @@ describe RDF::N3::Writer do
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b [ex:c ex:d] .),
         regexp: [%r(^ex:a ex:b \[ex:c ex:d\] \.$)],
       },
-      "reuses BNode labels by default" => {
-        input: %(@prefix ex: <http://example.com/> . _:a ex:b _:a .),
-        regexp: [%r(^\s*_:a(_\d+_\d+) ex:b _:a\1 \.$)]
-      },
       "standard prefixes" => {
         input: %(
           <a> a <http://xmlns.com/foaf/0.1/Person>;
@@ -127,15 +129,15 @@ describe RDF::N3::Writer do
         ],
         standard_prefixes: true, prefixes: {}
       },
-      "should not use qname with illegal local part" => {
+      "should not use pname with illegal local part" => {
         input: %(
           @prefix db: <http://dbpedia.org/resource/> .
           @prefix dbo: <http://dbpedia.org/ontology/> .
-          db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> .
+          db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/(I_Can%27t_Make_It)_Another_Day> .
         ),
         regexp: [
           %r(^@prefix db: <http://dbpedia.org/resource/> \.$),
-          %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/%28I_Can%27t_Make_It%29_Another_Day> \.$)
+          %r(^db:Michael_Jackson dbo:artistOf <http://dbpedia.org/resource/\(I_Can%27t_Make_It\)_Another_Day> \.$)
         ],
         prefixes: {
           "db" => RDF::URI("http://dbpedia.org/resource/"),
@@ -148,41 +150,49 @@ describe RDF::N3::Writer do
     end
   end
 
-  describe "lists" do
+  describe "collections" do
     {
       "bare list": {
         input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) .),
-        regexp: [%r(^\(\s*ex:a ex:b\s*\) \.$)]
+        regexp: [%r(^\(\s*ex:a ex:b\s*\) \.$)],
+        list_terms: true
       },
       "literal list": {
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b ( "apple" "banana" ) .),
-        regexp: [%r(^ex:a ex:b \(\s*"apple" "banana"\s*\) \.$)]
+        regexp: [%r(^ex:a ex:b \(\s*"apple" "banana"\s*\) \.$)],
+        list_terms: true
       },
       "empty list": {
         input: %(@prefix ex: <http://example.com/> . ex:a ex:b () .),
         regexp: [%r(^ex:a ex:b \(\s*\) \.$)],
-        prefixes: { "" => RDF::Vocab::FOAF}
+        prefixes: { "" => RDF::Vocab::FOAF},
+        list_terms: true
       },
       "should generate empty list(2)" => {
         input: %(@prefix : <http://xmlns.com/foaf/0.1/> . :emptyList = () .),
         regexp: [%r(^:emptyList (<.*sameAs>|owl:sameAs|=) \(\) \.$)],
-        prefixes: { "" => "http://xmlns.com/foaf/0.1/"}
+        prefixes: { "" => "http://xmlns.com/foaf/0.1/"},
+        list_terms: true
       },
       "empty list as subject": {
         input: %(@prefix ex: <http://example.com/> . () ex:a ex:b .),
-        regexp: [%r(^\(\s*\) ex:a ex:b \.$)]
+        regexp: [%r(^\(\s*\) ex:a ex:b \.$)],
+        list_terms: true
       },
       "list as subject": {
         input: %(@prefix ex: <http://example.com/> . (ex:a) ex:b ex:c .),
-        regexp: [%r(^\(\s*ex:a\s*\) ex:b ex:c \.$)]
+        regexp: [%r(^\(\s*ex:a\s*\) ex:b ex:c \.$)],
+        list_terms: true
       },
       "list of empties": {
         input: %(@prefix ex: <http://example.com/> . [ex:listOf2Empties (() ())] .),
-        regexp: [%r(\[\s*ex:listOf2Empties \(\s*\(\s*\) \(\s*\)\s*\)\s*\] \.$)]
+        regexp: [%r(\[\s*ex:listOf2Empties \(\s*\(\s*\) \(\s*\)\s*\)\s*\] \.$)],
+        list_terms: true
       },
       "list anon": {
         input: %(@prefix ex: <http://example.com/> . [ex:twoAnons ([a ex:mother] [a ex:father])] .),
-        regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)]
+        regexp: [%r(\[\s*ex:twoAnons \(\s*\[\s*a ex:mother\s*\] \[\s*a ex:father\s*\]\)\] \.$)],
+        list_terms: true
       },
       "list subjects": {
         input: %(@prefix ex: <http://example.com/> . (ex:a ex:b) . ex:a a ex:Thing . ex:b a ex:Thing .),
@@ -190,7 +200,15 @@ describe RDF::N3::Writer do
           %r(\(ex:a ex:b\) \.),
           %r(ex:a a ex:Thing \.),
           %r(ex:b a ex:Thing \.),
-        ]
+        ],
+        list_terms: true
+      },
+      "embedded list": {
+        input: %{((:q)) a :Thing .},
+        regexp: [
+          %r{\(\(:q\)\) a :Thing \.}
+        ],
+        list_terms: true
       },
       "owl:unionOf list": {
         input: %(
@@ -250,24 +268,24 @@ describe RDF::N3::Writer do
         ],
         standard_prefixes: true
       },
-      "list pattern with extra properties": {
-        input: %(
-          <http://example.com> <http://example.com/property> _:a .
-          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
-          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
-          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
-          _:a <http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest" .
-          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
-          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
-          _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        ),
-        regexp: [%r(<http://example.com> <http://example.com/property> \[),
-          %r(<http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest";),
-          %r(rdf:first "a";),
-          %r(rdf:rest \(\s*"b" "c"\s*\)),
-        ],
-        standard_prefixes: true
-      },
+      #"list pattern with extra properties": {
+      #  input: %(
+      #    <http://example.com> <http://example.com/property> _:a .
+      #    _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+      #    _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:b .
+      #    _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+      #    _:a <http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest" .
+      #    _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:c .
+      #    _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "c" .
+      #    _:c <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+      #  ),
+      #  regexp: [%r(<http://example.com> <http://example.com/property> \[),
+      #    %r(<http://example.com/other-property> "This list node has also properties other than rdf:first and rdf:rest";),
+      #    %r(rdf:first "a";),
+      #    %r(rdf:rest \(\s*"b" "c"\s*\)),
+      #  ],
+      #  standard_prefixes: true
+      #},
       "list with empty list": {
         input: %(
           <http://example.com/a> <http://example.com/property> _:l1 .
@@ -281,20 +299,34 @@ describe RDF::N3::Writer do
       },
       "list with multiple lists": {
         input: %(
-        <http://example.com/a> <http://example.com/property> _:l1 .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
-        _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
-        _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
-        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:a .
-        _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:l2 .
-        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:b .
-        _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          <http://example.com/a> <http://example.com/property> _:l1 .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "a" .
+          _:a <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "b" .
+          _:b <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:a .
+          _:l1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:l2 .
+          _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:b .
+          _:l2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
         ),
         regexp: [
           %r(<http://example.com/a> <http://example.com/property> \(\s*\(\s*"a"\) \(\s*"b"\)\) .)
         ],
         standard_prefixes: true
+      },
+      "list with formula": {
+        input: %(
+          @prefix log:  <http://www.w3.org/2000/10/swap/log#> .
+          {
+            ({:sky :color :blue} {:sky :color :green}) log:conjunction ?F
+          } =>  {  ?F a :result} .
+        ),
+        regexp: [
+          %r[{\s+\(\s*{\s*:sky :color :blue \.\s+}\s+{]m,
+          %r[{\s+:sky :color :green \.\s+}\s*\)]m,
+          %r[}\)\s+log:conjunction\s+\?F\s+\.\s+} =>]m,
+          %r[=>\s+{\s+\?F a :result \.\s*}]m
+        ]
       },
     }.each do |name, params|
       it name do
@@ -440,13 +472,13 @@ describe RDF::N3::Writer do
     
     describe "xsd:double" do
       [
-        [%q("1.0e1"^^xsd:double), /1.0e1 ./],
-        [%q(1.0e1), /1.0e1 ./],
-        [%q("0.1e1"^^xsd:double), /1.0e0 ./],
-        [%q(0.1e1), /1.0e0 ./],
-        [%q("10.02e1"^^xsd:double), /1.002e2 ./],
-        [%q(10.02e1), /1.002e2 ./],
-        [%q("14"^^xsd:double), /1.4e1 ./],
+        [%q("1.0e1"^^xsd:double), /1.0E1 ./],
+        [%q(1.0e1), /1.0E1 ./],
+        [%q("0.1e1"^^xsd:double), /1.0E0 ./],
+        [%q(0.1e1), /1.0E0 ./],
+        [%q("10.02e1"^^xsd:double), /1.002E2 ./],
+        [%q(10.02e1), /1.002E2 ./],
+        [%q("14"^^xsd:double), /1.4E1 ./],
       ].each do |(l,r)|
         it "uses token for #{l.inspect}" do
           ttl = %(@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . <http://a> <http:/b> #{l} .)
@@ -458,15 +490,15 @@ describe RDF::N3::Writer do
       end
 
       [
-        [0, "0.0e0"],
-        [10, "1.0e1"],
-        [-1, "-1.0e0"],
-        ["0", "0.0e0"],
-        ["10", "1.0e1"],
-        ["-1", "-1.0e0"],
-        ["1.0", "1.0e0"],
-        ["0.1", "1.0e-1"],
-        ["10.01", "1.001e1"],
+        [0, "0.0E0"],
+        [10, "1.0E1"],
+        [-1, "-1.0E0"],
+        ["0", "0.0E0"],
+        ["10", "1.0E1"],
+        ["-1", "-1.0E0"],
+        ["1.0", "1.0E0"],
+        ["0.1", "1.0E-1"],
+        ["10.01", "1.001E1"],
         ["true", %{"true"^^<http://www.w3.org/2001/XMLSchema#double>}],
         ["false", %{"false"^^<http://www.w3.org/2001/XMLSchema#double>}],
         ["string", %{"string"^^<http://www.w3.org/2001/XMLSchema#double>}],
@@ -483,13 +515,13 @@ describe RDF::N3::Writer do
       "empty subject" => {
         input: %({} <b> <c> .),
         regexp: [
-          %r(\[<b> <c>\] \.)
+          %r({} <b> <c> \.)
         ]
       },
       "empty object" => {
         input: %(<a> <b> {} .),
         regexp: [
-          %r(<a> <b> \[\] \.)
+          %r(<a> <b> {} \.)
         ]
       },
       "as subject with constant content" => {
@@ -507,7 +539,7 @@ describe RDF::N3::Writer do
       "implies" => {
         input: %({ _:x :is _:x } => {_:x :is _:x } .),
         regexp: [
-          %r({\s+_:x(_\d+_\d+) :is _:x\1 \.\s+} => {\s+_:x(_\d+_\d+) :is _:x\2 \.\s+} \.)m
+          %r({\s+_:b0 :is _:b0 \.\s+} => {\s+_:b1 :is _:b1 \.\s+} \.)m
         ]
       },
       "formula simple" => {
@@ -561,7 +593,19 @@ describe RDF::N3::Writer do
           %r(} \.),
         ],
         input_format: :trig
-      }
+      },
+      "implication" => {
+        input: %q(
+          @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+          ("17"^^xsd:integer) a <#TestCase> .
+          { ( ?x ) a :TestCase}  => { ?x a :RESULT } .
+        ),
+        regexp: [
+          %r{\(17\) a :TestCase \.},
+          %r{\(?x\) a :TestCase \.},
+          %r{\?x a :RESULT \.},
+        ]
+      },
     }.each do |name, params|
       it name do
         serialize(params[:input], params[:regexp], **params)
@@ -574,22 +618,21 @@ describe RDF::N3::Writer do
       "@forAll": {
         input: %(@forAll :o. :s :p :o .),
         regexp: [
-          %r(@forAll :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(@forAll :o \.),
+          %r(:s :p :o \.),
         ]
       },
       "@forSome": {
         input: %(@forSome :o. :s :p :o .),
         regexp: [
-          %r(@forSome :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(@forSome :o \.),
+          %r(:s :p :o \.),
         ]
       },
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
-          %r(@forAll :o_\d+_\d+ \.),
-          %r(:s :p :o_\d+_\d+ \.),
+          %r(:s :p \?o \.),
         ]
       },
     }.each do |name, params|
@@ -599,49 +642,86 @@ describe RDF::N3::Writer do
     end
   end
 
+  describe "results" do
+    {
+      "r1": {
+        input: %(
+          ( "one"  "two" ) a :whatever.
+          "one" a :SUCCESS.
+          "two" a :SUCCESS.
+        ),
+        regexp: [
+          %r(\(\s*"one"\s+"two"\s*\) a :whatever\s*\.),
+          %r("one" a :SUCCESS \.),
+          %r("two" a :SUCCESS \.),
+        ]
+      },
+    }.each do |name, params|
+      it name do
+        serialize(params[:input], params[:regexp], list_terms: true, **params)
+      end
+    end
+  end
+
   # W3C TriG Test suite
   describe "w3c n3 parser tests" do
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
-          next unless t.positive_test? && t.evaluate?
+          next if t.negative_test? || t.rejected?
           specify "#{t.name}: #{t.comment} (action)" do
             case t.name
-            when *%w(n3_10003 n3_10004 n3_10008)
-              skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10017)
+            when *%w(cwm_syntax_path2.n3
+                     cwm_includes_quantifiers_limited.n3
+                     cwm_includes_builtins.n3
+                     cwm_list_unify5-ref.n3
+                     cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
+                     cwm_other_lists.n3   # empty list with extra properties
+                     new_syntax_inverted_properties.n3
+                     cwm_other_dec-div.n3 cwm_syntax_sep-term.n3
+                     )
               pending "Investigate"
-            when *%w(n3_10013)
+            when *%w(cwm_math_trigo.ref.n3
+                     cwm_syntax_decimal.n3 cwm_syntax_decimal-ref.n3)
               pending "Number syntax"
+            when *%w(cwm_syntax_bad-preds-formula.n3
+                     cwm_syntax_path2.n3)
+              pending "Anonymous properties"
+            when *%w(cwm_syntax_too-nested.n3 cwm_list_unify4.n3)
+              skip("stack overflow")
+            when *%w(manifest.ttl cwm_math_math-test.n3 cwm_other_daml-ex.n3
+                     cwm_math_math-test.n3 cwm_syntax_this-quantifiers-ref.n3)
+              skip("too long")
             end
+
             logger.info t.inspect
             logger.info "source: #{t.input}"
-            repo = parse(t.input, base_uri: t.base)
-            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
-            logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base)
-            expect(g2).to be_equivalent_graph(repo, logger: logger)
+            repo = parse(t.input, base_uri: t.base, logger: false)
+            logger.info("sxp: #{SXP::Generator.string(repo.to_sxp_bin)}")
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
+            g2 = parse(n3, validate: true, base_uri: t.base, logger: logger)
+            expect(g2.count).to produce(repo.count, logger)
+            expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
 
+          next if t.syntax? || t.reason?
           specify "#{t.name}: #{t.comment} (result)" do
             case t.name
-            when *%w(n3_10003 n3_10004 n3_10008)
-              skip "Blank Node predicates"
-            when *%w(n3_10012 n3_10017)
+            when *%w(cwm_syntax_path2.n3)
               pending "Investigate"
-            when *%w(n3_10013)
-              pending "Number syntax"
+            when *%w(cwm_syntax_too-nested.n3)
+              skip("stack overflow")
             end
+
             logger.info t.inspect
             logger.info "source: #{t.expected}"
             format = detect_format(t.expected)
-            repo = parse(t.expected, base_uri: t.base, format: format)
-            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true)
-            logger.info "serialized: #{n3}"
-            g2 = parse(n3, base_uri: t.base)
-            expect(g2).to be_equivalent_graph(repo, logger: logger)
+            repo = parse(t.expected, base_uri: t.base, format: format, logger: false)
+            n3 = serialize(repo, [], base_uri: t.base, standard_prefixes: true, logger: logger)
+            g2 = parse(n3, validate: true, base_uri: t.base, logger: false)
+            expect(g2.isomorphic?(repo)).to produce(true, logger)
           end
         end
       end
@@ -649,18 +729,18 @@ describe RDF::N3::Writer do
   end unless ENV['CI']
 
   def parse(input, format: :n3, **options)
-    repo = RDF::Repository.new
+    repo = [].extend(RDF::Enumerable, RDF::Queryable)
     reader = RDF::Reader.for(format)
-    repo << reader.new(input, **options)
+    reader.new(input, **options).each_statement {|st| repo << st}
     repo
   end
 
   # Serialize ntstr to a string and compare against regexps
   def serialize(ntstr, regexps = [], base_uri: nil, **options)
     prefixes = options[:prefixes] || {}
-    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: [], format: options.fetch(:input_format, :n3))
+    g = ntstr.is_a?(RDF::Enumerable) ? ntstr : parse(ntstr, base_uri: base_uri, prefixes: prefixes, validate: false, logger: false, format: options.fetch(:input_format, :n3))
     result = RDF::N3::Writer.buffer(**options.merge(logger: logger, base_uri: base_uri, prefixes: prefixes)) do |writer|
-      writer << g
+      g.each_statement {|st| writer << st}
     end
     if $verbose
       require 'cgi'

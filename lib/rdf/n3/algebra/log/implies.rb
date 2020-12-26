@@ -8,12 +8,15 @@ module RDF::N3::Algebra::Log
   class Implies < SPARQL::Algebra::Operator::Binary
     include SPARQL::Algebra::Query
     include SPARQL::Algebra::Update
-    include RDF::Enumerable
-    include RDF::Util::Logger
+    include RDF::N3::Algebra::Builtin
 
     NAME = :logImplies
+    URI = RDF::N3::Log.implies
 
-    # Yields solutions from subject. Solutions are created by evaluating subject against `queryable`.
+    ##
+    # Returns solutions from subject. Solutions are created by evaluating subject against `queryable`.
+    #
+    # Solutions are kept within this instance, and used for conclusions. Note that the evaluated solutions do not affect that of the invoking formula, as the solution spaces are disjoint.
     #
     # @param  [RDF::Queryable] queryable
     #   the graph or repository to query
@@ -24,12 +27,42 @@ module RDF::N3::Algebra::Log
     # @return [RDF::Solutions] distinct solutions
     def execute(queryable, solutions:, **options)
       @queryable = queryable
-      log_debug {"logImplies"}
-      @solutions = log_depth {operands.first.execute(queryable, solutions: solutions, **options)}
-      log_debug {"(logImplies solutions) #{@solutions.to_sxp}"}
+      @solutions = RDF::Query::Solutions(solutions.map do |solution|
+        log_debug(NAME, "solution") {SXP::Generator.string(solution.to_sxp_bin)}
+        subject = operand(0).evaluate(solution.bindings, formulae: formulae)
+        object = operand(1).evaluate(solution.bindings, formulae: formulae)
+        log_info(NAME,  "subject") {SXP::Generator.string(subject.to_sxp_bin)}
+        log_info(NAME, "object") {SXP::Generator.string(object.to_sxp_bin)}
+
+        # Nothing to do if variables aren't resolved.
+        next unless subject && object
+
+        solns = log_depth {subject.execute(queryable, solutions: RDF::Query::Solutions(solution), **options)}
+
+        # Execute object as well (typically used for log:outputString)
+        solns.each do |soln|
+          log_depth {object.execute(queryable, solutions: RDF::Query::Solutions(soln), **options)}
+        end
+
+        # filter solutions where not all variables in antecedant are bound.
+        vars = subject.universal_vars
+        solns = RDF::Query::Solutions(solns.to_a.select do |soln|
+          vars.all? {|v| soln.bound?(v)}
+        end)
+        solns
+      end.flatten.compact.uniq)
+      log_info(NAME) {SXP::Generator.string(@solutions.to_sxp_bin)}
 
       # Return original solutions, without bindings
       solutions
+    end
+
+    ##
+    # Clear out any cached solutions.
+    # This principaly is for log:conclusions
+    def clear_solutions
+      super
+      @solutions = nil
     end
 
     ##
@@ -39,34 +72,26 @@ module RDF::N3::Algebra::Log
     #   each matching statement
     # @yieldparam  [RDF::Statement] solution
     # @yieldreturn [void] ignored
-    def each(&block)
-      @solutions ||= RDF::Query::Solutions.new
-      log_debug {"logImplies each #{@solutions.to_sxp}"}
-      subject, object = operands
+    def each(solutions: RDF::Query::Solutions(), &block)
+      # Merge solutions in with those for the evaluation of this implication
+      # Clear out solutions so they don't get remembered erroneously.
+      solutions, @solutions = Array(@solutions), nil
+      log_depth do
+        super(solutions: RDF::Query::Solutions(RDF::Query::Solution.new), &block)
 
-      if @solutions.empty?
-        # Some evalaluatable operand evaluated to false
-        log_debug("(logImplies implication false - no solutions)")
-        return
-      end
+        solutions.each do |solution|
+          log_info("(logImplies each) solution") {SXP::Generator.string solution.to_sxp_bin}
+          object = operand(1).evaluate(solution.bindings, formulae: formulae)
+          log_info("(logImplies each) object") {SXP::Generator.string object.to_sxp_bin}
 
-      # Graph based on solutions from subject
-      subject_graph = log_depth {RDF::Graph.new {|g| g << subject}}
-
-      # Use solutions from subject for object
-      object.solutions = @solutions
-
-      # Nothing emitted if @solutions is not complete. Solutions are complete when all variables are bound.
-      if @queryable.contain?(subject_graph)
-        log_debug("(logImplies implication true)")
-        # Yield statements into the default graph
-        log_depth do
-          object.each do |statement|
-            block.call(RDF::Statement.from(statement.to_triple, inferred: true, graph_name: graph_name))
+          # Yield inferred statements
+          log_depth do
+            object.each(solutions: RDF::Query::Solutions(solution)) do |statement|
+              log_debug(("(logImplies each) infer\s")) {statement.to_sxp}
+              block.call(RDF::Statement.from(statement.to_quad, inferred: true))
+            end
           end
         end
-      else
-        log_debug("(logImplies implication false)")
       end
     end
 

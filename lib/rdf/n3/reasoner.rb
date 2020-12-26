@@ -11,13 +11,13 @@ module RDF::N3
     include RDF::Mutable
     include RDF::Util::Logger
 
-    # The top-level parsed formula
+    # The top-level parsed formula, including builtins and variables.
     # @return [RDF::N3::Algebra::Formula]
     attr_reader :formula
 
     # Opens a Notation-3 file, and parses it to initialize the reasoner
     #
-    # @param  [String, #to_s] filename
+    # @param  [String, #to_s] file
     # @yield  [reasoner] `self`
     # @yieldparam  [RDF::N3::Reasoner] reasoner
     # @yieldreturn [void] ignored
@@ -50,7 +50,8 @@ module RDF::N3
     #   RDF::N3::Reader.open("rules.n3") {|r| reasoner << r}
     #   reasoner.each_triple {}
     #
-    # @param  [RDF::Enumerable] input (nil)
+    # @param  [RDF::Mutable] input (nil)
+    #   Input should be parsed N3 using native lists (see `:list_terms` option to {RDF::N3::Reader#initialize})
     # @param  [Hash{Symbol => Object}] options
     # @option options [#to_s]    :base_uri     (nil)
     #   the base URI to use when resolving relative URIs (for acessing intermediate parser productions)
@@ -59,14 +60,16 @@ module RDF::N3
     # @yieldreturn [void] ignored
     # @return [RDF::N3::Reasoner]
     def initialize(input, **options, &block)
-      @options = options
+      @options = options.merge(strings: {}) # for --strings and log:outputString
       @mutable = case input
       when RDF::Mutable then input
-      when RDF::Enumerable then RDF::Repository.new {|r| r << input}
-      else RDF::Repository.new
+      when RDF::Enumerable then RDF::N3::Repository.new {|r| r << input}
+      else RDF::N3::Repository.new
       end
 
-      log_debug("reasoner: expression", **options) {SXP::Generator.string(formula.to_sxp_bin)}
+      @formula = input if input.is_a?(RDF::N3::Algebra::Formula)
+
+      log_debug("reasoner: expression") {SXP::Generator.string(formula.to_sxp_bin)}
 
       if block_given?
         case block.arity
@@ -79,7 +82,7 @@ module RDF::N3
     ##
     # Returns a copy of this reasoner
     def dup
-      repo = RDF::Repository.new {|r| r << @mutable}
+      repo = RDF::N3::Repository.new {|r| r << @mutable}
       self.class.new(repo) do |reasoner|
         reasoner.instance_variable_set(:@options, @options.dup)
         reasoner.instance_variable_set(:@formula, @formula.dup) if @formula
@@ -92,6 +95,7 @@ module RDF::N3
     # @param  [RDF::Statement] statement
     # @return [void]
     def insert_statement(statement)
+      @formula = nil
       @mutable.insert_statement(statement)
     end
 
@@ -100,6 +104,7 @@ module RDF::N3
     #
     # @param  [Hash{Symbol => Object}] options
     # @option options [Boolean] :apply
+    # @option options [Boolean] :rules
     # @option options [Boolean] :think
     # @yield  [statement]
     # @yieldparam  [RDF::Statement] statement
@@ -107,29 +112,38 @@ module RDF::N3
     def execute(**options, &block)
       @options[:logger] = options[:logger] if options.has_key?(:logger)
 
+      # The knowledge base is the non-variable portions of formula
+      knowledge_base = RDF::N3::Repository.new {|r| r << formula}
+      log_debug("reasoner: knowledge_base") {SXP::Generator.string(knowledge_base.statements.to_sxp_bin)}
+
       # If thinking, continuously execute until results stop growing
-      if options[:think]
-        count = 0
-        log_info("reasoner: think start") { "count: #{count}"}
-        while @mutable.count > count
-          count = @mutable.count
-          dataset = RDF::Graph.new << @mutable.project_graph(nil)
-          log_depth {formula.execute(dataset, **options)}
-          @mutable << formula
+      count = -1
+      log_info("reasoner: start") { "count: #{count}"}
+      solutions = RDF::Query::Solutions(RDF::Query::Solution.new)
+      while knowledge_base.count > count
+        log_info("reasoner: do") { "count: #{count}"}
+        count = knowledge_base.count
+        log_depth {formula.execute(knowledge_base, solutions: solutions, **options)}
+        knowledge_base << formula
+        solutions = RDF::Query::Solutions(RDF::Query::Solution.new) if solutions.empty?
+        log_debug("reasoner: solutions") {SXP::Generator.string solutions.to_sxp_bin}
+        log_debug("reasoner: datastore") {SXP::Generator.string knowledge_base.statements.to_sxp_bin}
+        log_info("reasoner: inferred") {SXP::Generator.string knowledge_base.statements.select(&:inferred?).to_sxp_bin}
+        log_info("reasoner: formula") do
+          SXP::Generator.string RDF::N3::Algebra::Formula.from_enumerable(knowledge_base).to_sxp_bin
         end
-        log_info("reasoner: think end") { "count: #{count}"}
-      else
-        # Run one iteration
-        log_info("reasoner: apply start") { "count: #{count}"}
-        dataset = RDF::Graph.new << @mutable.project_graph(nil)
-        log_depth {formula.execute(dataset, **options)}
-        @mutable << formula
-        log_info("reasoner: apply end") { "count: #{count}"}
+        @formula = nil # cause formula to be re-calculated from knowledge-base
+        unless options[:think]
+          count = knowledge_base.count
+          break
+        end
       end
+      log_info("reasoner: end") { "count: #{count}"}
 
-      log_debug("reasoner: datastore") {@mutable.to_sxp}
+      # Add updates back to mutable, containg builtins and variables.
+      @mutable << knowledge_base
 
-      conclusions(&block) if block_given?
+      each(&block) if block_given?
       self
     end
     alias_method :reason!, :execute
@@ -137,7 +151,7 @@ module RDF::N3
     ##
     # Reason with results in a duplicate datastore
     #
-    # @see {execute}
+    # @see execute
     def reason(**options, &block)
       self.dup.reason!(**options, &block)
     end
@@ -180,7 +194,7 @@ module RDF::N3
     alias_method :each_datum, :data
 
     ##
-    # Returns an enumerator for {#conclusions}.
+    # Returns an enumerator for {#data}.
     # FIXME: enum_for doesn't seem to be working properly
     # in JRuby 1.7, so specs are marked pending
     #
@@ -234,49 +248,24 @@ module RDF::N3
     end
 
     ##
-    # Returns the top-level formula for this file
+    # Returns the concatenated strings from log:outputString
+    #
+    # @return [String]
+    def strings
+      @options[:strings].
+        sort_by {|k, v| k}.
+        map {|(k,v)| v.join("")}.
+        join("")
+    end
+
+    ##
+    # Returns the top-level formula for this file.
+    #
+    # Transforms an RDF dataset into a recursive formula structure.
     #
     # @return [RDF::N3::Algebra::Formula]
     def formula
-      # SPARQL used for SSE and algebra functionality
-      require 'sparql' unless defined?(:SPARQL)
-
-      @formula ||= begin
-        # Create formulae from statement graph_names
-        formulae = (@mutable.graph_names.unshift(nil)).inject({}) do |memo, graph_name|
-          memo.merge(graph_name => Algebra::Formula.new(graph_name: graph_name, **@options))
-        end
-
-        # Add patterns to appropiate formula based on graph_name,
-        # and replace subject and object bnodes which identify
-        # named graphs with those formula
-        @mutable.each_statement do |statement|
-          pattern = statement.variable? ? RDF::Query::Pattern.from(statement) : statement
-
-          # A graph name indicates a formula.
-          form = formulae[pattern.graph_name]
-
-          # Formulae may be the subject or object of a known operator
-          if klass = Algebra.for(pattern.predicate)
-            fs = formulae.fetch(pattern.subject, pattern.subject)
-            fo = formulae.fetch(pattern.object, pattern.object)
-            form.operands << klass.new(fs, fo, parent: form, **@options)
-          else
-            # Add formulae as direct operators
-            if formulae.has_key?(pattern.subject)
-              form.operands << formulae[pattern.subject]
-            end
-            if formulae.has_key?(pattern.object)
-              form.operands << formulae[pattern.object]
-            end
-            pattern.graph_name = nil
-            form.operands << pattern
-          end
-        end
-
-        # Formula is that without a graph name
-        formulae[nil]
-      end
+      @formula ||= RDF::N3::Algebra::Formula.from_enumerable(@mutable, **@options)
     end
 
     ##

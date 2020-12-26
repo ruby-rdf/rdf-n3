@@ -1,4 +1,7 @@
 # coding: utf-8
+require 'rdf/reader'
+require 'ebnf'
+
 module RDF::N3
   ##
   # A Notation-3/Turtle parser in Ruby
@@ -9,7 +12,9 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
-  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are tracked using `$`, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are named using an `_ext` suffix, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  #
+  # Non-distinguished blank node variables are created as part of reasoning.
   #
   # @todo
   # * Formulae as RDF::Query representations
@@ -18,16 +23,41 @@ module RDF::N3
   # @author [Gregg Kellogg](http://greggkellogg.net/)
   class Reader < RDF::Reader
     format Format
+    using Refinements
 
     include RDF::Util::Logger
-    include Meta
-    include Parser
+    include EBNF::LL1::Parser
+    include Terminals
 
-    N3_KEYWORDS = %w(a is of has keywords prefix base true false forSome forAny)
-
-    # The Blank nodes allocated for formula
+    # Nodes used as Formulae graph names
+    #
     # @return [Array<RDF::Node>]
     attr_reader :formulae
+
+    # All nodes allocated to formulae
+    #
+    # @return [Hash{RDF::Node => RDF::Graph}]
+    attr_reader :formula_nodes
+
+    # Allocated variables by formula
+    #
+    # @return [Hash{Symbol => RDF::Node}]
+    attr_reader :variables
+
+    ##
+    # N3 Reader options
+    # @see http://www.rubydoc.info/github/ruby-rdf/rdf/RDF/Reader#options-class_method
+    def self.options
+      super + [
+        RDF::CLI::Option.new(
+          symbol: :list_terms,
+          datatype: TrueClass,
+          default: true,
+          control: :checkbox,
+          on: ["--list-terms CONTEXT"],
+          description: "Use native collections (lists), not first/rest ladder.")
+      ]
+    end
 
     ##
     # Initializes the N3 reader instance.
@@ -40,11 +70,11 @@ module RDF::N3
     # @option options [Boolean]  :validate     (false)
     #   whether to validate the parsed statements and values
     # @option options [Boolean]  :canonicalize (false)
-    #   whether to canonicalize parsed literals
-    # @option options [Boolean]  :intern       (true)
-    #   whether to intern all parsed URIs
+    #   whether to canonicalize parsed literals and URIs.
     # @option options [Hash]     :prefixes     (Hash.new)
     #   the prefix mappings to use (not supported by all readers)
+    # @option options [Hash]     :list_terms   (false)
+    #   represent collections as an `RDF::Term`, rather than an rdf:first/rest ladder.
     # @return [reader]
     # @yield  [reader] `self`
     # @yieldparam  [RDF::Reader] reader
@@ -52,44 +82,43 @@ module RDF::N3
     # @raise [Error]:: Raises RDF::ReaderError if validating and an error is found
     def initialize(input = $stdin, **options, &block)
       super do
-        input.rewind if input.respond_to?(:rewind)
-        @input = input.respond_to?(:read) ? input : StringIO.new(input.to_s)
-        @lineno = 0
-        readline  # Prime the pump
+        @options = {
+          anon_base:  "b0",
+          whitespace:  WS,
+          depth: 0,
+        }.merge(@options)
+        @prod_stack = []
 
-        @memo = {}
-        @keyword_mode = false
-        @keywords = %w(a is of this has).map(&:freeze).freeze
-        @productions = []
-        @prod_data = []
-
-        @branches = BRANCHES # Get from meta class
-        @regexps = REGEXPS # Get from meta class
-
-        @formulae = []      # Nodes used as Formulae graph names
-        @formulae_nodes = {}
-        @label_uniquifier ||= "#{Random.new_seed}_000000"
-        @bnodes = {}  # allocated bnodes by formula
-        @variables = {}  # allocated variables by formula
+        @formulae = []
+        @formula_nodes = {}
+        @label_uniquifier = "0"
+        @bnodes = {}
+        @bn_labler = @options[:anon_base].dup
+        @bn_mapper = {}
+        @variables = {}
 
         if options[:base_uri]
-          log_info("@uri") { base_uri.inspect}
-          namespace(nil, uri("#{base_uri}#"))
+          progress("base_uri") { base_uri.inspect}
+          namespace(nil, iri(base_uri.to_s.match?(%r{[#/]$}) ? base_uri : "#{base_uri}#"))
         end
 
         # Prepopulate operator namespaces unless validating
         unless validate?
-          namespace(:crypto, RDF::N3::Crypto)
-          namespace(:list, RDF::N3::List)
-          namespace(:log, RDF::N3::Log)
-          namespace(:math, RDF::N3::Math)
-          namespace(:rei, RDF::N3::Rei)
-          #namespace(:string, RDF::N3::String)
-          namespace(:time, RDF::N3::Time)
+          namespace(:rdf, RDF.to_uri)
+          namespace(:rdfs, RDF::RDFS.to_uri)
+          namespace(:xsd, RDF::XSD.to_uri)
+          namespace(:crypto, RDF::N3::Crypto.to_uri)
+          namespace(:list, RDF::N3::List.to_uri)
+          namespace(:log, RDF::N3::Log.to_uri)
+          namespace(:math, RDF::N3::Math.to_uri)
+          namespace(:rei, RDF::N3::Rei.to_uri)
+          #namespace(:string, RDF::N3::String.to_uri)
+          namespace(:time, RDF::N3::Time.to_uri)
         end
-        log_info("validate") {validate?.inspect}
-        log_info("canonicalize") {canonicalize?.inspect}
-        log_info("intern") {intern?.inspect}
+        progress("validate") {validate?.inspect}
+        progress("canonicalize") {canonicalize?.inspect}
+
+        @lexer = EBNF::LL1::Lexer.new(input, self.class.patterns, **@options)
 
         if block_given?
           case block.arity
@@ -111,9 +140,16 @@ module RDF::N3
     # @return [void]
     def each_statement(&block)
       if block_given?
+        log_recover
         @callback = block
 
-        parse(START.to_sym)
+        begin
+          while (@lexer.first rescue true)
+            read_n3Doc
+          end
+        rescue EBNF::LL1::Lexer::Error, SyntaxError, EOFError, Recovery
+          # Terminate loop if EOF found while recovering
+        end
 
         if validate? && log_statistics[:error]
           raise RDF::ReaderError, "Errors found during processing"
@@ -140,526 +176,619 @@ module RDF::N3
     end
 
     protected
-    # Start of production
-    def onStart(prod)
-      handler = "#{prod}Start".to_sym
-      log_info("#{handler}(#{respond_to?(handler, true)})", prod, depth: depth)
-      @productions << prod
-      send(handler, prod) if respond_to?(handler, true)
 
-    end
+    # Terminals passed to lexer. Order matters!
 
-    # End of production
-    def onFinish
-      prod = @productions.pop()
-      handler = "#{prod}Finish".to_sym
-      log_info("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}: #{@prod_data.last.inspect}"}
-      send(handler) if respond_to?(handler, true)
-    end
+    # @!parse none
+    terminal(:ANON,                             ANON)
+    terminal(:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL)
+    terminal(:IRIREF,                           IRIREF, unescape:  true)
+    terminal(:DOUBLE,                           DOUBLE)
+    terminal(:DECIMAL,                          DECIMAL)
+    terminal(:INTEGER,                          INTEGER)
+    terminal(:PNAME_LN,                         PNAME_LN, unescape:  true)
+    terminal(:PNAME_NS,                         PNAME_NS)
+    terminal(:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE, unescape:  true, partial_regexp: /^'''/)
+    terminal(:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE,        unescape:  true, partial_regexp: /^"""/)
+    terminal(:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE,             unescape:  true)
+    terminal(:STRING_LITERAL_SINGLE_QUOTE,      STRING_LITERAL_SINGLE_QUOTE,      unescape:  true)
 
-    # Process of a token
-    def onToken(prod, tok)
-      unless @productions.empty?
-        parentProd = @productions.last
-        handler = "#{parentProd}Token".to_sym
-        log_info("#{handler}(#{respond_to?(handler, true)})", depth: depth) {"#{prod}, #{tok}: #{@prod_data.last.inspect}"}
-        send(handler, prod, tok) if respond_to?(handler, true)
-      else
-        error("Token has no parent production")
-      end
-    end
+    # String terminals
+    terminal(nil,                               %r(
+                                                   [\(\){},.;\[\]a!]
+                                                 | \^\^|\^
+                                                 |<-|<=|=>|=
+                                                 | true|false
+                                                 | has|is|of
+                                                 |@forAll|@forSome
+                                                )x)
 
-    def booleanToken(prod, tok)
-      lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
-      add_prod_data(:literal, lit)
-    end
+    terminal(:PREFIX,                           PREFIX)
+    terminal(:BASE,                             BASE)
+    terminal(:LANGTAG,                          LANGTAG)
+    terminal(:QUICK_VAR_NAME,                   QUICK_VAR_NAME,                  unescape:  true)
 
-    def declarationStart(prod)
-      @prod_data << {}
-    end
-
-    def declarationToken(prod, tok)
-      case prod
-      when "@prefix", "@base", "@keywords"
-        add_prod_data(:prod, prod)
-      when "prefix"
-        add_prod_data(:prefix, tok[0..-2])
-      when "explicituri"
-        add_prod_data(:explicituri, tok[1..-2])
-      else
-        add_prod_data(prod.to_sym, tok)
-      end
-    end
-
-    def declarationFinish
-      decl = @prod_data.pop
-      case decl[:prod]
-      when "@prefix"
-        uri = process_uri(decl[:explicituri])
-        namespace(decl[:prefix], uri)
-      when "@base"
-        # Base, set or update document URI
-        uri = decl[:explicituri]
-        options[:base_uri] = process_uri(uri)
-
-        # The empty prefix "" is by default , bound to "#" -- the local namespace of the file.
-        # The parser behaves as though there were a
-        #   @prefix : <#>.
-        # just before the file.
-        # This means that <#foo> can be written :foo and using @keywords one can reduce that to foo.
-
-        namespace(nil, uri.match(/[\/\#]$/) ? base_uri : process_uri("#{uri}#"))
-        log_debug("declarationFinish[@base]", depth: depth) {"@base=#{base_uri}"}
-      when "@keywords"
-        log_debug("declarationFinish[@keywords]", depth: depth) {@keywords.inspect}
-        # Keywords are handled in tokenizer and maintained in @keywords array
-        if (@keywords & N3_KEYWORDS) != @keywords
-          error("Undefined keywords used: #{(@keywords - N3_KEYWORDS).to_sentence}") if validate?
-        end
-        @userkeys = true
-      else
-        error("declarationFinish: FIXME #{decl.inspect}")
-      end
-    end
-
-    # Document start, instantiate
-    def documentStart(prod)
-      @formulae.push(nil)
-      @prod_data << {}
-    end
-
-    def dtlangToken(prod, tok)
-      add_prod_data(:langcode, tok) if prod == "langcode"
-    end
-
-    def existentialStart(prod)
-      @prod_data << {}
-    end
-
-    # Apart from the set of statements, a formula also has a set of URIs of symbols which are universally quantified,
-    # and a set of URIs of symbols which are existentially quantified.
-    # Variables are then in general symbols which have been quantified.
+  private
+    ##
+    # Read statements and directives
     #
-    # Here we allocate a variable (making up a name) and record with the defining formula. Quantification is done
-    # when the formula is completed against all in-scope variables
-    def existentialFinish
-      pd = @prod_data.pop
-      forSome = Array(pd[:symbol])
-      forSome.each do |term|
-        var = univar(term, existential: true)
-        add_var_to_formula(@formulae.last, term, var)
-      end
-    end
-
-    def expressionStart(prod)
-      @prod_data << {}
-    end
-
-    # Process path items, and push on the last object for parent processing
-    def expressionFinish
-      expression = @prod_data.pop
-
-      # If we're in teh middle of a pathtail, append
-      if @prod_data.last[:pathtail] && expression[:pathitem] && expression[:pathtail]
-        path_list = [expression[:pathitem]] + expression[:pathtail]
-        log_debug("expressionFinish(pathtail)", depth: depth) {"set pathtail to #{path_list.inspect}"}
-        @prod_data.last[:pathtail] = path_list
-
-        dir_list = [expression[:direction]] if expression[:direction]
-        dir_list += expression[:directiontail] if expression[:directiontail]
-        @prod_data.last[:directiontail] = dir_list if dir_list
-      elsif expression[:pathitem] && expression[:pathtail]
-        add_prod_data(:expression, process_path(expression))
-      elsif expression[:pathitem]
-        add_prod_data(:expression, expression[:pathitem])
-      else
-        error("expressionFinish: FIXME #{expression.inspect}")
-      end
-    end
-
-    def literalStart(prod)
-      @prod_data << {}
-    end
-
-    def literalToken(prod, tok)
-      tok = tok[0, 3] == '"""' ? tok[3..-4] : tok[1..-2]
-      add_prod_data(:string, tok)
-    end
-
-    def literalFinish
-      lit = @prod_data.pop
-      content = RDF::NTriples.unescape(lit[:string])
-      language = lit[:langcode] if lit[:langcode]
-      language = language.downcase if language && canonicalize?
-      datatype = lit[:symbol]
-
-      lit = RDF::Literal.new(content, language: language, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
-      add_prod_data(:literal, lit)
-    end
-
-    def objectStart(prod)
-      @prod_data << {}
-    end
-
-    def objectFinish
-      object = @prod_data.pop
-      if object[:expression]
-        add_prod_data(:object, object[:expression])
-      else
-        error("objectFinish: FIXME #{object.inspect}")
-      end
-    end
-
-    def pathitemStart(prod)
-      @prod_data << {}
-    end
-
-    def pathitemToken(prod, tok)
-      case prod
-      when "numericliteral"
-        nl = RDF::NTriples.unescape(tok)
-        datatype = case nl
-        when /e/i then RDF::XSD.double
-        when /\./ then RDF::XSD.decimal
-        else RDF::XSD.integer
-        end
-
-        lit = RDF::Literal.new(nl, datatype: datatype, validate: validate?, canonicalize: canonicalize?)
-        add_prod_data(:literal, lit)
-      when "quickvariable"
-        # There is a also a shorthand syntax ?x which is the same as :x except that it implies that x is
-        # universally quantified not in the formula but in its parent formula
-        uri = process_qname(tok.sub('?', ':'))
-        var = uri.variable? ? uri : univar(uri)
-        add_var_to_formula(@formulae[-2], uri, var)
-        # Also add var to this formula
-        add_var_to_formula(@formulae.last, uri, var)
-
-        add_prod_data(:symbol, var)
-      when "boolean"
-        lit = RDF::Literal.new(tok.delete("@"), datatype: RDF::XSD.boolean, validate: validate?, canonicalize: canonicalize?)
-        add_prod_data(:literal, lit)
-      when "[", "("
-        # Push on state for content of blank node
-        @prod_data << {}
-      when "]", ")"
-        # Construct
-        symbol = process_anonnode(@prod_data.pop)
-        add_prod_data(:symbol, symbol)
-      when "{"
-        # A new formula, push on a node as a named graph
-        node = RDF::Node.new(".form_#{unique_label}")
-        @formulae << node
-        @formulae_nodes[node] = true
-
-        # Promote variables defined on the earlier formula to this formula
-        @variables[node] = {}
-        @variables[@formulae[-2]].each do |name, var|
-          @variables[node][name] = var
-        end
-      when "}"
-        # Pop off the formula
-        formula = @formulae.pop
-        add_prod_data(:symbol, formula)
-      else
-        error("pathitemToken(#{prod}, #{tok}): FIXME")
-      end
-    end
-
-    def pathitemFinish
-      pathitem = @prod_data.pop
-      if pathitem[:pathlist]
-        error("pathitemFinish(pathlist): FIXME #{pathitem.inspect}")
-      elsif pathitem[:propertylist]
-        error("pathitemFinish(propertylist): FIXME #{pathitem.inspect}")
-      elsif pathitem[:symbol] || pathitem[:literal]
-        add_prod_data(:pathitem, pathitem[:symbol] || pathitem[:literal])
-      else
-        error("pathitemFinish: FIXME #{pathitem.inspect}")
-      end
-    end
-
-    def pathlistStart(prod)
-      @prod_data << {pathlist: []}
-    end
-
-    def pathlistFinish
-      pathlist = @prod_data.pop
-      # Flatten propertylist into an array
-      expr = @prod_data.last.delete(:expression)
-      add_prod_data(:pathlist, expr) if expr
-      add_prod_data(:pathlist, pathlist[:pathlist]) if pathlist[:pathlist]
-    end
-
-    def pathtailStart(prod)
-      @prod_data << {pathtail: []}
-    end
-
-    def pathtailToken(prod, tok)
-      case tok
-      when "!", "."
-        add_prod_data(:direction, :forward)
-      when "^"
-        add_prod_data(:direction, :reverse)
-      end
-    end
-
-    def pathtailFinish
-      pathtail = @prod_data.pop
-      add_prod_data(:pathtail, pathtail[:pathtail])
-      add_prod_data(:direction, pathtail[:direction]) if pathtail[:direction]
-      add_prod_data(:directiontail, pathtail[:directiontail]) if pathtail[:directiontail]
-    end
-
-    def propertylistStart(prod)
-      @prod_data << {}
-    end
-
-    def propertylistFinish
-      propertylist = @prod_data.pop
-      # Flatten propertylist into an array
-      ary = [propertylist, propertylist.delete(:propertylist)].flatten.compact
-      @prod_data.last[:propertylist] = ary
-    end
-
-    def simpleStatementStart(prod)
-      @prod_data << {}
-    end
-
-    # Completion of Simple Statement, all productions include :subject, and :propertyList
-    def simpleStatementFinish
-      statement = @prod_data.pop
-
-      subject = statement[:subject]
-      properties = Array(statement[:propertylist])
-      properties.each do |p|
-        predicate = p[:verb]
-        next unless predicate
-        log_debug("simpleStatementFinish(pred)", depth: depth) {predicate.to_s}
-        error(%(Illegal statment: "#{predicate}" missing object)) unless p.has_key?(:object)
-        objects = Array(p[:object])
-        objects.each do |object|
-          if p[:invert]
-            add_statement("simpleStatementFinish", object, predicate, subject)
-          else
-            add_statement("simpleStatementFinish", subject, predicate, object)
+    #      [1]  n3Doc ::= (n3Statement '.' | sparqlDirective)*
+    #
+    # @return [void]
+    def read_n3Doc
+      prod(:n3Doc, %w{.}) do
+        error("read_n3Doc", "Unexpected end of file") unless token = @lexer.first
+        case token.type
+        when :BASE, :PREFIX
+          read_directive || error("Failed to parse directive", production: :directive, token: token)
+        else
+          read_n3Statement
+          if !log_recovering? || @lexer.first === '.'
+            # If recovering, we will have eaten the closing '.'
+            token = @lexer.shift
+            unless token && token.value == '.'
+              error("Expected '.' following n3Statement", production: :n3Statement, token: token)
+            end
           end
         end
       end
     end
 
-    def subjectStart(prod)
-      @prod_data << {}
-    end
 
-    def subjectFinish
-      subject = @prod_data.pop
-
-      if subject[:expression]
-        add_prod_data(:subject, subject[:expression])
-      else
-        error("unknown expression type")
+    ##
+    # Read statements and directives
+    #
+    #     [2]  n3Statement ::= n3Directive | triples | existential | universal
+    #
+    # @return [void]
+    def read_n3Statement
+      prod(:n3Statement, %w{.}) do
+        error("read_n3Doc", "Unexpected end of file") unless token = @lexer.first
+        read_uniext ||
+        read_triples ||
+        error("Expected token", production: :statement, token: token)
       end
     end
 
-    def symbolToken(prod, tok)
-      term = case prod
-      when 'explicituri'
-        process_uri(tok[1..-2])
-      when 'qname'
-        process_qname(tok)
-      else
-        error("symbolToken(#{prod}, #{tok}): FIXME #{term.inspect}")
+    ##
+    # Read base and prefix directives
+    #
+    #     [3]  n3Directive ::= prefixID | base
+    #
+    # @return [void]
+    def read_directive
+      prod(:directive, %w{.}) do
+        token = @lexer.first
+        case token.type
+        when :BASE
+          prod(:base) do
+            @lexer.shift
+            terminated = token.value == '@base'
+            iri = @lexer.shift
+            error("Expected IRIREF", production: :base, token: iri) unless iri === :IRIREF
+            @options[:base_uri] = process_iri(iri.value[1..-2].gsub(/\s/, ''))
+            namespace(nil, base_uri.to_s.end_with?('#') ? base_uri : iri("#{base_uri}#"))
+            error("base", "#{token} should be downcased") if token.value.start_with?('@') && token.value != '@base'
+
+            if terminated
+              error("base", "Expected #{token} to be terminated") unless @lexer.first === '.'
+              @lexer.shift
+            elsif @lexer.first === '.'
+              error("base", "Expected #{token} not to be terminated") 
+            else
+              true
+            end
+          end
+        when :PREFIX
+          prod(:prefixID, %w{.}) do
+            @lexer.shift
+            pfx, iri = @lexer.shift, @lexer.shift
+            terminated = token.value == '@prefix'
+            error("Expected PNAME_NS", production: :prefix, token: pfx) unless pfx === :PNAME_NS
+            error("Expected IRIREF", production: :prefix, token: iri) unless iri === :IRIREF
+            debug("prefixID", depth: options[:depth]) {"Defined prefix #{pfx.inspect} mapping to #{iri.inspect}"}
+            namespace(pfx.value[0..-2], process_iri(iri.value[1..-2].gsub(/\s/, '')))
+            error("prefixId", "#{token} should be downcased") if token.value.start_with?('@') && token.value != '@prefix'
+
+            if terminated
+              error("prefixID", "Expected #{token} to be terminated") unless @lexer.first === '.'
+              @lexer.shift
+            elsif @lexer.first === '.'
+              error("prefixID", "Expected #{token} not to be terminated") 
+            else
+              true
+            end
+          end
+        end
       end
-
-      add_prod_data(:symbol, term)
     end
 
-    def universalStart(prod)
-      @prod_data << {}
+    ##
+    # Read triples
+    #
+    #     [9]  triples ::= subject predicateObjectList?
+    #
+    # @return [Object] returns the last IRI matched, or subject BNode on predicateObjectList?
+    def read_triples
+      prod(:triples, %w{.}) do
+        error("read_triples", "Unexpected end of file") unless token = @lexer.first
+        subject = case token.type || token.value
+        when '['
+          # blankNodePropertyList predicateObjectList? 
+          read_blankNodePropertyList || error("Failed to parse blankNodePropertyList", production: :triples, token: @lexer.first)
+        else
+          # subject predicateObjectList
+          read_path || error("Failed to parse subject", production: :triples, token: @lexer.first)
+        end
+        read_predicateObjectList(subject) || subject
+      end
     end
 
+    ##
+    # Read predicateObjectList
+    #
+    #     [10] predicateObjectList ::= verb objectList (';' (verb objectList)?)*
+    #
+    # @param [RDF::Resource] subject
+    # @return [RDF::URI] the last matched verb
+    def read_predicateObjectList(subject)
+      return if @lexer.first.nil? || %w(. }).include?(@lexer.first.value)
+      prod(:predicateObjectList, %{;}) do
+        last_verb = nil
+        loop do
+          verb, invert = read_verb
+          break unless verb
+          last_verb = verb
+          prod(:_predicateObjectList_2) do
+            read_objectList(subject, verb, invert) || error("Expected objectList", production: :predicateObjectList, token: @lexer.first)
+          end
+          break unless @lexer.first === ';'
+          @lexer.shift while @lexer.first === ';'
+        end
+        last_verb
+      end
+    end
+
+    ##
+    # Read objectList
+    #
+    #     [11] objectList ::= object (',' object)*
+    #
+    # @return [RDF::Term] the last matched subject
+    def read_objectList(subject, predicate, invert)
+      prod(:objectList, %{,}) do
+        last_object = nil
+        while object = prod(:_objectList_2) {read_path}
+          last_object = object
+
+          if invert
+             add_statement(:objectList, object, predicate, subject)
+          else
+            add_statement(:objectList, subject, predicate, object)
+          end
+
+          break unless @lexer.first === ','
+          @lexer.shift while @lexer.first === ','
+        end
+        last_object
+      end
+    end
+
+    ##
+    # Read a verb
+    #
+    #     [12] verb = predicate
+    #               | 'a'
+    #               | 'has' expression
+    #               | 'is' expression 'of'
+    #               | '<-' expression
+    #               | '<='
+    #               | '=>'
+    #               | '='
+    #     
+    # @return [RDF::Resource, Boolean] verb and invert?
+    def read_verb
+      invert = false
+      error("read_verb", "Unexpected end of file") unless token = @lexer.first
+      verb = case token.type || token.value
+      when 'a' then prod(:verb) {@lexer.shift && RDF.type}
+      when 'has' then prod(:verb) {@lexer.shift && read_path}
+      when 'is' then prod(:verb) {
+        @lexer.shift
+        invert, v = true, read_path
+        error( "Expected 'of'", production: :verb, token: @lexer.first) unless @lexer.first.value == 'of'
+        @lexer.shift
+        v
+      }
+      when '<-' then prod(:verb) {
+        @lexer.shift
+        invert = true
+        read_path
+      }
+      when '<=' then prod(:verb) {
+        @lexer.shift
+        invert = true
+        RDF::N3::Log.implies
+      }
+      when '=>' then prod(:verb) {@lexer.shift && RDF::N3::Log.implies}
+      when '='  then prod(:verb) {@lexer.shift && RDF::OWL.sameAs}
+      else read_path
+      end
+      [verb, invert]
+    end
+
+    ##
+    # subjects, predicates and objects are all expressions, which are all paths
+    #
+    #     [13] subject       ::= expression
+    #     [14] predicate     ::= expression
+    #     [16] expression    ::= path
+    #     [17] path	         ::= pathItem ('!' path | '^' path)?
+    #
+    # @return [RDF::Resource]
+    def read_path
+      return if @lexer.first.nil? || %w/. } ) ]/.include?(@lexer.first.value)
+      prod(:path) do
+        pathtail = path = {}
+        loop do
+          pathtail[:pathitem] = prod(:pathItem) do
+            read_iri ||
+            read_blankNode ||
+            read_quickVar ||
+            read_collection ||
+            read_blankNodePropertyList ||
+            read_literal ||
+            read_formula
+          end
+
+          break if @lexer.first.nil? || !%w(! ^).include?(@lexer.first.value)
+          prod(:_path_2) do
+            pathtail[:direction] = @lexer.shift.value == '!' ? :forward : :reverse
+            pathtail = pathtail[:pathtail] = {}
+          end
+        end
+
+        # Returns the first object in the path
+        # FIXME: what if it's a verb?
+        process_path(path)
+      end
+    end
+
+    ##
+    # Read a literal
+    #
+    #     [19] literal ::= rdfLiteral | numericLiteral | BOOLEAN_LITERAL
+    #
+    # @return [RDF::Literal]
+    def read_literal
+      error("Unexpected end of file", production: :literal) unless token = @lexer.first
+      case token.type || token.value
+      when :INTEGER then prod(:literal) {literal(@lexer.shift.value, datatype:  RDF::XSD.integer, canonicalize: canonicalize?)}
+      when :DECIMAL
+        prod(:literal) do
+          value = @lexer.shift.value
+          value = "0#{value}" if value.start_with?(".")
+          literal(value, datatype:  RDF::XSD.decimal, canonicalize: canonicalize?)
+        end
+      when :DOUBLE then prod(:literal) {literal(@lexer.shift.value.sub(/\.([eE])/, '.0\1'), datatype:  RDF::XSD.double, canonicalize: canonicalize?)}
+      when "true", "false" then prod(:literal) {literal(@lexer.shift.value, datatype: RDF::XSD.boolean, canonicalize: canonicalize?)}
+      when :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE
+        prod(:literal) do
+          value = @lexer.shift.value[1..-2]
+          error("read_literal", "Unexpected end of file") unless token = @lexer.first
+          case token.type || token.value
+          when :LANGTAG
+            literal(value, language: @lexer.shift.value[1..-1].to_sym)
+          when '^^'
+            @lexer.shift
+            literal(value, datatype: read_iri)
+          else
+            literal(value)
+          end
+        end
+      when :STRING_LITERAL_LONG_QUOTE, :STRING_LITERAL_LONG_SINGLE_QUOTE
+        prod(:literal) do
+          value = @lexer.shift.value[3..-4]
+          error("read_literal", "Unexpected end of file") unless token = @lexer.first
+          case token.type || token.value
+          when :LANGTAG
+            literal(value, language: @lexer.shift.value[1..-1].to_sym)
+          when '^^'
+            @lexer.shift
+            literal(value, datatype: read_iri)
+          else
+            literal(value)
+          end
+        end
+      end
+    end
+
+    ##
+    # Read a blankNodePropertyList
+    #
+    #     [20] blankNodePropertyList ::= '[' predicateObjectList ']'
+    #
+    # @return [RDF::Node]
+    def read_blankNodePropertyList
+      token = @lexer.first
+      if token === '['
+        prod(:blankNodePropertyList, %{]}) do
+          @lexer.shift
+          progress("blankNodePropertyList", depth: options[:depth], token: token)
+          node = bnode
+          debug("blankNodePropertyList: subject", depth: options[:depth]) {node.to_sxp}
+          read_predicateObjectList(node)
+          error("blankNodePropertyList", "Expected closing ']'") unless @lexer.first === ']'
+          @lexer.shift
+          node
+        end
+      end
+    end
+
+    ##
+    # Read a collection (`RDF::List`)
+    #
+    #     [21] collection ::= '(' object* ')'
+    #
+    # If the `list_terms` option is given, the resulting resource is a list, otherwise, it is the list subject, and the first/rest entries are also emitted.
+    # @return [RDF::Node]
+    def read_collection
+      if @lexer.first === '('
+        prod(:collection, %{)}) do
+          @lexer.shift
+          token = @lexer.first
+          progress("collection", depth: options[:depth]) {"token: #{token.inspect}"}
+          objects = []
+          while @lexer.first.value != ')' && (object = read_path)
+            objects << object
+          end
+          error("collection", "Expected closing ')'") unless @lexer.first === ')'
+          @lexer.shift
+          list = RDF::N3::List.new(values: objects)
+          if options[:list_terms]
+            list
+          else
+            list.each_statement do |statement|
+              add_statement("collection", *statement.to_a)
+            end
+            list.subject
+          end
+        end
+      end
+    end
+
+    ##
+    # Read a formula
+    #
+    #     [22] formula         ::= '{' formulaContent? '}'
+    #     [23] formulaContent  ::= n3Statement ('.' formulaContent?)?
+    #
+    # @return [RDF::Node]
+    def read_formula
+      if @lexer.first === '{'
+        prod(:formula, %(})) do
+          @lexer.shift
+          node = RDF::Node.intern("_form_#{unique_label}")
+          formulae.push(node)
+          formula_nodes[node] = true
+          debug(:formula, depth: @options[:depth]) {"id: #{node}, depth: #{formulae.length}"}
+
+          # Promote variables defined on the earlier formula to this formula
+          variables[node] = {}
+          variables.fetch(formulae[-2], {}).each do |name, var|
+            variables[node][name] = var
+          end
+
+          read_formulaContent
+
+          # Pop off the formula
+          # Result is the BNode associated with the formula
+          debug(:formula, depth: @options[:depth]) {"pop: #{formulae.last}, depth: #{formulae.length}"}
+          error("collection", "Expected closing '}'") unless @lexer.shift === '}'
+
+          formulae.pop
+        end
+      end
+    end
+
+    ##
+    # Read formula content, similaer to n3Statement
+    #
+    #     [23] formulaContent  ::= n3Statement ('.' formulaContent?)?
+    #
+    # @return [void]
+    def read_formulaContent
+      return if @lexer.first === '}'  # Allow empty formula
+      prod(:formulaContent, %w(. })) do
+        loop do
+          token = @lexer.first
+          error("read_formulaContent", "Unexpected end of file") unless token
+          case token.type
+          when :BASE, :PREFIX
+            read_directive || error("Failed to parse directive", production: :directive, token: token)
+            break if @lexer.first === '}'
+          else
+            read_n3Statement
+            token = @lexer.first
+            case token.value
+            when '.'
+              @lexer.shift
+              # '.' optional at end of formulaContent
+              break if @lexer.first === '}'
+            when '}'
+              break
+            else
+              error("Expected '.' or '}' following n3Statement", production: :formulaContent, token: token)
+            end
+          end
+        end
+      end
+    end
+
+    ##
+    # Read an IRI
+    #
+    #     (rule iri "26" (alt IRIREF prefixedName))
+    #
+    # @return [RDF::URI]
+    def read_iri
+      token = @lexer.first
+      case token && token.type
+      when :IRIREF then prod(:iri)  {process_iri(@lexer.shift.value[1..-2].gsub(/\s+/m, ''))}
+      when :PNAME_LN, :PNAME_NS then prod(:prefixedName) {process_pname(*@lexer.shift.value)}
+      end
+    end
+
+    ##
+    # Read a blank node
+    #
+    #     [29] blankNode ::=  BLANK_NODE_LABEL | ANON
+    #
+    # @return [RDF::Node]
+    def read_blankNode
+      token = @lexer.first
+      case token && token.type
+      when :BLANK_NODE_LABEL then prod(:blankNode) {bnode(@lexer.shift.value[2..-1])}
+      when :ANON then @lexer.shift && prod(:blankNode) {bnode}
+      end
+    end
+
+    ##
+    # Read a quickVar, having global scope.
+    #
+    #     [30] quickVar ::= QUICK_VAR_NAME
+    #
+    # @return [RDF::Query::Variable]
+    def read_quickVar
+      if @lexer.first.type == :QUICK_VAR_NAME
+        prod(:quickVar) do
+          token = @lexer.shift
+          value = token.value.sub('?', '')
+          iri = ns(nil, "#{value}_quick")
+          variables[nil][iri] ||= univar(iri, scope: nil)
+        end
+      end
+    end
+
+    ##
+    # Read a list of IRIs
+    #
+    #     [27] iriList ::= iri ( ',' iri )*
+    #
+    # @return [Array<RDF::URI>] the list of IRIs
+    def read_irilist
+      iris = []
+      prod(:iriList, %{,}) do
+        while iri = read_iri
+          iris << iri
+          break unless @lexer.first === ','
+          @lexer.shift while @lexer.first === ','
+        end
+      end
+      iris
+    end
+
+    ##
+    # Read a univeral or existential
+    #
     # Apart from the set of statements, a formula also has a set of URIs of symbols which are universally quantified,
     # and a set of URIs of symbols which are existentially quantified.
     # Variables are then in general symbols which have been quantified.
     #
     # Here we allocate a variable (making up a name) and record with the defining formula. Quantification is done
     # when the formula is completed against all in-scope variables
-    def universalFinish
-      pd = @prod_data.pop
-      forAll = Array(pd[:symbol])
-      forAll.each do |term|
-        add_var_to_formula(@formulae.last, term, univar(term))
+    #
+    #     [31] existential ::=  '@forSome' iriList
+    #     [32] universal   ::=  '@forAll' iriList
+    #
+    # @return [void]
+    def read_uniext
+      if %w(@forSome @forAll).include?(@lexer.first.value)
+        token = @lexer.shift
+        prod(token === '@forAll' ? :universal : :existential) do
+          iri_list = read_irilist 
+          iri_list.each do |iri|
+            # Note, this might re-create an equivalent variable already defined in this formula, and replaces an equivalent variable that may have been defined in the parent formula.
+            var = univar(iri, scope: formulae.last, existential: token === '@forSome')
+            add_var_to_formula(formulae.last, iri, var)
+          end
+        end
       end
     end
-
-    def verbStart(prod)
-      @prod_data << {}
-    end
-
-    def verbToken(prod, tok)
-      term = case prod
-      when '<='
-        add_prod_data(:expression, RDF::N3::Log.implies)
-        add_prod_data(:invert, true)
-      when '=>'
-        add_prod_data(:expression, RDF::N3::Log.implies)
-      when '='
-        add_prod_data(:expression, RDF::OWL.sameAs)
-      when '@a'
-        add_prod_data(:expression, RDF.type)
-      when '@has', "@of"
-        # Syntactic sugar
-      when '@is'
-        add_prod_data(:invert, true)
-      else
-        error("verbToken(#{prod}, #{tok}): FIXME #{term.inspect}")
-      end
-
-      add_prod_data(:symbol, term)
-    end
-
-    def verbFinish
-      verb = @prod_data.pop
-      if verb[:expression]
-        error("Literal may not be used as a predicate") if verb[:expression].is_a?(RDF::Literal)
-        error("Formula may not be used as a peredicate") if @formulae_nodes.has_key?(verb[:expression])
-        add_prod_data(:verb, verb[:expression])
-        add_prod_data(:invert, true) if verb[:invert]
-      else
-        error("verbFinish: FIXME #{verb.inspect}")
-      end
-    end
-
-    private
 
     ###################
     # Utility Functions
     ###################
 
-    def process_anonnode(anonnode)
-      log_debug("process_anonnode", depth: depth) {anonnode.inspect}
-
-      if anonnode[:propertylist]
-        properties = anonnode[:propertylist]
-        bnode = bnode()
-        properties.each do |p|
-          predicate = p[:verb]
-          log_debug("process_anonnode(verb)", depth: depth) {predicate.inspect}
-          objects = Array(p[:object])
-          objects.each do |object|
-            if p[:invert]
-              add_statement("anonnode", object, predicate, bnode)
-            else
-              add_statement("anonnode", bnode, predicate, object)
-            end
-          end
-        end
-        bnode
-      elsif anonnode[:pathlist]
-        objects = Array(anonnode[:pathlist])
-        list = RDF::List[*objects]
-        list_subjects = {}
-        list.each_statement do |statement|
-          next if statement.predicate == RDF.type && statement.object == RDF.List
-          add_statement("anonnode(list)", statement.subject, statement.predicate, statement.object)
-        end
-        list.subject
-      end
-    end
-
     # Process a path, such as:
-    #   :a.:b means [is :b of :a] Deprecated
     #   :a!:b means [is :b of :a] => :a :b []
     #   :a^:b means [:b :a]       => [] :b :a
     #
     # Create triple and return property used for next iteration
-    def process_path(expression)
-      log_debug("process_path", depth: depth) {expression.inspect}
+    #
+    # Result is last created bnode
+    def process_path(path)
+      pathitem, direction, pathtail = path[:pathitem], path[:direction], path[:pathtail]
+      debug("process_path", depth: @options[:depth]) {path.inspect}
 
-      pathitem = expression[:pathitem]
-      pathtail = expression[:pathtail]
-
-      direction_list = [expression[:direction], expression[:directiontail]].flatten.compact
-
-      pathtail.each do |pred|
-        direction = direction_list.shift
-        bnode = RDF::Node.new
+      while pathtail
+        bnode = bnode()
+        pred = pathtail.is_a?(RDF::Term) ? pathtail : pathtail[:pathitem]
         if direction == :reverse
           add_statement("process_path(reverse)", bnode, pred, pathitem)
         else
           add_statement("process_path(forward)", pathitem, pred, bnode)
         end
         pathitem = bnode
+        direction = pathtail[:direction] if pathtail.is_a?(Hash)
+        pathtail = pathtail.is_a?(Hash) && pathtail[:pathtail]
       end
       pathitem
     end
 
-    def process_uri(uri)
-      uri(base_uri, RDF::NTriples.unescape(uri))
+    def process_iri(iri)
+      iri(base_uri, iri.to_s)
     end
 
-    def process_qname(tok)
-      if tok.include?(":")
-        prefix, name = tok.split(":")
-      elsif @userkeys
-        # If the @keywords directive is given, the keywords given will thereafter be recognized
-        # without a "@" prefix, and anything else is a local name in the default namespace.
-        prefix, name = "", tok
-      elsif %w(true false).include?(tok)
-        # The words true and false are boolean literals.
-        #
-        # They were added to Notation3 in 2006-02 in discussion with the SPARQL language developers, the Data
-        # Access Working Group. Note that no existing documents will have used a naked true or false word, without a
-        # @keyword statement which would make it clear that they were not to be treated as keywords. Furthermore any
-        # old parser encountering true or false naked or in a @keywords
-        return RDF::Literal.new(tok, datatype: RDF::XSD.boolean)
-      else
-        error("Set user @keywords to use barenames (#{tok}).")
-      end
+    def process_pname(value)
+      prefix, name = value.split(":", 2)
 
-      uri = if prefix(prefix)
-        log_debug('process_qname(ns)', depth: depth) {"#{prefix(prefix)}, #{name}"}
+      iri = if prefix(prefix)
+        #debug('process_pname(ns)', depth: @options[:depth]) {"#{prefix(prefix)}, #{name}"}
         ns(prefix, name)
-      elsif prefix == '_'
-        log_debug('process_qname(bnode)', name, depth: depth)
-        # If we're in a formula, create a non-distigushed variable instead
-        # Note from https://www.w3.org/TeamSubmission/n3/#bnodes, it seems the blank nodes are scoped to the formula, not the file.
-        bnode(name)
+      elsif prefix && !prefix.empty?
+        error("process_pname", "Use of undefined prefix #{prefix.inspect}")
+        ns(nil, name)
       else
-        log_debug('process_qname(default_ns)', name, depth: depth)
-        namespace(nil, uri("#{base_uri}#")) unless prefix(nil)
         ns(nil, name)
       end
-      log_debug('process_qname', depth: depth) {uri.inspect}
-      uri
-    end
-
-    # Add values to production data, values aranged as an array
-    def add_prod_data(sym, value)
-      case @prod_data.last[sym]
-      when nil
-        @prod_data.last[sym] = value
-      when Array
-        @prod_data.last[sym] += Array(value)
-      else
-        @prod_data.last[sym] = Array(@prod_data.last[sym]) +  Array(value)
-      end
+      debug('process_pname', depth: @options[:depth]) {iri.inspect}
+      iri
     end
 
     # Keep track of allocated BNodes. Blank nodes are allocated to the formula.
+    # Unnnamed bnodes are created using an incrementing labeler for repeatability.
     def bnode(label = nil)
+      form_id = formulae.last ? formulae.last.id : '_bn_ground'
       if label
-        value = "#{label}_#{unique_label}"
-        (@bnodes[@formulae.last] ||= {})[label.to_s] ||= RDF::Node.new(value)
-      else
-        RDF::Node.new
+        # Return previously allocated blank node for.
+        @bn_mapper[form_id] ||= {}
+        return @bn_mapper[form_id][label] if @bn_mapper[form_id][label]
       end
+
+      # Get a fresh label
+      @bn_labler.succ! while @bnodes[@bn_labler]
+
+      bn = RDF::Node.intern(@bn_labler.to_sym)
+      @bnodes[@bn_labler] = bn
+      @bn_mapper[form_id][label] = bn if label
+      bn
     end
 
-    def univar(label, existential: false)
-      # Label using any provided label, followed by seed, followed by incrementing index
-      value = "#{label}_#{unique_label}"
+    # If not in ground formula, note scope, and if existential
+    def univar(label, scope:, existential: false)
+      value = existential ? "#{label}_ext" : label
+      value = "#{value}#{scope.id}" if scope
       RDF::Query::Variable.new(value, existential: existential)
     end
 
@@ -678,46 +807,56 @@ module RDF::N3
       else
         RDF::Statement(subject, predicate, object)
       end
-      log_debug("statement(#{node})", depth: depth) {statement.to_s}
+      debug("statement(#{node})", depth: @options[:depth]) {statement.to_s}
+      error("statement(#{node})", "Statement is invalid: #{statement.inspect}") if validate? && statement.invalid?
       @callback.call(statement)
     end
 
-    def namespace(prefix, uri)
-      uri = uri.to_s
-      if uri == '#'
-        uri = prefix(nil).to_s + '#'
+    def namespace(prefix, iri)
+      iri = iri.to_s
+      if iri == '#'
+        iri = prefix(nil).to_s + '#'
       end
-      log_debug("namespace", depth: depth) {"'#{prefix}' <#{uri}>"}
-      prefix(prefix, uri(uri))
+      debug("namespace", depth: @options[:depth]) {"'#{prefix}' <#{iri}>"}
+      prefix(prefix, iri(iri))
     end
 
-    # Is this an allowable keyword?
-    def keyword_check(kw)
-      unless (@keywords || %w(a is of has)).include?(kw)
-        raise RDF::ReaderError, "unqualified keyword '#{kw}' used without @keyword directive" if validate?
-      end
-    end
-
-    # Create URIs
-    def uri(value, append = nil)
+    # Create IRIs
+    def iri(value, append = nil)
       value = RDF::URI(value)
       value = value.join(append) if append
       value.validate! if validate? && value.respond_to?(:validate)
       value.canonicalize! if canonicalize?
-      value = RDF::URI.intern(value) if intern?
 
       # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than the current formula
-      var = find_var(@formulae.last, value)
+      var = find_var(value)
       value = var if var
 
       value
+    rescue ArgumentError => e
+      error("iri", e.message)
+    end
+    
+    # Create a literal
+    def literal(value, **options)
+      debug("literal", depth: @options[:depth]) do
+        "value: #{value.inspect}, " +
+        "options: #{options.inspect}, " +
+        "validate: #{validate?.inspect}, " +
+        "c14n?: #{canonicalize?.inspect}"
+      end
+      RDF::Literal.new(value, validate:  validate?, canonicalize: canonicalize?, **options)
+    rescue ArgumentError => e
+      error("Argument Error #{e.message}", production: :literal, token: @lexer.first)
     end
 
-    def ns(prefix, suffix)
+    # Decode a PName
+    def ns(prefix = nil, suffix = nil)
+      namespace(nil, iri("#{base_uri}#")) if prefix.nil? && !prefix(nil)
+
       base = prefix(prefix).to_s
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
-      log_debug("ns", depth: depth) {"base: '#{base}', suffix: '#{suffix}'"}
-      uri(base + suffix.to_s)
+      iri(base + suffix.to_s)
     end
 
     # Returns a unique label
@@ -727,11 +866,10 @@ module RDF::N3
     end
 
     # Find any variable that may be defined in the formula identified by `bn`
-    # @param [RDF::Node] bn name of formula
-    # @param [#to_s] name
+    # @param [RDF::Node] name of formula
     # @return [RDF::Query::Variable]
-    def find_var(sym, name)
-      (@variables[sym] ||= {})[name.to_s]
+    def find_var(name)
+      (variables[@formulae.last] ||= {})[name.to_s]
     end
 
     # Add a variable to the formula identified by `bn`, returning the variable. Useful as an LRU for variable name lookups
@@ -740,7 +878,146 @@ module RDF::N3
     # @param [RDF::Query::Variable] var
     # @return [RDF::Query::Variable]
     def add_var_to_formula(bn, name, var)
-      (@variables[bn] ||= {})[name.to_s] = var
+      (variables[bn] ||= {})[name.to_s] = var
+    end
+
+    def prod(production, recover_to = [])
+      @prod_stack << {prod: production, recover_to: recover_to}
+      @options[:depth] += 1
+      recover("#{production}(start)", depth: options[:depth], token: @lexer.first)
+      yield
+    rescue EBNF::LL1::Lexer::Error, SyntaxError, Recovery =>  e
+      # Lexer encountered an illegal token or the parser encountered
+      # a terminal which is inappropriate for the current production.
+      # Perform error recovery to find a reasonable terminal based
+      # on the follow sets of the relevant productions. This includes
+      # remaining terms from the current production and the stacked
+      # productions
+      case e
+      when EBNF::LL1::Lexer::Error
+        @lexer.recover
+        begin
+          error("Lexer error", "With input '#{e.input}': #{e.message}",
+            production: production,
+            token: e.token)
+        rescue SyntaxError
+        end
+      end
+      raise EOFError, "End of input found when recovering" if @lexer.first.nil?
+      debug("recovery", "current token: #{@lexer.first.inspect}", depth: @options[:depth])
+
+      unless e.is_a?(Recovery)
+        # Get the list of follows for this sequence, this production and the stacked productions.
+        debug("recovery", "stack follows:", depth: @options[:depth])
+        @prod_stack.reverse.each do |prod|
+          debug("recovery", level: 1, depth: @options[:depth]) {"  #{prod[:prod]}: #{prod[:recover_to].inspect}"}
+        end
+      end
+
+      # Find all follows to the top of the stack
+      follows = @prod_stack.map {|prod| Array(prod[:recover_to])}.flatten.compact.uniq
+
+      # Skip tokens until one is found in follows
+      while (token = (@lexer.first rescue @lexer.recover)) && follows.none? {|t| token === t}
+        skipped = @lexer.shift
+        debug("recovery", depth: @options[:depth]) {"skip #{skipped.inspect}"}
+      end
+      debug("recovery", depth: @options[:depth]) {"found #{token.inspect} in follows"}
+
+      # Re-raise the error unless token is a follows of this production
+      raise Recovery unless Array(recover_to).any? {|t| token === t}
+
+      # Skip that token to get something reasonable to start the next production with
+      @lexer.shift
+    ensure
+      progress("#{production}(finish)", depth: options[:depth])
+      @options[:depth] -= 1
+      @prod_stack.pop
+    end
+
+    def progress(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 1
+      opts[:lineno] ||= lineno
+      log_info(*args, **opts, &block)
+    end
+
+    def recover(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 1
+      opts[:lineno] ||= lineno
+      log_recover(*args, **opts, &block)
+    end
+
+    def debug(*args, &block)
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      opts[:level] ||= 0
+      opts[:lineno] ||= lineno
+      log_debug(*args, **opts, &block)
+    end
+
+    ##
+    # Error information, used as level `0` debug messages.
+    #
+    # @overload error(node, message, options)
+    #   @param [String] node Relevant location associated with message
+    #   @param [String] message Error string
+    #   @param [Hash] options
+    #   @option options [URI, #to_s] :production
+    #   @option options [Token] :token
+    #   @see {#debug}
+    def error(*args)
+      ctx = ""
+      ctx += "(found #{options[:token].inspect})" if options[:token]
+      ctx += ", production = #{options[:production].inspect}" if options[:production]
+      lineno = (options[:token].lineno if options[:token].respond_to?(:lineno)) || (@lexer && @lexer.lineno)
+      log_error(*args, ctx,
+        lineno:     lineno,
+        token:      options[:token],
+        production: options[:production],
+        depth:      options[:depth],
+        exception:  SyntaxError,)
+    end
+
+    # Used for internal error recovery
+    class Recovery < StandardError; end
+
+    class SyntaxError < RDF::ReaderError
+      ##
+      # The current production.
+      #
+      # @return [Symbol]
+      attr_reader :production
+
+      ##
+      # The invalid token which triggered the error.
+      #
+      # @return [String]
+      attr_reader :token
+
+      ##
+      # The line number where the error occurred.
+      #
+      # @return [Integer]
+      attr_reader :lineno
+
+      ##
+      # Initializes a new syntax error instance.
+      #
+      # @param  [String, #to_s]          message
+      # @param  [Hash{Symbol => Object}] options
+      # @option options [Symbol]         :production  (nil)
+      # @option options [String]         :token  (nil)
+      # @option options [Integer]        :lineno (nil)
+      def initialize(message, **options)
+        @production = options[:production]
+        @token      = options[:token]
+        @lineno     = options[:lineno] || (@token.lineno if @token.respond_to?(:lineno))
+        super(message.to_s)
+      end
     end
   end
 end

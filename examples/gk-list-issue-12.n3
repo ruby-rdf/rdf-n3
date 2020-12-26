@@ -1,0 +1,11 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix list: <http://www.w3.org/2000/10/swap/list#>.
+@prefix : <http://example.org/test#>.
+
+{ (1 2 3) list:last ?x } => { :lastMember :is ?x } .
+
+{
+  _:l3 rdf:first 3; rdf:rest rdf:nil .
+  _:l2 rdf:first 2; rdf:rest _:l3 .
+  _:l1 rdf:first 1; rdf:rest _:l2; list:last ?y
+} => { :lastMember2 :is ?y } .

@@ -1,6 +1,4 @@
 require 'rubygems'
-require 'yard'
-require 'rspec/core/rake_task'
 
 namespace :gem do
   desc "Build the rdf-n3-#{File.read('VERSION').chomp}.gem file"
@@ -14,22 +12,17 @@ namespace :gem do
   end
 end
 
-RSpec::Core::RakeTask.new(:spec)
-
-desc "Run specs through RCov"
-RSpec::Core::RakeTask.new("spec:rcov") do |spec|
-  spec.rcov = true
-  spec.rcov_opts =  %q[--exclude "spec"]
-end
-
-namespace :doc do
-  YARD::Rake::YardocTask.new
-
-  desc "Generate HTML report specs"
-  RSpec::Core::RakeTask.new("spec") do |spec|
-    spec.rspec_opts = ["--format", "html", "-o", "doc/spec.html"]
+namespace :etc do
+  ETC_FILES = %w{etc/n3.sxp}
+  desc 'Remove generated files in etc'
+  task :clean do
+    %x(rm #{ETC_FILES.join(' ')})
   end
+
+  desc 'Create versions of ebnf files in etc'
+  task build: ETC_FILES
 end
 
-task specs: :spec
-task default: :spec
+file "etc/n3.sxp" => "etc/n3.ebnf" do |t|
+  %x{ebnf -o #{t.name} #{t.source}}
+end

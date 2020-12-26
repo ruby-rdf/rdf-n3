@@ -4,22 +4,29 @@ require 'rdf/trig'  # For formatting error descriptions
 describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c n3 tests" do
+    let(:logger) {RDF::Spec.logger}
+
+    after(:each) do |example|
+      puts logger.to_s if
+        example.exception &&
+        !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+    end
+
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/n3/tests/manifest-parser.n3") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
+          next if t.approval == 'rdft:Rejected'
           specify "#{t.name}: #{t.comment}" do
             case t.name
-            when *%w(n3_10004 n3_10007 n3_10014 n3_10015 n3_10017)
-              pending("Reification not supported")
-            when *%w(n3_10013)
-              pending("numeric representation")
-            when *%w(n3_10003 n3_10006)
-              pending("Verified test results are incorrect")
+            when *%w(cwm_syntax_numbers.n3)
+              pending("number representation")
+            when *%w(cwm_syntax_too-nested.n3)
+              skip("stack overflow")
             end
 
-            t.logger = RDF::Spec.logger
+            t.logger = logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
 
@@ -29,22 +36,22 @@ describe RDF::N3::Reader do
                 validate: true,
                 logger: t.logger)
 
-            repo = RDF::Repository.new
+            repo = [].extend(RDF::Enumerable, RDF::Queryable)
 
             output_repo = if t.evaluate?
               begin
                 format = detect_format(t.expected)
-                RDF::Repository.load(t.result, format: format, base_uri: t.accept)
+                RDF::N3:: Repository.load(t.result, format: format, base_uri: t.accept)
               rescue Exception => e
-                expect(e.message).to produce("Exception loading output #{e.inspect}", t.logger)
+                expect(e.message).to produce("Exception loading output #{e.inspect}", t)
               end
             end
 
             if t.positive_test?
               begin
-                repo << reader
+                reader.each_statement {|st| repo << st}
               rescue Exception => e
-                expect(e.message).to produce("Not exception #{e.inspect}", t.logger)
+                expect(e.message).to produce("Not exception #{e.inspect}", t)
               end
 
               if t.evaluate?
@@ -54,8 +61,8 @@ describe RDF::N3::Reader do
               end
             elsif t.syntax?
               expect {
-                repo << reader
-                repo.dump(:nquads).should produce("not this", t.logger)
+                reader.each_statement {|st| repo << st}
+                expect(repo.count).to produce("not this", t)
               }.to raise_error(RDF::ReaderError)
             else
               expect(repo).not_to be_equivalent_graph(output_repo, t)
