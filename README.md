@@ -18,6 +18,7 @@ This version tracks the [W3C N3 Community Group][] [Specification][N3] which has
 * Terminals adhere closely to their counterparts in [Turtle][].
 * The modifier `<-` is introduced as a synonym for `is ... of`.
 * The SPARQL `BASE` and `PREFIX` declarations are supported.
+* Implicit universal variables are defined at the top-level, rather than in the parent formula of the one in which they are defined.
 
 This brings N3 closer to compatibility with Turtle.
 
@@ -152,7 +153,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `time:timeZone`               (See {RDF::N3::Algebra::Time::Timezone})
   * `time:year`                   (See {RDF::N3::Algebra::Time::Year})
 
-### Formulae
+### Formulae / Quoted Graphs
 
 N3 Formulae are introduced with the `{ statement-list }` syntax. A given formula is assigned an `RDF::Node` instance, which is also used as the graph_name for `RDF::Statement` instances provided to `RDF::N3::Reader#each_statement`. For example, the following N3 generates the associated statements:
 
@@ -183,6 +184,9 @@ results in:
     RDF::Statement(f, <#loves>, h)
 
 Note that the behavior of both existential and universal variables is not entirely in keeping with the [Team Submission][], and neither work quite like SPARQL variables. When used in the antecedent part of an implication, universal variables should behave much like SPARQL variables. This area is subject to a fair amount of change.
+
+* Variables, themselves, cannot be part of a solution, which limits the ability to generate updated rules for reasoning.
+* Both Existentials and Universals are treated as simple variables, and there is really no preference given based on the order in which they are introduced.
 
 ### Query
 Formulae are typically used to query the knowledge-base, which is set from the base-formula/default graph. A formula is composed of both constant statements, and variable statements. When running as a query, such as for the antecedent formula in `log:implies`, statements including either explicit variables or blank nodes are treated as query patterns and are used to query the knowledge base to create a solution set, which is used either prove the formula correct, or create bindings passed to the consequent formula.
