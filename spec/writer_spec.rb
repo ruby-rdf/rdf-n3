@@ -671,8 +671,8 @@ describe RDF::N3::Writer do
       describe m.comment do
         m.entries.each do |t|
           next if t.negative_test? || t.rejected?
-          specify "#{t.name}: #{t.comment} (action)" do
-            case t.name
+          specify "#{t.rel}: #{t.name}: #{t.comment} (action)" do
+            case t.rel
             when *%w(cwm_syntax_path2.n3
                      cwm_includes_quantifiers_limited.n3
                      cwm_includes_builtins.n3

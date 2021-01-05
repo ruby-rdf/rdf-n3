@@ -17,8 +17,8 @@ describe RDF::N3::Reader do
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}", slow: t.slow? do
-            case t.name
+          specify "#{t.rel}: #{t.name}: #{t.comment}", slow: t.slow? do
+            case t.rel
             when *%w(07test_utf8.n3)
               pending("invalid byte sequence in UTF-8")
             when *%w(01etc_skos-extra-rules.n3 01etc_skos-rules.n3 07test_pd_hes_theory.n3)

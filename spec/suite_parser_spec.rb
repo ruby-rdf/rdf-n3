@@ -18,8 +18,8 @@ describe RDF::N3::Reader do
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}" do
-            case t.name
+          specify "#{t.rel}: #{t.name}: #{t.comment}" do
+            case t.rel
             when *%w(cwm_syntax_numbers.n3)
               pending("number representation")
             when *%w(cwm_syntax_too-nested.n3)
