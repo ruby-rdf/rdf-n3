@@ -44,7 +44,7 @@ def run_tc(man, tc, **options)
     return unless tc.reason?
   end
 
-  STDERR.write "test #{tc.name} "
+  STDERR.write "test #{tc.rel} "
 
   if options[:verbose]
     STDERR.puts "\nTestCase: #{tc.inspect}"
@@ -153,10 +153,12 @@ def run_tc(man, tc, **options)
       result ||= "passed"
     end
 
+  rescue Interupt => e
+    raise e
   rescue Exception => e
     STDERR.puts "#{"exception:" unless options[:quiet]}: #{e}"
     return if options[:quiet]
-    STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+    STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if options[:verbose]
   end
 
   STDERR.puts options[:logger] if options[:verbose] && !options[:live]
@@ -191,8 +193,8 @@ options = {
 }
 
 OPT_ARGS = [
-  ["--earl",            GetoptLong::NO_ARGUMENT, "Generate EARL report"],
   ["--debug",           GetoptLong::NO_ARGUMENT, "Debugging output"],
+  ["--earl",            GetoptLong::NO_ARGUMENT, "Generate EARL report"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT, "print this message"],
   ["--info",            GetoptLong::NO_ARGUMENT, "Show progress on execution"],
   ["--live",            GetoptLong::NO_ARGUMENT, "Show live parsing results, not buffered"],
@@ -202,6 +204,7 @@ OPT_ARGS = [
   ["--type",            GetoptLong::REQUIRED_ARGUMENT, "Test type (`parser`, `reasoner`, or `all`)"],
   ["--validate",        GetoptLong::NO_ARGUMENT, "Validate input"],
   ["--verbose", "-v",   GetoptLong::NO_ARGUMENT, "Verbose output"],
+  ["--write-manifests", GetoptLong::NO_ARGUMENT, "Write out the parsed manifests for earl reporting"],
 ]
 
 def usage
@@ -248,6 +251,7 @@ opts.each do |opt, arg|
     options[:type] = arg.to_sym
   when '--validate'         then options[:validate] = true
   when '--verbose'          then options[:verbose] = true
+  when '--write-manifests'  then options[:write_manifests] = true
   end
 end
 
@@ -260,18 +264,52 @@ manifests = %w(
 
 earl_preamble(**options) if options[:earl]
 
+if options[:write_manifests]
+  options[:output].puts %(
+  @prefix mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+  @prefix rdft:  <http://www.w3.org/ns/rdftest#> .
+  @prefix test:  <https://w3c.github.io/N3/tests/test.n3#> .
+  ).gsub(/^  /, '')
+end
+
 begin
   manifests.each do |man|
     Fixtures::SuiteTest::Manifest.open(man) do |m|
-      m.entries.each do |tc|
-        next unless ARGV.empty? || ARGV.any? {|n| tc.property('@id').match?(/#{n}/) || tc.property('action').match?(/#{n}/)}
-        run_tc(man, tc, **options.merge(list_terms: !man.include?("TurtleTests")))
+      if options[:write_manifests]
+        require 'rdf/ntriples'
+        options[:output].puts %(\n<#{m.id}> a mf:Manifest ;)
+        options[:output].puts %(  rdfs:label #{RDF::Literal(m.label || m.name).to_ntriples} ;) if m.label || m.name
+        options[:output].puts %(  rdfs:comment #{RDF::Literal(m.comment).to_ntriples} ;) if m.comment
+        options[:output].puts %{  mf:entries (<#{m.entries.map(&:id).join('> <')}>)}
+        options[:output].puts %(  .)
+      end
+      m.entries.each do |t|
+        if options[:write_manifests]
+          options[:output].puts %(\n<#{t.id}> a #{Array(t.attributes['@type']).join(', ')} ;)
+          options[:output].puts %(  mf:name "#{RDF::Literal(t.name).to_ntriples} ;) if t.label
+          options[:output].puts %(  rdfs:comment #{RDF::Literal(m.comment).to_ntriples} ;) if t.comment
+          options[:output].puts %(  mf:action <#{t.action}> ;) if t.action
+          options[:output].puts %(  mf:result <#{t.result}> ;) if t.result
+          if t.options
+            options[:output].puts %(  test:options [)
+            options[:output].puts %(    test:conclusions: true ;) if t.options['conclusions']
+            options[:output].puts %(    test:data: true ;) if t.options['data']
+            options[:output].puts %(    test:strings: true ;) if t.options['strings']
+            options[:output].puts %(    test:think: true ;) if t.options['think']
+            options[:output].puts %(  ] ;)
+          end
+          options[:output].puts %(  .)
+          next
+        end
+        next unless ARGV.empty? || ARGV.any? {|n| t.property('@id').match?(/#{n}/) || t.property('action').match?(/#{n}/)}
+        run_tc(man, t, **options.merge(list_terms: !man.include?("TurtleTests")))
       end
     end
   end
 rescue Interrupt => e
   STDERR.puts "(interrupt)"
-  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if $verbose
+  STDERR.puts "Backtrace: " + e.backtrace.join("\n  ") if options[:verbose]
   exit 1
 end
 

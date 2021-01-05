@@ -10,7 +10,7 @@ describe RDF::N3::Reader do
       describe m.comment do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}" do
+          specify "#{t.rel}: #{t.name}: #{t.comment}" do
             t.logger = RDF::Spec.logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"

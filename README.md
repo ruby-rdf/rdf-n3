@@ -3,7 +3,7 @@ Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
 [![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
 [![Build Status](https://github.com/ruby-rdf/rdf-n3/workflows/CI/badge.svg?branch=develop)](https://github.com/ruby-rdf/rdf-n3/actions?query=workflow%3ACI)
-[![Coverage Status](https://coveralls.io/repos/ruby-rdf/rdf-n3/badge.svg)](https://coveralls.io/github/ruby-rdf/rdf-n3)
+[![Coverage Status](https://coveralls.io/repos/github/ruby-rdf/rdf-n3/badge.svg?branch=develop)](https://coveralls.io/github/ruby-rdf/rdf-n3?branch=develop)
 [![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
 
 ## Description
@@ -26,6 +26,8 @@ This brings N3 closer to compatibility with Turtle.
 RDF::N3 parses [Notation-3][N3], [Turtle][] and [N-Triples][] into statements or quads. It also performs reasoning and serializes to N3.
 
 Install with `gem install rdf-n3`
+
+[Implementation Report](https://ruby-rdf.github.io/rdf-n3/etc/earl.html)
 
 ## Limitations
 * Support for Variables in Formulae. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
@@ -139,7 +141,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `string:scrape`               (See {RDF::N3::Algebra::Str::Scrape})
   * `string:startsWith`           (See {RDF::N3::Algebra::Str::StartsWith})
 
-#### RDF Time vocabulary <>
+#### RDF Time vocabulary <http://www.w3.org/2000/10/swap/time#>
 
   * `time:dayOfWeek`              (See {RDF::N3::Algebra::Time::DayOfWeek})
   * `time:day`                    (See {RDF::N3::Algebra::Time::Day})

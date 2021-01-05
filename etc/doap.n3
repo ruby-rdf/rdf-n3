@@ -2,6 +2,7 @@
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix dc:   <http://purl.org/dc/terms/> .
+@prefix earl: <http://www.w3.org/ns/earl#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix ex:   <http://example.org/> .
@@ -11,7 +12,7 @@
   doap:name          "RDF::N3" ;
   doap:homepage      <https://github.com/ruby-rdf/rdf-n3> ;
   doap:license       <https://unlicense.org/1.0/> ;
-  doap:shortdesc     "N3 reader/writer for Ruby."@en ;
+  doap:shortdesc     "N3 reader/writer for Ruby RDF.rb."@en ;
   doap:description   "RDF::N3 is an Notation-3 reader/writer and reasoner for the RDF.rb library suite."@en ;
   doap:created       "2010-06-03"^^xsd:date;
   doap:programming-language "Ruby" ;
@@ -28,3 +29,15 @@
   doap:documenter    <https://greggkellogg.net/foaf#me> ;
   foaf:maker         <https://greggkellogg.net/foaf#me> ;
   dc:creator         <https://greggkellogg.net/foaf#me> .
+
+<> foaf:primaryTopic <https://rubygems.org/gems/rdf-turtle> ;
+  dc:issued "2021-01-04T13:02:46-08:00"^^xsd:dateTime ;
+  foaf:maker <https://greggkellogg.net/foaf#me> .
+
+<https://greggkellogg.net/foaf#me> a foaf:Person, earl:Assertor;
+  foaf:name "Gregg Kellogg";
+  foaf:title "Implementor";
+  foaf:homepage <https://greggkellogg.net/> .
+
+<https://rubygems.org/gems/rdf-n3>
+  doap:release <https://github.com/ruby-rdf/rdf-n3/tree/3.1.2> .

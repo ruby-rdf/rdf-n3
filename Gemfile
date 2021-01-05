@@ -24,6 +24,5 @@ group :development, :test do
 end
 
 group :debug do
-  gem 'awesome_print', github: 'akshaymohite/awesome_print'
   gem 'byebug', platform: :mri
 end

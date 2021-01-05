@@ -1,0 +1,5 @@
+---
+:format: :json
+:manifest: manifests.ttl
+:bibRef: ! '[[Notation3]]'
+:name: Notation3
