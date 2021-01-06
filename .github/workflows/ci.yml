@@ -35,6 +35,11 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
+      - name: Clone Test Suite repository
+        uses: actions/checkout@v2
+        with:
+          repository: w3c/N3
+          path: spec/w3c-N3
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
