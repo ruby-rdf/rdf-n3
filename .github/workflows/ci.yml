@@ -31,7 +31,7 @@ jobs:
           - 2.6
           - 2.7
           #- ruby-head # Commented out until net-http-persistent is updaated
-          - jruby
+          #- jruby # Refinements issue?
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
