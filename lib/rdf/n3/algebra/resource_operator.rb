@@ -49,7 +49,6 @@ module RDF::N3::Algebra
           res = apply(lhs, rhs)
           log_debug(self.class.const_get(:NAME), "result") {SXP::Generator.string(res.to_sxp_bin).strip}
           # Return the result applying subject and object
-          #require 'byebug'; byebug
           case res
           when RDF::Literal::TRUE
             solution

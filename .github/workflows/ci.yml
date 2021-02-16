@@ -30,7 +30,8 @@ jobs:
           - 2.5
           - 2.6
           - 2.7
-          #- ruby-head # Commented out until net-http-persistent is updaated
+          - 3.0
+          - ruby-head # Commented out until net-http-persistent is updaated
           #- jruby # Refinements issue?
     steps:
       - name: Clone repository
