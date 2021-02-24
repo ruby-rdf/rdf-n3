@@ -19,6 +19,7 @@ module RDF::N3
       autoload :Append,               'rdf/n3/algebra/list/append'
       autoload :First,                'rdf/n3/algebra/list/first'
       autoload :In,                   'rdf/n3/algebra/list/in'
+      autoload :Iterate,              'rdf/n3/algebra/list/iterate'
       autoload :Last,                 'rdf/n3/algebra/list/last'
       autoload :Length,               'rdf/n3/algebra/list/length'
       autoload :Member,               'rdf/n3/algebra/list/member'
@@ -117,6 +118,7 @@ module RDF::N3
         RDF::N3::List.append              => List.const_get(:Append),
         RDF::N3::List.first               => List.const_get(:First),
         RDF::N3::List.in                  => List.const_get(:In),
+        RDF::N3::List.iterate             => List.const_get(:Iterate),
         RDF::N3::List.last                => List.const_get(:Last),
         RDF::N3::List.length              => List.const_get(:Length),
         RDF::N3::List.member              => List.const_get(:Member),

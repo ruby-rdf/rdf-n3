@@ -71,6 +71,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `list:append` (See {RDF::N3::Algebra::List::Append})
   * `list:first`  (See {RDF::N3::Algebra::List::First})
   * `list:in`     (See {RDF::N3::Algebra::List::In})
+  * `list:iterate`     (See {RDF::N3::Algebra::List::Iterate})
   * `list:last`   (See {RDF::N3::Algebra::List::Last})
   * `list:length` (See {RDF::N3::Algebra::List::Length})
   * `list:member` (See {RDF::N3::Algebra::List::Member})

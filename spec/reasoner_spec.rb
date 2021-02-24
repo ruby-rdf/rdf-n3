@@ -514,6 +514,96 @@ describe "RDF::N3::Reasoner" do
         end
       end
     end
+
+    context "list:iterate" do
+      {
+        "pairs of (1 2 3 4)": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {(1 2 3 4) list:iterate ?R} => {(1 2 3 4) :has ?R}.
+          ),
+          expect: %(
+            (1 2 3 4) :has (0 1),  (1 2), (2 3), (3 4).
+          )
+        },
+        "c is third member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c") list:iterate (2 ?Y)} => {("a" "b" "c") :has (2 ?Y)}.
+          ),
+          expect: %(
+            ("a" "b" "c") :has (2 "c").
+          )
+        },
+        "members matching c": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x "c")} => {("a" "b" "c" "c") :has (?x "c")}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has (2 "c"), (3 "c").
+          )
+        },
+        "all members": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x ?y)} => {("a" "b" "c" "c") :has (?x ?y)}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has (0 "a"), (1 "b"), (2 "c"), (3 "c").
+          )
+        },
+        "specific member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (2 "c")} => {("a" "b" "c" "c") :has :it}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has :it.
+          )
+        },
+        "no member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (2 "x")} => {("a" "b" "c" "c") :has :it}.
+          ),
+          expect: %(
+          )
+        },
+        "object to small": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x)} => {("a" "b" "c" "c") :has ?x}.
+          ),
+          expect: %(
+          )
+        },
+        "object to large": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x ?y ?z)} => {("a" "b" "c" "c") :has ?x}.
+          ),
+          expect: %(
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {conclusions: true}.merge(options)
+          expected = parse(options[:expect])
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
   end
 
   context "n3:math" do
