@@ -31,9 +31,11 @@ module RDF::N3
       autoload :Conclusion,           'rdf/n3/algebra/log/conclusion'
       autoload :Conjunction,          'rdf/n3/algebra/log/conjunction'
       autoload :Content,              'rdf/n3/algebra/log/content'
+      autoload :DtLit,                'rdf/n3/algebra/log/dtlit'
       autoload :EqualTo,              'rdf/n3/algebra/log/equal_to'
       autoload :Implies,              'rdf/n3/algebra/log/implies'
       autoload :Includes,             'rdf/n3/algebra/log/includes'
+      autoload :LangLit,              'rdf/n3/algebra/log/langlit'
       autoload :N3String,             'rdf/n3/algebra/log/n3_string'
       autoload :NotEqualTo,           'rdf/n3/algebra/log/not_equal_to'
       autoload :NotIncludes,          'rdf/n3/algebra/log/not_includes'
@@ -126,9 +128,11 @@ module RDF::N3
         RDF::N3::Log.conclusion           => Log.const_get(:Conclusion),
         RDF::N3::Log.conjunction          => Log.const_get(:Conjunction),
         RDF::N3::Log.content              => Log.const_get(:Content),
+        RDF::N3::Log.dtlit                => Log.const_get(:DtLit),
         RDF::N3::Log.equalTo              => Log.const_get(:EqualTo),
         RDF::N3::Log.implies              => Log.const_get(:Implies),
         RDF::N3::Log.includes             => Log.const_get(:Includes),
+        RDF::N3::Log.langlit              => Log.const_get(:LangLit),
         RDF::N3::Log.n3String             => Log.const_get(:N3String),
         RDF::N3::Log.notEqualTo           => Log.const_get(:NotEqualTo),
         RDF::N3::Log.notIncludes          => Log.const_get(:NotIncludes),

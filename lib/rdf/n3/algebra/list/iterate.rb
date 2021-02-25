@@ -62,7 +62,7 @@ module RDF::N3::Algebra::List
             # Solution binds indexes to all matching values
             solutions = RDF::Query::Solutions.new
             subject.each_with_index do |r, i|
-              next unless r.sameTerm?(object.last)
+              next unless r == object.last
               s = solution.merge(object.first.to_sym => RDF::Literal(i))
               log_debug(self.class.const_get(:NAME), "result: #{s.to_sxp}")
               solutions << s
@@ -79,7 +79,6 @@ module RDF::N3::Algebra::List
           # Create a solution for each index/value pair in subject
           solutions = RDF::Query::Solutions.new
           subject.each_with_index do |r, i|
-            #require 'byebug'; byebug
             s = solution.merge(object.to_sym => RDF::N3::List[RDF::Literal(i), r])
             log_debug(self.class.const_get(:NAME), "result: #{s.to_sxp}")
             solutions << s
@@ -87,7 +86,7 @@ module RDF::N3::Algebra::List
           solutions
         else
           # Evaluates to true if the subject has a matching entry
-          same = subject.at(object.first).sameTerm?(object.last)
+          same = subject.at(object.first) == object.last
           log_debug(self.class.const_get(:NAME), "result: #{same.inspect}")
           solution if same
         end
