@@ -489,28 +489,19 @@ describe "RDF::N3::Reader" do
       end
     end
 
-    context "patterns" do
-      it "substitutes variable for URI with @forAll" do
+    context "DEPRECATION" do
+      it "@forAll" do
         n3 = %(@forAll :x . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b")
-        statement = g.statements.first
-        expect(statement.subject).to be_variable
-        expect(statement.predicate.to_s).to eq "http://a/b#y"
-        expect(statement.object.to_s).to eq "http://a/b#z"
+        expect {parse(n3, base_uri: "http://a/b", validate: true)}.to raise_error(RDF::ReaderError)
       end
 
-      it "substitutes variable for URIs with @forAll" do
-        n3 = %(@forAll :x, :y, :z . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b")
-        statement = g.statements.first
-        expect(statement.subject).to be_variable
-        expect(statement.predicate).to be_variable
-        expect(statement.object).to be_variable
-        expect(statement.subject).not_to equal statement.predicate
-        expect(statement.object).not_to equal statement.predicate
-        expect(statement.predicate).not_to equal statement.object
+      it "@forSome" do
+        n3 = %(@forSome :x . :x :y :z .)
+        expect {parse(n3, base_uri: "http://a/b", validate: true)}.to raise_error(RDF::ReaderError)
       end
+    end
 
+    context "patterns" do
       it "creates variable for quickVar" do
         n3 = %(?x :y :z .)
         g = parse(n3, base_uri: "http://a/b")
@@ -520,27 +511,6 @@ describe "RDF::N3::Reader" do
         expect(statement.object).not_to be_variable
         expect(statement.subject).not_to equal statement.predicate
         expect(statement.subject).not_to equal statement.object
-      end
-
-      it "substitutes node for URI with @forSome" do
-        n3 = %(@forSome :x . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b")
-        statement = g.statements.first
-        expect(statement.subject).to be_variable, logger.to_s
-        expect(statement.predicate.to_s).to eq "http://a/b#y"
-        expect(statement.object.to_s).to eq "http://a/b#z"
-      end
-
-      it "substitutes node for URIs with @forSome" do
-        n3 = %(@forSome :x, :y, :z . :x :y :z .)
-        g = parse(n3, base_uri: "http://a/b")
-        statement = g.statements.first
-        expect(statement.subject).to be_variable
-        expect(statement.predicate).to be_variable
-        expect(statement.object).to be_variable
-        expect(statement.subject).not_to equal statement.predicate
-        expect(statement.object).not_to equal statement.predicate
-        expect(statement.predicate).not_to equal statement.object
       end
     end
 

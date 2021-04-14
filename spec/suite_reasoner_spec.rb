@@ -42,7 +42,7 @@ describe RDF::N3::Reader do
             reader = RDF::N3::Reader.open(t.action,
                 canonicalize: false,
                 list_terms: true,
-                validate: false,
+                validate: true,
                 logger: false)
 
             reasoner = RDF::N3::Reasoner.new(reader,

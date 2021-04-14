@@ -615,20 +615,6 @@ describe RDF::N3::Writer do
 
   describe "variables" do
     {
-      "@forAll": {
-        input: %(@forAll :o. :s :p :o .),
-        regexp: [
-          %r(@forAll :o \.),
-          %r(:s :p :o \.),
-        ]
-      },
-      "@forSome": {
-        input: %(@forSome :o. :s :p :o .),
-        regexp: [
-          %r(@forSome :o \.),
-          %r(:s :p :o \.),
-        ]
-      },
       "?o": {
         input: %(:s :p ?o .),
         regexp: [
@@ -667,20 +653,20 @@ describe RDF::N3::Writer do
   describe "w3c n3 parser tests" do
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-parser.ttl") do |m|
       describe m.comment do
         m.entries.each do |t|
-          next if t.negative_test? || t.rejected?
+          next if t.negative_test? || t.approval == 'rdft:Rejected'
           specify "#{t.rel}: #{t.name}: #{t.comment} (action)" do
             case t.rel
             when *%w(cwm_syntax_path2.n3
-                     cwm_includes_quantifiers_limited.n3
                      cwm_includes_builtins.n3
                      cwm_list_unify5-ref.n3
-                     cwm_other_lists-simple.n3 cwm_syntax_qual-after-user.n3
+                     cwm_other_lists-simple.n3
                      cwm_other_lists.n3   # empty list with extra properties
                      new_syntax_inverted_properties.n3
                      cwm_other_dec-div.n3 cwm_syntax_sep-term.n3
+                     manifest-parser.ttl
                      )
               pending "Investigate"
             when *%w(cwm_math_trigo.ref.n3
@@ -709,7 +695,7 @@ describe RDF::N3::Writer do
           next if t.syntax? || t.reason?
           specify "#{t.name}: #{t.comment} (result)" do
             case t.name
-            when *%w(cwm_syntax_path2.n3)
+            when *%w(cwm_syntax_path2.n3 path2.n3)
               pending "Investigate"
             when *%w(cwm_syntax_too-nested.n3)
               skip("stack overflow")

@@ -1,4 +1,5 @@
 require_relative 'spec_helper'
+require_relative 'suite_helper'
 require 'rdf/trig'  # For formatting error descriptions
 
 describe RDF::N3::Reader do
@@ -12,26 +13,11 @@ describe RDF::N3::Reader do
         !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
     end
 
-    require_relative 'suite_helper'
     Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-extended.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
           specify "#{t.rel}: #{t.name}: #{t.comment}", slow: t.slow? do
-            case t.rel
-            when *%w(07test_utf8.n3)
-              pending("invalid byte sequence in UTF-8")
-            when *%w(01etc_skos-extra-rules.n3 01etc_skos-rules.n3 07test_pd_hes_theory.n3)
-              pending("@keywords")
-            when *%w(01etc_train_model.n3 04test_icalQ002.n3 04test_icalR.n3 04test_LanguageQ.n3
-                     04test_LanguageQ.n3 04test_query-survey-11.n3 04test_query-survey-13.n3
-                     04test_icalQ001.n3)
-              pending("variable filter syntax")
-            when *%w(04test_ontology-for-data-model.n3)
-              pending("invalid literal")
-            end
-
-
             t.logger = logger
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"

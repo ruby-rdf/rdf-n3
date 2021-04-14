@@ -12,7 +12,7 @@ module RDF::N3
   #
   # Separate pass to create branch_table from n3-selectors.n3
   #
-  # This implementation uses distinguished variables for both universal and explicit existential variables (defined with `@forSome`). Variables created from blank nodes are non-distinguished. Distinguished existential variables are named using an `_ext` suffix, internally, as the RDF `query_pattern` logic looses details of the variable definition in solutions, where the variable is represented using a symbol.
+  # This implementation only supports quickVars at the document scope.
   #
   # Non-distinguished blank node variables are created as part of reasoning.
   #
@@ -200,7 +200,6 @@ module RDF::N3
                                                  |<-|<=|=>|=
                                                  | true|false
                                                  | has|is|of
-                                                 |@forAll|@forSome
                                                 )x)
 
     terminal(:PREFIX,                           PREFIX)
@@ -244,7 +243,6 @@ module RDF::N3
     def read_n3Statement
       prod(:n3Statement, %w{.}) do
         error("read_n3Doc", "Unexpected end of file") unless token = @lexer.first
-        read_uniext ||
         read_triples ||
         error("Expected token", production: :statement, token: token)
       end
@@ -573,12 +571,6 @@ module RDF::N3
           formula_nodes[node] = true
           debug(:formula, depth: @options[:depth]) {"id: #{node}, depth: #{formulae.length}"}
 
-          # Promote variables defined on the earlier formula to this formula
-          variables[node] = {}
-          variables.fetch(formulae[-2], {}).each do |name, var|
-            variables[node][name] = var
-          end
-
           read_formulaContent
 
           # Pop off the formula
@@ -664,54 +656,7 @@ module RDF::N3
         prod(:quickVar) do
           token = @lexer.shift
           value = token.value.sub('?', '')
-          iri = ns(nil, "#{value}_quick")
-          variables[nil][iri] ||= univar(iri, scope: nil)
-        end
-      end
-    end
-
-    ##
-    # Read a list of IRIs
-    #
-    #     [27] iriList ::= iri ( ',' iri )*
-    #
-    # @return [Array<RDF::URI>] the list of IRIs
-    def read_irilist
-      iris = []
-      prod(:iriList, %{,}) do
-        while iri = read_iri
-          iris << iri
-          break unless @lexer.first === ','
-          @lexer.shift while @lexer.first === ','
-        end
-      end
-      iris
-    end
-
-    ##
-    # Read a univeral or existential
-    #
-    # Apart from the set of statements, a formula also has a set of URIs of symbols which are universally quantified,
-    # and a set of URIs of symbols which are existentially quantified.
-    # Variables are then in general symbols which have been quantified.
-    #
-    # Here we allocate a variable (making up a name) and record with the defining formula. Quantification is done
-    # when the formula is completed against all in-scope variables
-    #
-    #     [31] existential ::=  '@forSome' iriList
-    #     [32] universal   ::=  '@forAll' iriList
-    #
-    # @return [void]
-    def read_uniext
-      if %w(@forSome @forAll).include?(@lexer.first.value)
-        token = @lexer.shift
-        prod(token === '@forAll' ? :universal : :existential) do
-          iri_list = read_irilist 
-          iri_list.each do |iri|
-            # Note, this might re-create an equivalent variable already defined in this formula, and replaces an equivalent variable that may have been defined in the parent formula.
-            var = univar(iri, scope: formulae.last, existential: token === '@forSome')
-            add_var_to_formula(formulae.last, iri, var)
-          end
+          variables[value] ||= RDF::Query::Variable.new(value)
         end
       end
     end
@@ -786,10 +731,9 @@ module RDF::N3
     end
 
     # If not in ground formula, note scope, and if existential
-    def univar(label, scope:, existential: false)
-      value = existential ? "#{label}_ext" : label
-      value = "#{value}#{scope.id}" if scope
-      RDF::Query::Variable.new(value, existential: existential)
+    def univar(label, scope:)
+      value = label
+      RDF::Query::Variable.new(value)
     end
 
     # add a pattern or statement
@@ -865,20 +809,11 @@ module RDF::N3
       label
     end
 
-    # Find any variable that may be defined in the formula identified by `bn`
+    # Find any variable that may be defined identified by `name`
     # @param [RDF::Node] name of formula
     # @return [RDF::Query::Variable]
     def find_var(name)
-      (variables[@formulae.last] ||= {})[name.to_s]
-    end
-
-    # Add a variable to the formula identified by `bn`, returning the variable. Useful as an LRU for variable name lookups
-    # @param [RDF::Node] bn name of formula
-    # @param [#to_s] name of variable for lookup
-    # @param [RDF::Query::Variable] var
-    # @return [RDF::Query::Variable]
-    def add_var_to_formula(bn, name, var)
-      (variables[bn] ||= {})[name.to_s] = var
+      variables[name.to_s]
     end
 
     def prod(production, recover_to = [])

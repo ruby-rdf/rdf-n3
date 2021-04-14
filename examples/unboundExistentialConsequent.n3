@@ -1,5 +1,5 @@
 @prefix : <http://www.example.org/ex#>.  
 
 :s :p :o.
- @forAll :x. {:x :p :o}=>{:x :b :c}.
- @forSome :y. {:s :p :y}=>{:a :b :y}.
+{?x :p :o}=>{?x :b :c}.
+{:s :p _:y}=>{:a :b _:y}.

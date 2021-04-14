@@ -1,6 +1,5 @@
-@forSome :x. 
-:x a :Person.
-@forAll :y.{:y a :Person.}=>{:y :loves :x.}.
+_:x a :Person.
+{?y a :Person.}=>{?y :loves _:x.}.
 
 :Julie a :Person .
 :Steve a :Person.

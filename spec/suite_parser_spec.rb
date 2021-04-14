@@ -14,7 +14,7 @@ describe RDF::N3::Reader do
 
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-parser.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'

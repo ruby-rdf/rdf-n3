@@ -51,8 +51,6 @@ def run_tc(man, tc, **options)
     STDERR.puts "\nInput:\n" + tc.input 
     STDERR.puts "\nExpected:\n" + tc.expected if tc.result && tc.positive_test?
   end
-  
-  return if tc.approval == "rdft:Rejected"
 
   logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
   logger.level = options[:level]
@@ -74,7 +72,9 @@ def run_tc(man, tc, **options)
     graph = RDF::N3::Repository.new
     result = nil
 
-    if !options[:slow] && tc.slow?
+    if tc.approval == "rdft:Rejected"
+      result = "rejected"
+    elsif !options[:slow] && tc.slow?
       result = "untested"
     elsif tc.positive_test?
       begin
@@ -256,7 +256,7 @@ opts.each do |opt, arg|
 end
 
 manifests = %w(
-  tests/N3Tests/manifest.ttl
+  tests/N3Tests/manifest-parser.ttl
   tests/TurtleTests/manifest.ttl
   tests/N3Tests/manifest-reasoner.ttl
   tests/N3Tests/manifest-extended.ttl
