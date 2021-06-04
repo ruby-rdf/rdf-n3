@@ -19,6 +19,7 @@ This version tracks the [W3C N3 Community Group][] [Specification][N3] which has
 * The modifier `<-` is introduced as a synonym for `is ... of`.
 * The SPARQL `BASE` and `PREFIX` declarations are supported.
 * Implicit universal variables are defined at the top-level, rather than in the parent formula of the one in which they are defined.
+* Support for explicit existential and universal variables (`@forAll` and `@forSome`) has been removed. Quick variables are the standard for universal quantification and blank nodes for existential, but scoping rules are different: Quickvars have top-level scope, and blank nodes formula scope.
 
 This brings N3 closer to compatibility with Turtle.
 
