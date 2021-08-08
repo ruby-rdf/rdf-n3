@@ -273,13 +273,26 @@ module RDF::N3
       case literal
       when RDF::Literal
         case literal.valid? ? literal.datatype : false
-        when RDF::XSD.boolean, RDF::XSD.integer, RDF::XSD.decimal
-          literal.canonicalize.to_s
+        when RDF::XSD.boolean
+          %w(true false).include?(literal.value) ? literal.value : literal.canonicalize.to_s
+        when RDF::XSD.integer
+          literal.value.match?(/^[\+\-]?\d+$/) && !canonicalize? ? literal.value : literal.canonicalize.to_s
+        when RDF::XSD.decimal
+          literal.value.match?(/^[\+\-]?\d+\.\d+?$/) && !canonicalize? ?
+            literal.value :
+            literal.canonicalize.to_s
         when RDF::XSD.double
           if literal.nan? || literal.infinite?
             quoted(literal.value) + "^^#{format_uri(literal.datatype)}"
           else
-            literal.canonicalize.to_s
+            in_form = case literal.value
+            when /[\+\-]?\d+\.\d*E[\+\-]?\d+$/i then true
+            when /[\+\-]?\.\d+E[\+\-]?\d+$/i    then true
+            when /[\+\-]?\d+E[\+\-]?\d+$/i      then true
+            else false
+            end && !canonicalize?
+
+            in_form ? literal.value : literal.canonicalize.to_s.sub('E', 'e')
           end
         else
           text = quoted(literal.value)
