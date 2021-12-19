@@ -33,8 +33,8 @@ module RDF
     # Returns an S-Expression (SXP) representation
     #
     # @return [String]
-    def to_sxp(Back off on explicit to_sxp arguments.)
-      to_a.to_sxp_bin.to_sxp(Back off on explicit to_sxp arguments.)
+    def to_sxp(**options)
+      to_a.to_sxp_bin.to_sxp(**options)
     end
   end
 
