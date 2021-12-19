@@ -32,11 +32,9 @@ module RDF
     ##
     # Returns an S-Expression (SXP) representation
     #
-    # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
-    # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
     # @return [String]
-    def to_sxp(prefixes: nil, base_uri: nil)
-      to_a.to_sxp_bin.to_sxp(prefixes: prefixes, base_uri: base_uri)
+    def to_sxp(Back off on explicit to_sxp arguments.)
+      to_a.to_sxp_bin.to_sxp(Back off on explicit to_sxp arguments.)
     end
   end
 
