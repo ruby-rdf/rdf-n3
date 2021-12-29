@@ -18,8 +18,8 @@ describe RDF::N3::Reader do
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}" do
-            case t.id.split('#').last
+          specify "#{t.rel}: #{t.name}: #{t.comment}" do
+            case t.rel
             when *%w{cwm_unify_unify1 cwm_unify_unify2 cwm_includes_builtins
                      cwm_includes_t11
                      cwm_includes_conclusion}
@@ -42,7 +42,7 @@ describe RDF::N3::Reader do
             reader = RDF::N3::Reader.open(t.action,
                 canonicalize: false,
                 list_terms: true,
-                validate: false,
+                validate: true,
                 logger: false)
 
             reasoner = RDF::N3::Reasoner.new(reader,
@@ -92,4 +92,4 @@ describe RDF::N3::Reader do
       end
     end
   end
-end unless ENV['CI']
+end

@@ -273,13 +273,26 @@ module RDF::N3
       case literal
       when RDF::Literal
         case literal.valid? ? literal.datatype : false
-        when RDF::XSD.boolean, RDF::XSD.integer, RDF::XSD.decimal
-          literal.canonicalize.to_s
+        when RDF::XSD.boolean
+          %w(true false).include?(literal.value) ? literal.value : literal.canonicalize.to_s
+        when RDF::XSD.integer
+          literal.value.match?(/^[\+\-]?\d+$/) && !canonicalize? ? literal.value : literal.canonicalize.to_s
+        when RDF::XSD.decimal
+          literal.value.match?(/^[\+\-]?\d+\.\d+?$/) && !canonicalize? ?
+            literal.value :
+            literal.canonicalize.to_s
         when RDF::XSD.double
           if literal.nan? || literal.infinite?
             quoted(literal.value) + "^^#{format_uri(literal.datatype)}"
           else
-            literal.canonicalize.to_s
+            in_form = case literal.value
+            when /[\+\-]?\d+\.\d*E[\+\-]?\d+$/i then true
+            when /[\+\-]?\.\d+E[\+\-]?\d+$/i    then true
+            when /[\+\-]?\d+E[\+\-]?\d+$/i      then true
+            else false
+            end && !canonicalize?
+
+            in_form ? literal.value : literal.canonicalize.to_s.sub('E', 'e')
           end
         else
           text = quoted(literal.value)
@@ -330,19 +343,6 @@ module RDF::N3
       log_debug("start_document: prefixes") { prefixes.inspect}
       prefixes.keys.sort_by(&:to_s).each do |prefix|
         @output.write("@prefix #{prefix}: <#{prefixes[prefix]}> .\n")
-      end
-
-      # Universals and extentials at top-level
-      unless @universals.empty?
-        log_debug("start_document: universals") { @universals.inspect}
-        terms = @universals.map {|v| format_uri(RDF::URI(v.name.to_s))}
-        @output.write("@forAll #{terms.join(', ')} .\n") 
-      end
-
-      unless @existentials.empty?
-        log_debug("start_document: existentials") { @existentials.inspect}
-        terms = @existentials.map {|v| format_uri(RDF::URI(v.name.to_s.sub(/_ext$/, '')))}
-        @output.write("@forSome #{terms.join(', ')} .\n") 
       end
     end
 
@@ -424,10 +424,6 @@ module RDF::N3
 
       @options[:prefixes] = {}  # Will define actual used when matched
       repo.each {|statement| preprocess_statement(statement)}
-
-      vars = repo.enum_term.to_a.uniq.select {|r| r.is_a?(RDF::Query::Variable) && !r.to_s.end_with?('_quick')}
-      @universals = vars.reject(&:existential?)
-      @existentials = vars - @universals
     end
 
     # Perform any statement preprocessing required. This is used to perform reference counts and determine required
@@ -462,7 +458,6 @@ module RDF::N3
 
     # Reset internal helper instance variables
     def reset
-      @universals, @existentials = [], []
       @lists = {}
       @references = {}
       @serialized = {}
@@ -521,11 +516,7 @@ module RDF::N3
     def p_term(resource, position)
       #log_debug("p_term") {"#{resource.to_sxp}, #{position}"}
       l = if resource.is_a?(RDF::Query::Variable)
-        if resource.to_s.end_with?('_quick')
-          '?' + RDF::URI(resource.name).fragment.sub(/_quick$/, '')
-        else
-          format_term(RDF::URI(resource.name.to_s.sub(/_ext$/, '')))
-        end
+        "?#{resource.name}"
       elsif resource == RDF.nil
         "()"
       else

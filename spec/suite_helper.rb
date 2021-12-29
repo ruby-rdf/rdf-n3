@@ -83,6 +83,7 @@ module Fixtures
         "data": {"@id": "test:data", "@type": "xsd:boolean"},
         "entries": {"@id": "mf:entries", "@container": "@list"},
         "filter": {"@id": "test:filter", "@type": "@id"},
+        "label": "rdfs:label",
         "name": "mf:name",
         "options": {"@id": "test:options", "@type": "@id"},
         "result": {"@id": "mf:result", "@type": "@id"},
@@ -114,7 +115,7 @@ module Fixtures
 
       def entries
         # Map entries to resources
-        attributes['entries'].map {|e| Entry.new(e)}
+        attributes['entries'].map {|e| Entry.new(e, context: context)}
       end
     end
 
@@ -177,6 +178,10 @@ module Fixtures
 
       attr_accessor :logger
 
+      def initialize(node_definition, **options)
+        super
+      end
+
       # For debug output formatting
       def format; :n3; end
 
@@ -184,12 +189,12 @@ module Fixtures
         action
       end
 
-      def name
+      def rel
         id.to_s.split('#').last
       end
 
       def slow?
-        SLOW.include?(name)
+        SLOW.include?(rel)
       end
 
       # Alias data and query

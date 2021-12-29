@@ -3,7 +3,7 @@ Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
 [![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
 [![Build Status](https://github.com/ruby-rdf/rdf-n3/workflows/CI/badge.svg?branch=develop)](https://github.com/ruby-rdf/rdf-n3/actions?query=workflow%3ACI)
-[![Coverage Status](https://coveralls.io/repos/ruby-rdf/rdf-n3/badge.svg)](https://coveralls.io/github/ruby-rdf/rdf-n3)
+[![Coverage Status](https://coveralls.io/repos/github/ruby-rdf/rdf-n3/badge.svg?branch=develop)](https://coveralls.io/github/ruby-rdf/rdf-n3?branch=develop)
 [![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
 
 ## Description
@@ -19,6 +19,7 @@ This version tracks the [W3C N3 Community Group][] [Specification][N3] which has
 * The modifier `<-` is introduced as a synonym for `is ... of`.
 * The SPARQL `BASE` and `PREFIX` declarations are supported.
 * Implicit universal variables are defined at the top-level, rather than in the parent formula of the one in which they are defined.
+* Support for explicit existential and universal variables (`@forAll` and `@forSome`) has been removed. Quick variables are the standard for universal quantification and blank nodes for existential, but scoping rules are different: Quickvars have top-level scope, and blank nodes formula scope.
 
 This brings N3 closer to compatibility with Turtle.
 
@@ -26,6 +27,8 @@ This brings N3 closer to compatibility with Turtle.
 RDF::N3 parses [Notation-3][N3], [Turtle][] and [N-Triples][] into statements or quads. It also performs reasoning and serializes to N3.
 
 Install with `gem install rdf-n3`
+
+[Implementation Report](https://ruby-rdf.github.io/rdf-n3/etc/earl.html)
 
 ## Limitations
 * Support for Variables in Formulae. Existential variables are quantified to RDF::Node instances, Universals to RDF::Query::Variable, with the URI of the variable target used as the variable name.
@@ -69,6 +72,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `list:append` (See {RDF::N3::Algebra::List::Append})
   * `list:first`  (See {RDF::N3::Algebra::List::First})
   * `list:in`     (See {RDF::N3::Algebra::List::In})
+  * `list:iterate`     (See {RDF::N3::Algebra::List::Iterate})
   * `list:last`   (See {RDF::N3::Algebra::List::Last})
   * `list:length` (See {RDF::N3::Algebra::List::Length})
   * `list:member` (See {RDF::N3::Algebra::List::Member})
@@ -78,9 +82,11 @@ Reasoning is discussed in the [Design Issues][] document.
   * `log:conclusion`    (See {RDF::N3::Algebra::Log::Conclusion})
   * `log:conjunction`   (See {RDF::N3::Algebra::Log::Conjunction})
   * `log:content`       (See {RDF::N3::Algebra::Log::Content})
+  * `log:dtlit`       (See {RDF::N3::Algebra::Log::DtLit})
   * `log:equalTo`       (See {RDF::N3::Algebra::Log::EqualTo})
   * `log:implies`       (See {RDF::N3::Algebra::Log::Implies})
   * `log:includes`      (See {RDF::N3::Algebra::Log::Includes})
+  * `log:langlit`       (See {RDF::N3::Algebra::Log::LangLit})
   * `log:n3String`      (See {RDF::N3::Algebra::Log::N3String})
   * `log:notEqualTo`    (See {RDF::N3::Algebra::Log::NotEqualTo})
   * `log:notIncludes`   (See {RDF::N3::Algebra::Log::NotIncludes})
@@ -139,7 +145,7 @@ Reasoning is discussed in the [Design Issues][] document.
   * `string:scrape`               (See {RDF::N3::Algebra::Str::Scrape})
   * `string:startsWith`           (See {RDF::N3::Algebra::Str::StartsWith})
 
-#### RDF Time vocabulary <>
+#### RDF Time vocabulary <http://www.w3.org/2000/10/swap/time#>
 
   * `time:dayOfWeek`              (See {RDF::N3::Algebra::Time::DayOfWeek})
   * `time:day`                    (See {RDF::N3::Algebra::Time::Day})
@@ -173,15 +179,8 @@ when turned into an RDF Repository results in the following quads
 Reasoning uses a Notation3 Algebra, similar to [SPARQL S-Expressions][]. This implementation considers formulae to be patterns, which may be asserted on statements made in the default graph, possibly loaded from a separate file. The logical relationships are reduced to algebraic operators. 
 
 ### Variables
-N3 Variables are introduced with `@forAll`, `@forSome`, or `?x`. Variables reference URIs described in formulae, typically defined in the default vocabulary (e.g., `":x"`). Existential variables are replaced with an allocated `RDF::Node` instance. Universal variables are replaced with a `RDF::Query::Variable` instance. For example, the following N3 generates the associated statements:
-
-    @forAll <#h>. @forSome <#g>. <#g> <#loves> <#h> .
-
-results in:
-
-    h = RDF::Query::Variable.new(<#h>)
-    g = RDF::Node.new()
-    RDF::Statement(f, <#loves>, h)
+The latest version of N3 supports only quickVars (e.g., `?x`). THe former explicit `@forAll` and `@forSome` of been removed.
+Existential variables are replaced with an allocated `RDF::Node` instance.
 
 Note that the behavior of both existential and universal variables is not entirely in keeping with the [Team Submission][], and neither work quite like SPARQL variables. When used in the antecedent part of an implication, universal variables should behave much like SPARQL variables. This area is subject to a fair amount of change.
 
@@ -194,11 +193,11 @@ Formulae are typically used to query the knowledge-base, which is set from the b
 Blank nodes associated with rdf:List statements used as part of a built-in are made _non-distinguished_ existential variables, and patters containing these variables become optional. If they are not bound as part of the query, the implicitly are bound as the original blank nodes defined within the formula, which allows for both constant list arguments, list arguments that contain variables, or arguments which are variables expanding to lists.
 
 ## Dependencies
-* [Ruby](https://ruby-lang.org/) (>= 2.4)
-* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.1, >= 3.1.4)
-* [EBNF][EBNF gem] (~> 2.1)
+* [Ruby](https://ruby-lang.org/) (>= 2.6)
+* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.2)
+* [EBNF][EBNF gem] (~> 2.2)
 * [SPARQL][SPARQL gem] (~> 3.1)
-* [SXP][SXP gem] (~> 1.1)
+* [SXP][SXP gem] (~> 1.2)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-rdf/rdf-n3)

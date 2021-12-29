@@ -3,6 +3,4 @@
 :Steve a :Person; :loves :Raymond .
 :Nancy a :Person; :loves :Raymond .
 
-@forAll :g .
-@forSome :h .
-{:g :loves :h} => {:g a :Lover} .
+{?g :loves _:h} => {?g a :Lover} .

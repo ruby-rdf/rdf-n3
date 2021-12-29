@@ -1,6 +1,6 @@
 (
  (rule n3Doc "1" (star (alt (seq n3Statement ".") sparqlDirective)))
- (rule n3Statement "2" (alt n3Directive triples existential universal))
+ (rule n3Statement "2" (alt n3Directive triples))
  (rule n3Directive "3" (alt prefixID base))
  (rule sparqlDirective "4" (alt sparqlBase sparqlPrefix))
  (rule sparqlBase "5" (seq BASE IRIREF))
@@ -34,15 +34,12 @@
  (rule numericLiteral "24" (alt DOUBLE DECIMAL INTEGER))
  (rule rdfLiteral "25" (seq STRING (opt (alt LANGTAG (seq "^^" iri)))))
  (rule iri "26" (alt IRIREF prefixedName))
- (rule iriList "27" (seq iri (star (seq "," iri))))
- (rule prefixedName "28" (alt PNAME_LN PNAME_NS))
- (rule blankNode "29" (alt BLANK_NODE_LABEL ANON))
- (rule quickVar "30" (seq QUICK_VAR_NAME))
- (rule existential "31" (seq "@forSome" iriList))
- (rule universal "32" (seq "@forAll" iriList))
+ (rule prefixedName "27" (alt PNAME_LN PNAME_NS))
+ (rule blankNode "28" (alt BLANK_NODE_LABEL ANON))
+ (rule quickVar "29" (seq QUICK_VAR_NAME))
  (terminals _terminals (seq))
- (terminal BOOLEAN_LITERAL "33" (alt "true" "false"))
- (terminal STRING "34"
+ (terminal BOOLEAN_LITERAL "30" (alt "true" "false"))
+ (terminal STRING "31"
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
  (terminal IRIREF "139s"

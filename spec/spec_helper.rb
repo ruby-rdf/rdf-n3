@@ -5,17 +5,22 @@ require "bundler/setup"
 require 'rspec'
 require 'matchers'
 require 'rdf/isomorphic'
-require 'rdf/n3'
 require 'rdf/ntriples'
 require 'rdf/spec'
 require 'rdf/spec/matchers'
 
 begin
   require 'simplecov'
-  require 'coveralls'
+  require 'simplecov-lcov'
+  SimpleCov::Formatter::LcovFormatter.config do |config|
+    #Coveralls is coverage by default/lcov. Send info results
+    config.report_with_single_file = true
+    config.single_report_path = 'coverage/lcov.info'
+  end
+
   SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
     SimpleCov::Formatter::HTMLFormatter,
-    Coveralls::SimpleCov::Formatter
+    SimpleCov::Formatter::LcovFormatter
   ])
   SimpleCov.start do
     add_filter "/spec/"
@@ -23,6 +28,7 @@ begin
 rescue LoadError => e
   STDERR.puts "Coverage Skipped: #{e.message}"
 end
+require 'rdf/n3'
 
 ::RSpec.configure do |c|
   c.filter_run focus: true

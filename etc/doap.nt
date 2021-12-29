@@ -1,21 +1,27 @@
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#blog> <https://greggkellogg.net/> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#bug-database> <https://github.com/ruby-rdf/rdf-n3/issues> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#implements> <http://www.w3.org/DesignIssues/Notation3.html> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#programming-language> "Ruby" .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#shortdesc> "N3 reader/writer for Ruby."@en .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#homepage> <https://github.com/ruby-rdf/rdf-n3> .
-<https://rubygems.org/gems/rdf-n3> <http://xmlns.com/foaf/0.1/maker> <https://greggkellogg.net/foaf#me> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#category> <http://dbpedia.org/resource/Resource_Description_Framework> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#category> <http://dbpedia.org/resource/Ruby_(programming_language)> .
-<https://rubygems.org/gems/rdf-n3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#description> "RDF::N3 is an Notation-3 reader/writer and reasoner for the RDF.rb library suite."@en .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#mailing-list> <https://lists.w3.org/Archives/Public/public-rdf-ruby/> .
 <https://rubygems.org/gems/rdf-n3> <http://purl.org/dc/terms/creator> <https://greggkellogg.net/foaf#me> .
 <https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#download-page> <https://rubygems.org/gems/rdf-n3> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#name> "RDF::N3" .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#license> <https://unlicense.org/1.0/> .
 <https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#helper> <http://njh.me/> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#license> <https://unlicense.org/1.0/> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#programming-language> "Ruby" .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#description> "RDF::N3 is an Notation-3 reader/writer and reasoner for the RDF.rb library suite."@en .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#release> <https://github.com/ruby-rdf/rdf-n3/tree/3.1.2> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#name> "RDF::N3" .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#implements> <http://www.w3.org/DesignIssues/Notation3.html> .
+<https://rubygems.org/gems/rdf-n3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#shortdesc> "N3 reader/writer for Ruby RDF.rb."@en .
 <https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#created> "2010-06-03"^^<http://www.w3.org/2001/XMLSchema#date> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#bug-database> <https://github.com/ruby-rdf/rdf-n3/issues> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#homepage> <https://github.com/ruby-rdf/rdf-n3> .
 <https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#documenter> <https://greggkellogg.net/foaf#me> .
-<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#developer> <https://greggkellogg.net/foaf#me> .
 <https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#maintainer> <https://greggkellogg.net/foaf#me> .
+<https://rubygems.org/gems/rdf-n3> <http://xmlns.com/foaf/0.1/maker> <https://greggkellogg.net/foaf#me> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#mailing-list> <https://lists.w3.org/Archives/Public/public-rdf-ruby/> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#category> <http://dbpedia.org/resource/Ruby_(programming_language)> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#category> <http://dbpedia.org/resource/Resource_Description_Framework> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#developer> <https://greggkellogg.net/foaf#me> .
+<https://rubygems.org/gems/rdf-n3> <http://usefulinc.com/ns/doap#blog> <https://greggkellogg.net/> .
+<https://greggkellogg.net/foaf#me> <http://xmlns.com/foaf/0.1/name> "Gregg Kellogg" .
+<https://greggkellogg.net/foaf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<https://greggkellogg.net/foaf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/earl#Assertor> .
+<https://greggkellogg.net/foaf#me> <http://xmlns.com/foaf/0.1/title> "Implementor" .
+<https://greggkellogg.net/foaf#me> <http://xmlns.com/foaf/0.1/homepage> <https://greggkellogg.net/> .

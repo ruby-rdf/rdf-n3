@@ -109,9 +109,8 @@ describe "RDF::N3::Reasoner" do
       {
         "r1" => {
           input: %(
-            @forAll :a, :b.
             ( "one"  "two" ) a :whatever.
-            { (:a :b) a :whatever } log:implies { :a a :SUCCESS. :b a :SUCCESS }.
+            { (?a ?b) a :whatever } log:implies { ?a a :SUCCESS. ?b a :SUCCESS }.
           ),
           expect: %(
             ( "one"  "two" ) a :whatever.
@@ -224,7 +223,7 @@ describe "RDF::N3::Reasoner" do
         "quantifiers-limited-a2" => {
           input: %(
             @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-            {{ :foo :bar :baz } log:includes { @forSome :foo. :foo :bar :baz }}
+            {{ :foo :bar :baz } log:includes { _:foo :bar :baz }}
             => { :testa2 a :success } .
           ),
           expect: %(
@@ -234,7 +233,7 @@ describe "RDF::N3::Reasoner" do
         "quantifiers-limited-b2" => {
           input: %(
             @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-            {{ @forSome :foo. :foo :bar :baz } log:includes {@forSome :foo. :foo :bar :baz }}
+            {{ _:foo :bar :baz } log:includes {_:foo :bar :baz }}
             => { :testb2 a :success } .
           ),
           expect: %(
@@ -286,8 +285,6 @@ describe "RDF::N3::Reasoner" do
             @prefix log: <http://www.w3.org/2000/10/swap/log#>.
             @prefix : <#>.
 
-            @forAll :F.
-
             {"""     @prefix : <http://www.w3.org/2000/10/swap/test/crypto/acc.n3#> .
                  @prefix crypto: <http://www.w3.org/2000/10/swap/crypto#> .
                  @prefix log: <http://www.w3.org/2000/10/swap/log#> .
@@ -297,7 +294,7 @@ describe "RDF::N3::Reasoner" do
                 :foo     :credential <access-tina-cert.n3>;
                      :forDocument <http://www.w3.org/Member>;
                      :junk "32746213462187364732164732164321" .
-            """ log:parsedAsN3 :F} log:implies { :F a :result }.
+            """ log:parsedAsN3 ?F} log:implies { ?F a :result }.
           ),
           expect: %(
             @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -502,6 +499,96 @@ describe "RDF::N3::Reasoner" do
           expect: %(
             3 a :Pythagorean.
             5 a :Pythagorean.
+          )
+        },
+      }.each do |name, options|
+        it name do
+          logger.info "input: #{options[:input]}"
+          pending(options[:pending]) if options[:pending]
+          options = {conclusions: true}.merge(options)
+          expected = parse(options[:expect])
+          expect(reason(options[:input], **options)).to be_equivalent_graph(expected, logger: logger)
+        end
+      end
+    end
+
+    context "list:iterate" do
+      {
+        "pairs of (1 2 3 4)": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {(1 2 3 4) list:iterate ?R} => {(1 2 3 4) :has ?R}.
+          ),
+          expect: %(
+            (1 2 3 4) :has (0 1),  (1 2), (2 3), (3 4).
+          )
+        },
+        "c is third member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c") list:iterate (2 ?Y)} => {("a" "b" "c") :has (2 ?Y)}.
+          ),
+          expect: %(
+            ("a" "b" "c") :has (2 "c").
+          )
+        },
+        "members matching c": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x "c")} => {("a" "b" "c" "c") :has (?x "c")}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has (2 "c"), (3 "c").
+          )
+        },
+        "all members": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x ?y)} => {("a" "b" "c" "c") :has (?x ?y)}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has (0 "a"), (1 "b"), (2 "c"), (3 "c").
+          )
+        },
+        "specific member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (2 "c")} => {("a" "b" "c" "c") :has :it}.
+          ),
+          expect: %(
+            ("a" "b" "c" "c") :has :it.
+          )
+        },
+        "no member": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (2 "x")} => {("a" "b" "c" "c") :has :it}.
+          ),
+          expect: %(
+          )
+        },
+        "object to small": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x)} => {("a" "b" "c" "c") :has ?x}.
+          ),
+          expect: %(
+          )
+        },
+        "object to large": {
+          input: %(
+            @prefix list: <http://www.w3.org/2000/10/swap/list#>.
+
+            {("a" "b" "c" "c") list:iterate (?x ?y ?z)} => {("a" "b" "c" "c") :has ?x}.
+          ),
+          expect: %(
           )
         },
       }.each do |name, options|

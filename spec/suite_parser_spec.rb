@@ -14,12 +14,12 @@ describe RDF::N3::Reader do
 
     require_relative 'suite_helper'
 
-    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest.ttl") do |m|
+    Fixtures::SuiteTest::Manifest.open("https://w3c.github.io/N3/tests/N3Tests/manifest-parser.ttl") do |m|
       describe m.label do
         m.entries.each do |t|
           next if t.approval == 'rdft:Rejected'
-          specify "#{t.name}: #{t.comment}" do
-            case t.name
+          specify "#{t.rel}: #{t.name}: #{t.comment}" do
+            case t.rel
             when *%w(cwm_syntax_numbers.n3)
               pending("number representation")
             when *%w(cwm_syntax_too-nested.n3)
@@ -72,4 +72,4 @@ describe RDF::N3::Reader do
       end
     end
   end
-end unless ENV['CI']
+end
