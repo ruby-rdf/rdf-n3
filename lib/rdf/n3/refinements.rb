@@ -173,6 +173,11 @@ module RDF::N3::Refinements
 
   refine ::RDF::Graph do
     # Allow a graph to be treated as a term in a statement.
-    include ::RDF::Term
+    if respond_to?(:import_methods)
+      # Refinement#include deprecated in Ruby 3.2
+      import_methods ::RDF::Term
+    else
+      include ::RDF::Term
+    end
   end
 end
