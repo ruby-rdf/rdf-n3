@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: RDF::N3::Algebra::Formula
+  
+    &mdash; Notation-3 and Turtle reader/writer for RDF.rb.
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "RDF::N3::Algebra::Formula";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span>
+     &raquo; 
+    <span class="title">Formula</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: RDF::N3::Algebra::Formula
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../../../SPARQL/Algebra/Operator.html" title="SPARQL::Algebra::Operator (class)">SPARQL::Algebra::Operator</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../../../SPARQL/Algebra/Operator.html" title="SPARQL::Algebra::Operator (class)">SPARQL::Algebra::Operator</a></span></li>
+          
+            <li class="next">RDF::N3::Algebra::Formula</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="../../Enumerable.html" title="RDF::Enumerable (module)">Enumerable</a></span>, <span class='object_link'><a href="Builtin.html" title="RDF::N3::Algebra::Builtin (module)">Builtin</a></span>, <span class='object_link'><a href="../../Term.html" title="RDF::Term (module)">Term</a></span>, SPARQL::Algebra::Query, SPARQL::Algebra::Update</dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/rdf/n3/algebra/formula.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A Notation3 Formula combines a graph with a BGP query.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="NAME-constant" class="">NAME =
+          
+        </dt>
+        <dd><pre class="code"><span class='symbol'>:formula</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query-instance_method" title="#query (instance method)">#<strong>query</strong>  &#x21d2; RDF::Query </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Query to run against a queryable to determine if the formula matches the queryable.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+  
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="../../Enumerable.html" title="RDF::Enumerable (module)">Enumerable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../Enumerable.html#existentials-instance_method" title="RDF::Enumerable#existentials (method)">#existentials</a></span>, <span class='object_link'><a href="../../Enumerable.html#universals-instance_method" title="RDF::Enumerable#universals (method)">#universals</a></span></p>
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from_enumerable-class_method" title="from_enumerable (class method)">.<strong>from_enumerable</strong>(enumerable, **options)  &#x21d2; RDF::N3::Algebra::Formula </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Create a formula from an RDF::Enumerable (such as RDF::N3::Repository).</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deep_dup-instance_method" title="#deep_dup (instance method)">#<strong>deep_dup</strong>  &#x21d2; RDF::N3::Algebra::Formula </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Duplicate this formula, recursively, renaming graph names using hash function.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#distinguished_vars-instance_method" title="#distinguished_vars (instance method)">#<strong>distinguished_vars</strong>  &#x21d2; Array&lt;RDF::Query::Variable] </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Distinguished vars in this formula.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#each-instance_method" title="#each (instance method)">#<strong>each</strong>(solutions: RDF::Query::Solutions(RDF::Query::Solution.new)) {|statement| ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Yields each statement from this formula bound to previously determined solutions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#each_pattern-instance_method" title="#each_pattern (instance method)">#<strong>each_pattern</strong> {|pattern| ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Yields each pattern which is not a builtin.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#evaluate-instance_method" title="#evaluate (instance method)">#<strong>evaluate</strong>(bindings, formulae:, **options)  &#x21d2; RDF::N3::List </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Evaluates the formula using the given variable <code>bindings</code> by cloning the formula replacing variables with their bindings recursively.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute-instance_method" title="#execute (instance method)">#<strong>execute</strong>(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)  &#x21d2; RDF::Solutions </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Yields solutions from patterns and other operands.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#existential_vars-instance_method" title="#existential_vars (instance method)">#<strong>existential_vars</strong>  &#x21d2; Array&lt;RDF::Query::Variable] </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Existential vars in this formula.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#formula%3F-instance_method" title="#formula? (instance method)">#<strong>formula?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns <code>true</code> if <code>self</code> is a <span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">Formula</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#graph_name-instance_method" title="#graph_name (instance method)">#<strong>graph_name</strong>  &#x21d2; RDF::Resource </a>
+    
+
+    
+      (also: #to_uri)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Graph name associated with this formula.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#graph_name=-instance_method" title="#graph_name= (instance method)">#<strong>graph_name=</strong>(name)  &#x21d2; RDF::Resource </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Assign a graph name to this formula.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#hash-instance_method" title="#hash (instance method)">#<strong>hash</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The formula hash is the hash of it’s operands and graph_name.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#n3statements-instance_method" title="#n3statements (instance method)">#<strong>n3statements</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Statements memoizer, from the operands which are statements.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#patterns-instance_method" title="#patterns (instance method)">#<strong>patterns</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Patterns memoizer, from the operands which are statements and not builtins.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sub_ops-instance_method" title="#sub_ops (instance method)">#<strong>sub_ops</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Non-statement operands memoizer.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_base-instance_method" title="#to_base (instance method)">#<strong>to_base</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_sxp_bin-instance_method" title="#to_sxp_bin (instance method)">#<strong>to_sxp_bin</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#undistinguished_vars-instance_method" title="#undistinguished_vars (instance method)">#<strong>undistinguished_vars</strong>  &#x21d2; Array&lt;RDF::Query::Variable] </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Undistinguished vars in this formula.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#universal_vars-instance_method" title="#universal_vars (instance method)">#<strong>universal_vars</strong>  &#x21d2; Array&lt;RDF::Query::Variable] </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Universal vars in this formula and sub-formulae.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#vars-instance_method" title="#vars (instance method)">#<strong>vars</strong>  &#x21d2; Array&lt;RDF::Query::Variable&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the variables contained within this formula.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Builtin.html" title="RDF::N3::Algebra::Builtin (module)">Builtin</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Builtin.html#input_operand-instance_method" title="RDF::N3::Algebra::Builtin#input_operand (method)">#input_operand</a></span>, <span class='object_link'><a href="Builtin.html#rank-instance_method" title="RDF::N3::Algebra::Builtin#rank (method)">#rank</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../../Term.html" title="RDF::Term (module)">Term</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../Term.html#as_datetime-instance_method" title="RDF::Term#as_datetime (method)">#as_datetime</a></span>, <span class='object_link'><a href="../../Term.html#as_number-instance_method" title="RDF::Term#as_number (method)">#as_number</a></span>, <span class='object_link'><a href="../../Term.html#sameTerm%3F-instance_method" title="RDF::Term#sameTerm? (method)">#sameTerm?</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../../../SPARQL/Algebra/Operator.html" title="SPARQL::Algebra::Operator (class)">SPARQL::Algebra::Operator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../../SPARQL/Algebra/Operator.html#formulae-instance_method" title="SPARQL::Algebra::Operator#formulae (method)">#formulae</a></span>, <span class='object_link'><a href="../../../SPARQL/Algebra/Operator.html#operands=-instance_method" title="SPARQL::Algebra::Operator#operands= (method)">#operands=</a></span></p>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="query=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="query-instance_method">
+  
+    #<strong>query</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">RDF::Query</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Query to run against a queryable to determine if the formula matches the queryable.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">RDF::Query</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 17</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@query</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="from_enumerable-class_method">
+  
+    .<strong>from_enumerable</strong>(enumerable, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">RDF::N3::Algebra::Formula</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Create a formula from an RDF::Enumerable (such as RDF::N3::Repository)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>enumerable</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Enumerable.html" title="RDF::Enumerable (module)">RDF::Enumerable</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>any additional keyword options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">RDF::N3::Algebra::Formula</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from_enumerable'>from_enumerable</span><span class='lparen'>(</span><span class='id identifier rubyid_enumerable'>enumerable</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='comment'># SPARQL used for SSE and algebra functionality
+</span>  <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>sparql</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='symbol'>:SPARQL</span><span class='rparen'>)</span>
+
+  <span class='comment'># Create formulae from statement graph_names
+</span>  <span class='id identifier rubyid_formulae'>formulae</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_enumerable'>enumerable</span><span class='period'>.</span><span class='id identifier rubyid_graph_names'>graph_names</span><span class='period'>.</span><span class='id identifier rubyid_unshift'>unshift</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='op'>|</span>
+    <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">Formula</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>graph_name:</span> <span class='id identifier rubyid_graph_name'>graph_name</span><span class='comma'>,</span> <span class='label'>formulae:</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Add patterns to appropiate formula based on graph_name,
+</span>  <span class='comment'># and replace subject and object bnodes which identify
+</span>  <span class='comment'># named graphs with those formula
+</span>  <span class='id identifier rubyid_enumerable'>enumerable</span><span class='period'>.</span><span class='id identifier rubyid_each_statement'>each_statement</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_statement'>statement</span><span class='op'>|</span>
+    <span class='comment'># A graph name indicates a formula.
+</span>    <span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>=</span> <span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span>
+    <span class='id identifier rubyid_form'>form</span> <span class='op'>=</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rbracket'>]</span>
+
+    <span class='comment'># Map statement components to formulae, if necessary.
+</span>    <span class='id identifier rubyid_statement'>statement</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Statement.html" title="RDF::Statement (class)">Statement</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_term'>term</span><span class='op'>|</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_term'>term</span>
+      <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Node.html" title="RDF::Node (class)">Node</a></span></span>
+        <span class='id identifier rubyid_term'>term</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span>
+          <span class='comment'># Transform blank nodes denoting formulae into those formulae
+</span>          <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span>
+        <span class='kw'>elsif</span> <span class='id identifier rubyid_graph_name'>graph_name</span>
+          <span class='comment'># If we&#39;re in a quoted graph, transform blank nodes into undistinguished existential variables.
+</span>          <span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_to_ndvar'>to_ndvar</span><span class='lparen'>(</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_term'>term</span>
+        <span class='kw'>end</span>
+      <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">List</a></span></span>
+        <span class='comment'># Transform blank nodes denoting formulae into those formulae
+</span>        <span class='id identifier rubyid_term'>term</span> <span class='op'>=</span> <span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_transform'>transform</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_node?'>node?</span> <span class='op'>?</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='comma'>,</span> <span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_t'>t</span><span class='rbrace'>}</span>
+
+        <span class='comment'># If we&#39;re in a quoted graph, transform blank node components into existential variables
+</span>        <span class='kw'>if</span> <span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_has_nodes?'>has_nodes?</span>
+          <span class='id identifier rubyid_term'>term</span> <span class='op'>=</span> <span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_to_ndvar'>to_ndvar</span><span class='lparen'>(</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_term'>term</span>
+    <span class='kw'>end</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_pattern'>pattern</span> <span class='op'>=</span> <span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_variable?'>variable?</span> <span class='op'>?</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Pattern.html" title="RDF::Query::Pattern (class)">Pattern</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='id identifier rubyid_statement'>statement</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_statement'>statement</span>
+
+    <span class='comment'># Formulae may be the subject or object of a known operator
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_klass'>klass</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span><span class='period'>.</span><span class='id identifier rubyid_for'><span class='object_link'><a href="../Algebra.html#for-class_method" title="RDF::N3::Algebra.for (method)">for</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='period'>.</span><span class='id identifier rubyid_predicate'>predicate</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_form'>form</span><span class='period'>.</span><span class='id identifier rubyid_operands'>operands</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_klass'>klass</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='period'>.</span><span class='id identifier rubyid_subject'>subject</span><span class='comma'>,</span>
+                                 <span class='id identifier rubyid_pattern'>pattern</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span>
+                                 <span class='label'>formulae:</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='comma'>,</span>
+                                 <span class='label'>parent:</span> <span class='id identifier rubyid_form'>form</span><span class='comma'>,</span>
+                                 <span class='label'>predicate:</span> <span class='id identifier rubyid_pattern'>pattern</span><span class='period'>.</span><span class='id identifier rubyid_predicate'>predicate</span><span class='comma'>,</span>
+                                 <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_pattern'>pattern</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='id identifier rubyid_form'>form</span><span class='period'>.</span><span class='id identifier rubyid_operands'>operands</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_pattern'>pattern</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Formula is that without a graph name
+</span>  <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='kw'>nil</span><span class='rbracket'>]</span>
+
+  <span class='comment'># If assigned a graph name, add it here
+</span>  <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:graph_name</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:graph_name</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_this'>this</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="deep_dup-instance_method">
+  
+    #<strong>deep_dup</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">RDF::N3::Algebra::Formula</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Duplicate this formula, recursively, renaming graph names using hash function.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">RDF::N3::Algebra::Formula</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+99
+100
+101
+102
+103
+104
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 99</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_deep_dup'>deep_dup</span>
+  <span class='comment'>#new_ops = operands.map(&amp;:dup)
+</span>  <span class='id identifier rubyid_new_ops'>new_ops</span> <span class='op'>=</span> <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span>
+    <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_deep_dup'>deep_dup</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Node.html" title="RDF::Node (class)">Node</a></span></span><span class='period'>.</span><span class='id identifier rubyid_intern'>intern</span><span class='lparen'>(</span><span class='id identifier rubyid_new_ops'>new_ops</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>formula</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>dup: </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_new_ops'>new_ops</span><span class='comma'>,</span> <span class='op'>**</span><span class='ivar'>@options</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>graph_name:</span> <span class='id identifier rubyid_graph_name'>graph_name</span><span class='comma'>,</span> <span class='label'>formulae:</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='rparen'>)</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="distinguished_vars-instance_method">
+  
+    #<strong>distinguished_vars</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Distinguished vars in this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Array&lt;RDF::Query::Variable]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+402
+403
+404</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 402</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_distinguished_vars'>distinguished_vars</span>
+  <span class='ivar'>@distinguished</span> <span class='op'>||=</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:distinguished?</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="each-instance_method">
+  
+    #<strong>each</strong>(solutions: RDF::Query::Solutions(RDF::Query::Solution.new)) {|statement| ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Yields each statement from this formula bound to previously determined solutions.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>statement</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>each matching statement</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>statement</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Statement.html" title="RDF::Statement (class)">RDF::Statement</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>void</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 236</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='label'>solutions:</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Solution.html" title="RDF::Query::Solution (class)">Solution</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula each)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+
+  <span class='comment'># Yield statements by binding variables
+</span>  <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_solution'>solution</span><span class='op'>|</span>
+    <span class='comment'># Bind blank nodes to the solution when it doesn&#39;t contain a solution for an existential variable
+</span>    <span class='id identifier rubyid_existential_vars'>existential_vars</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_var'>var</span><span class='op'>|</span>
+      <span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_var'>var</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Node.html" title="RDF::Node (class)">Node</a></span></span><span class='period'>.</span><span class='id identifier rubyid_intern'>intern</span><span class='lparen'>(</span><span class='id identifier rubyid_var'>var</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^\$+</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula apply)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_solution'>solution</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+    <span class='comment'># Yield each variable statement which is constant after applying solution
+</span>    <span class='id identifier rubyid_log_depth'>log_depth</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_n3statements'>n3statements</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_statement'>statement</span><span class='op'>|</span>
+        <span class='id identifier rubyid_terms'>terms</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+        <span class='lbracket'>[</span><span class='symbol'>:subject</span><span class='comma'>,</span> <span class='symbol'>:predicate</span><span class='comma'>,</span> <span class='symbol'>:object</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_part'>part</span><span class='op'>|</span>
+          <span class='id identifier rubyid_terms'>terms</span><span class='lbracket'>[</span><span class='id identifier rubyid_part'>part</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_o'>o</span> <span class='op'>=</span> <span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='id identifier rubyid_part'>part</span><span class='rparen'>)</span>
+          <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">Variable</a></span></span>
+            <span class='kw'>if</span> <span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_o'>o</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_o'>o</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_formula?'>formula?</span>
+              <span class='id identifier rubyid_log_info'>log_info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula from var form)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_o'>o</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+              <span class='id identifier rubyid_form_statements'>form_statements</span><span class='lparen'>(</span><span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_o'>o</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>solution:</span> <span class='id identifier rubyid_solution'>solution</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+            <span class='kw'>else</span>
+              <span class='id identifier rubyid_solution'>solution</span><span class='lbracket'>[</span><span class='id identifier rubyid_o'>o</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_o'>o</span>
+            <span class='kw'>end</span>
+          <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">List</a></span></span>
+            <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_variable?'>variable?</span> <span class='op'>?</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_evaluate'>evaluate</span><span class='lparen'>(</span><span class='id identifier rubyid_solution'>solution</span><span class='period'>.</span><span class='id identifier rubyid_bindings'>bindings</span><span class='comma'>,</span> <span class='label'>formulae:</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_o'>o</span>
+          <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">Formula</a></span></span>
+            <span class='comment'># uses the graph_name of the formula, and yields statements from the formula. No solutions are passed in.
+</span>            <span class='id identifier rubyid_log_info'>log_info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula from form)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+            <span class='id identifier rubyid_form_statements'>form_statements</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='comma'>,</span> <span class='label'>solution:</span> <span class='id identifier rubyid_solution'>solution</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+          <span class='kw'>else</span>
+            <span class='id identifier rubyid_o'>o</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+
+        <span class='id identifier rubyid_statement'>statement</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Statement.html" title="RDF::Statement (class)">Statement</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='id identifier rubyid_terms'>terms</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula add)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+
+        <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_statement'>statement</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># statements from sub-operands
+</span>      <span class='id identifier rubyid_sub_ops'>sub_ops</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span>
+        <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula sub_op)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='lbracket'>[</span><span class='id identifier rubyid_op'>op</span><span class='comma'>,</span> <span class='id identifier rubyid_solution'>solution</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='label'>solutions:</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='lparen'>(</span><span class='id identifier rubyid_solution'>solution</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_stmt'>stmt</span><span class='op'>|</span>
+          <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula add from sub_op)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_stmt'>stmt</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+          <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_stmt'>stmt</span><span class='rparen'>)</span>
+          <span class='comment'># Add statements for any term which is a formula
+</span>          <span class='id identifier rubyid_stmt'>stmt</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:node?</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_n'>n</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_ef'>ef</span><span class='op'>|</span>
+            <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula from form)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_ef'>ef</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='rbrace'>}</span>
+            <span class='id identifier rubyid_form_statements'>form_statements</span><span class='lparen'>(</span><span class='id identifier rubyid_ef'>ef</span><span class='comma'>,</span> <span class='label'>solution:</span> <span class='id identifier rubyid_solution'>solution</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>              
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="each_pattern-instance_method">
+  
+    #<strong>each_pattern</strong> {|pattern| ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Yields each pattern which is not a builtin</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>pattern</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>each matching pattern</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>pattern</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Query/Pattern.html" title="RDF::Query::Pattern (class)">RDF::Query::Pattern</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>void</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>ignored</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 301</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_each_pattern'>each_pattern</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_n3statements'>n3statements</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_statement'>statement</span><span class='op'>|</span>
+    <span class='id identifier rubyid_terms'>terms</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='lbracket'>[</span><span class='symbol'>:subject</span><span class='comma'>,</span> <span class='symbol'>:predicate</span><span class='comma'>,</span> <span class='symbol'>:object</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_part'>part</span><span class='op'>|</span>
+      <span class='id identifier rubyid_terms'>terms</span><span class='lbracket'>[</span><span class='id identifier rubyid_part'>part</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_o'>o</span> <span class='op'>=</span> <span class='id identifier rubyid_statement'>statement</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='id identifier rubyid_part'>part</span><span class='rparen'>)</span>
+      <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">Formula</a></span></span>
+        <span class='id identifier rubyid_form_statements'>form_statements</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='comma'>,</span> <span class='label'>solution:</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Solution.html" title="RDF::Query::Solution (class)">Solution</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_pattern'>pattern</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Pattern.html" title="RDF::Query::Pattern (class)">Pattern</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='id identifier rubyid_terms'>terms</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="evaluate-instance_method">
+  
+    #<strong>evaluate</strong>(bindings, formulae:, **options)  &#x21d2; <tt><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">RDF::N3::List</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Evaluates the formula using the given variable <code>bindings</code> by cloning the formula replacing variables with their bindings recursively.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>bindings</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; <span class='object_link'><a href="../../Term.html" title="RDF::Term (module)">RDF::Term</a></span>}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>a query solution containing zero or more variable bindings</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>({}) options passed from query</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">RDF::N3::List</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>SPARQL::Algebra::Expression.evaluate</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 200</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_evaluate'>evaluate</span><span class='lparen'>(</span><span class='id identifier rubyid_bindings'>bindings</span><span class='comma'>,</span> <span class='label'>formulae:</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_bindings'>bindings</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+  <span class='comment'># Maintain formula relationships
+</span>  <span class='id identifier rubyid_formulae'>formulae</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='id identifier rubyid_v'>v</span><span class='rbrace'>}</span>
+
+  <span class='comment'># Replace operands with bound operands
+</span>  <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_operands'>operands</span> <span class='op'>=</span> <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span>
+    <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_evaluate'>evaluate</span><span class='lparen'>(</span><span class='id identifier rubyid_bindings'>bindings</span><span class='comma'>,</span> <span class='label'>formulae:</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_this'>this</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute-instance_method">
+  
+    #<strong>execute</strong>(queryable, solutions: RDF::Query::Solutions(RDF::Query::Solution.new), **options)  &#x21d2; <tt>RDF::Solutions</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Yields solutions from patterns and other operands. Solutions are created by evaluating each pattern and other sub-operand against <code>queryable</code>.</p>
+
+<p>When executing, blank nodes are turned into non-distinguished existential variables, noted with <code>$$</code>. These variables are removed from the returned solutions, as they can’t be bound outside of the formula.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>queryable</span>
+      
+      
+        <span class='type'>(<tt>RDF::Queryable</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the graph or repository to query</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>solutions</span>
+      
+      
+        <span class='type'>(<tt>RDF::Query::Solutions</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>RDF::Query::Solutions(RDF::Query::Solution.new)</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>initial solutions for chained queries (RDF::Query::Solutions(RDF::Query::Solution.new))</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>any additional keyword options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>RDF::Solutions</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>distinct solutions</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 121</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_queryable'>queryable</span><span class='comma'>,</span> <span class='label'>solutions:</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Solution.html" title="RDF::Query::Solution (class)">Solution</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_log_info'>log_info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>formula </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula bindings)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rbrace'>}</span>
+
+  <span class='ivar'>@query</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_patterns'>patterns</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_optimize!'>optimize!</span>
+  <span class='id identifier rubyid_log_info'>log_info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula query)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_solutions'>solutions</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ivar'>@query</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_solutions'>solutions</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_these_solutions'>these_solutions</span> <span class='op'>=</span> <span class='id identifier rubyid_queryable'>queryable</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='lparen'>(</span><span class='ivar'>@query</span><span class='comma'>,</span> <span class='label'>solutions:</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+      <span class='comment'># Pattern doesn&#39;t match, so there can be no solutions
+</span>      <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula query solutions)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+      <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='period'>.</span><span class='id identifier rubyid_map!'>map!</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_solution'>solution</span><span class='op'>|</span>
+        <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query/Solution.html" title="RDF::Query::Solution (class)">Solution</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_solution'>solution</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='period'>.</span><span class='id identifier rubyid_inject'>inject</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_memo'>memo</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='op'>|</span>
+          <span class='comment'># Replace blank node bindings with lists and formula references with formula, where those blank nodes are associated with lists.
+</span>          <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_formulae'>formulae</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_node?'>node?</span>
+          <span class='id identifier rubyid_l'>l</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">List</a></span></span><span class='period'>.</span><span class='id identifier rubyid_try_list'><span class='object_link'><a href="../List.html#try_list-class_method" title="RDF::N3::List.try_list (method)">try_list</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_queryable'>queryable</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_l'>l</span> <span class='kw'>if</span> <span class='id identifier rubyid_l'>l</span><span class='period'>.</span><span class='id identifier rubyid_constant?'>constant?</span>
+          <span class='id identifier rubyid_memo'>memo</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+        <span class='kw'>end</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula query solutions)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lparen'>(</span><span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+      <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>return</span> <span class='id identifier rubyid_solutions'>solutions</span> <span class='kw'>if</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='comment'># Reject solutions which include variables as values
+</span>  <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_filter!'>filter!</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_s'>s</span><span class='op'>|</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_none?'>none?</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:variable?</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+
+  <span class='comment'># Use our solutions for sub-ops
+</span>  <span class='comment'># Join solutions from other operands
+</span>  <span class='comment'>#
+</span>  <span class='comment'># * Order operands by those having inputs which are constant or bound.
+</span>  <span class='comment'># * Run built-ins with indeterminant inputs (two-way) until any produces non-empty solutions, and then run remaining built-ins until exhasted or finished.
+</span>  <span class='comment'># * Re-calculate inputs with bound inputs after each built-in is run.
+</span>  <span class='id identifier rubyid_log_depth'>log_depth</span> <span class='kw'>do</span>
+    <span class='comment'># Iterate over sub_ops using evaluation heuristic
+</span>    <span class='id identifier rubyid_ops'>ops</span> <span class='op'>=</span> <span class='id identifier rubyid_sub_ops'>sub_ops</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_rank'>rank</span><span class='lparen'>(</span><span class='id identifier rubyid_solutions'>solutions</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+    <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_ops'>ops</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+      <span class='id identifier rubyid_last_op'>last_op</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='id identifier rubyid_ops'>ops</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span>
+        <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula built-in)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_these_solutions'>these_solutions</span> <span class='op'>=</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_queryable'>queryable</span><span class='comma'>,</span> <span class='label'>solutions:</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='rparen'>)</span>
+        <span class='comment'># If there are no solutions, try the next one, until we either run out of operations, or we have solutions
+</span>        <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+        <span class='id identifier rubyid_last_op'>last_op</span> <span class='op'>=</span> <span class='id identifier rubyid_op'>op</span>
+        <span class='id identifier rubyid_solutions'>solutions</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='lparen'>(</span><span class='id identifier rubyid_these_solutions'>these_solutions</span><span class='rparen'>)</span>
+        <span class='kw'>break</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># If there is no last_op, there are no solutions.
+</span>      <span class='kw'>unless</span> <span class='id identifier rubyid_last_op'>last_op</span>
+        <span class='id identifier rubyid_solutions'>solutions</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+        <span class='kw'>break</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># Remove op from list, and re-order remaining ops.
+</span>      <span class='id identifier rubyid_ops'>ops</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_ops'>ops</span> <span class='op'>-</span> <span class='lbracket'>[</span><span class='id identifier rubyid_last_op'>last_op</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_rank'>rank</span><span class='lparen'>(</span><span class='id identifier rubyid_solutions'>solutions</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_log_info'>log_info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(formula sub-op solutions)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='const'>SXP</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span> <span class='id identifier rubyid_solutions'>solutions</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_solutions'>solutions</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="existential_vars-instance_method">
+  
+    #<strong>existential_vars</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Existential vars in this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Array&lt;RDF::Query::Variable]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+395
+396
+397</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 395</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_existential_vars'>existential_vars</span>
+  <span class='ivar'>@existentials</span> <span class='op'>||=</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:existential?</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="formula?-instance_method">
+  
+    #<strong>formula?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns <code>true</code> if <code>self</code> is a <span class='object_link'><a href="" title="RDF::N3::Algebra::Formula (class)">RDF::N3::Algebra::Formula</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+217
+218
+219</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 217</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_formula?'>formula?</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="graph_name-instance_method">
+  
+    #<strong>graph_name</strong>  &#x21d2; <tt>RDF::Resource</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='to_uri-instance_method'>to_uri</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Graph name associated with this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>RDF::Resource</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+320</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 320</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_graph_name'>graph_name</span><span class='semicolon'>;</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:graph_name</span><span class='rbracket'>]</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="graph_name=-instance_method">
+  
+    #<strong>graph_name=</strong>(name)  &#x21d2; <tt>RDF::Resource</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Assign a graph name to this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>RDF::Resource</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>RDF::Resource</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+330
+331
+332
+333</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 330</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_graph_name='>graph_name=</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_formulae'>formulae</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>self</span>
+  <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:graph_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="hash-instance_method">
+  
+    #<strong>hash</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>The formula hash is the hash of it’s operands and graph_name.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>Value#hash</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+225
+226
+227</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 225</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_hash'>hash</span>
+  <span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='id identifier rubyid_operands'>operands</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+426
+427
+428</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 426</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='id identifier rubyid_sprintf'>sprintf</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#&lt;%s:%s(%d)&gt;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="n3statements-instance_method">
+  
+    #<strong>n3statements</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Statements memoizer, from the operands which are statements.</p>
+
+<p>Statements may include embedded formulae.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+339
+340
+341
+342
+343
+344
+345
+346</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 339</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_n3statements'>n3statements</span>
+  <span class='comment'># BNodes in statements are existential variables.
+</span>  <span class='ivar'>@n3statements</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='comment'># Operations/Builtins are not statements.
+</span>    <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span>
+      <span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Statement.html" title="RDF::Statement (class)">Statement</a></span></span><span class='rparen'>)</span><span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="patterns-instance_method">
+  
+    #<strong>patterns</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Patterns memoizer, from the operands which are statements and not builtins.</p>
+
+<p>Expands statements containing formulae into their statements.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+352
+353
+354
+355</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 352</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_patterns'>patterns</span>
+  <span class='comment'># BNodes in statements are existential variables.
+</span>  <span class='ivar'>@patterns</span> <span class='op'>||=</span> <span class='id identifier rubyid_enum_for'>enum_for</span><span class='lparen'>(</span><span class='symbol'>:each_pattern</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sub_ops-instance_method">
+  
+    #<strong>sub_ops</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Non-statement operands memoizer</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 359</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sub_ops'>sub_ops</span>
+  <span class='comment'># operands that aren&#39;t statements, ordered by their graph_name
+</span>  <span class='ivar'>@sub_ops</span> <span class='op'>||=</span> <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span> <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Statement.html" title="RDF::Statement (class)">Statement</a></span></span><span class='rparen'>)</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_op'>op</span><span class='op'>|</span>
+    <span class='comment'># Substitute nodes for existential variables in operator operands
+</span>    <span class='id identifier rubyid_op'>op</span><span class='period'>.</span><span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_map!'>map!</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_o'>o</span><span class='op'>|</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../List.html" title="RDF::N3::List (class)">List</a></span></span>
+        <span class='comment'># Substitute blank node members with existential variables, recusively.
+</span>        <span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_has_nodes?'>has_nodes?</span> <span class='op'>?</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_to_ndvar'>to_ndvar</span><span class='lparen'>(</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Node.html" title="RDF::Node (class)">Node</a></span></span>
+        <span class='id identifier rubyid_graph_name'>graph_name</span> <span class='op'>?</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_to_ndvar'>to_ndvar</span><span class='lparen'>(</span><span class='id identifier rubyid_graph_name'>graph_name</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_op'>op</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_base-instance_method">
+  
+    #<strong>to_base</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+422
+423
+424</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 422</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_base'>to_base</span>
+  <span class='id identifier rubyid_inspect'>inspect</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_s-instance_method">
+  
+    #<strong>to_s</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+413
+414
+415</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 413</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='id identifier rubyid_to_sxp'>to_sxp</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_sxp_bin-instance_method">
+  
+    #<strong>to_sxp_bin</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+417
+418
+419
+420</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 417</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_sxp_bin'>to_sxp_bin</span>
+  <span class='lbracket'>[</span><span class='symbol'>:formula</span><span class='comma'>,</span> <span class='id identifier rubyid_graph_name'>graph_name</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span> <span class='op'>+</span>
+  <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_sxp_bin</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="undistinguished_vars-instance_method">
+  
+    #<strong>undistinguished_vars</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Undistinguished vars in this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Array&lt;RDF::Query::Variable]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+409
+410
+411</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 409</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_undistinguished_vars'>undistinguished_vars</span>
+  <span class='ivar'>@undistinguished</span> <span class='op'>||=</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:distinguished?</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="universal_vars-instance_method">
+  
+    #<strong>universal_vars</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Universal vars in this formula and sub-formulae</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>]</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Array&lt;RDF::Query::Variable]</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+388
+389
+390</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 388</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_universal_vars'>universal_vars</span>
+  <span class='ivar'>@universals</span> <span class='op'>||=</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:existential?</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="vars-instance_method">
+  
+    #<strong>vars</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return the variables contained within this formula</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="../../Query/Variable.html" title="RDF::Query::Variable (class)">RDF::Query::Variable</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+381
+382
+383</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/formula.rb', line 381</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_vars'>vars</span>
+  <span class='id identifier rubyid_operands'>operands</span><span class='period'>.</span><span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Jan 27 23:51:25 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

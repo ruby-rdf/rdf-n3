@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: RDF::N3::Algebra::Str
+  
+    &mdash; Notation-3 and Turtle reader/writer for RDF.rb.
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "RDF::N3::Algebra::Str";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span>
+     &raquo; 
+    <span class="title">Str</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: RDF::N3::Algebra::Str
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/rdf/n3/algebra.rb<span class="defines">,<br />
+  lib/rdf/n3/algebra/str/format.rb,<br /> lib/rdf/n3/algebra/str/scrape.rb,<br /> lib/rdf/n3/algebra/str/matches.rb,<br /> lib/rdf/n3/algebra/str/replace.rb,<br /> lib/rdf/n3/algebra/str/contains.rb,<br /> lib/rdf/n3/algebra/str/ends_with.rb,<br /> lib/rdf/n3/algebra/str/less_than.rb,<br /> lib/rdf/n3/algebra/str/not_matches.rb,<br /> lib/rdf/n3/algebra/str/starts_with.rb,<br /> lib/rdf/n3/algebra/str/greater_than.rb,<br /> lib/rdf/n3/algebra/str/concatenation.rb,<br /> lib/rdf/n3/algebra/str/not_less_than.rb,<br /> lib/rdf/n3/algebra/str/not_greater_than.rb,<br /> lib/rdf/n3/algebra/str/equal_ignoring_case.rb,<br /> lib/rdf/n3/algebra/str/contains_ignoring_case.rb,<br /> lib/rdf/n3/algebra/str/not_equal_ignoring_case.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Str/Concatenation.html" title="RDF::N3::Algebra::Str::Concatenation (class)">Concatenation</a></span>, <span class='object_link'><a href="Str/Contains.html" title="RDF::N3::Algebra::Str::Contains (class)">Contains</a></span>, <span class='object_link'><a href="Str/ContainsIgnoringCase.html" title="RDF::N3::Algebra::Str::ContainsIgnoringCase (class)">ContainsIgnoringCase</a></span>, <span class='object_link'><a href="Str/EndsWith.html" title="RDF::N3::Algebra::Str::EndsWith (class)">EndsWith</a></span>, <span class='object_link'><a href="Str/EqualIgnoringCase.html" title="RDF::N3::Algebra::Str::EqualIgnoringCase (class)">EqualIgnoringCase</a></span>, <span class='object_link'><a href="Str/Format.html" title="RDF::N3::Algebra::Str::Format (class)">Format</a></span>, <span class='object_link'><a href="Str/GreaterThan.html" title="RDF::N3::Algebra::Str::GreaterThan (class)">GreaterThan</a></span>, <span class='object_link'><a href="Str/LessThan.html" title="RDF::N3::Algebra::Str::LessThan (class)">LessThan</a></span>, <span class='object_link'><a href="Str/Matches.html" title="RDF::N3::Algebra::Str::Matches (class)">Matches</a></span>, <span class='object_link'><a href="Str/NotEqualIgnoringCase.html" title="RDF::N3::Algebra::Str::NotEqualIgnoringCase (class)">NotEqualIgnoringCase</a></span>, <span class='object_link'><a href="Str/NotGreaterThan.html" title="RDF::N3::Algebra::Str::NotGreaterThan (class)">NotGreaterThan</a></span>, <span class='object_link'><a href="Str/NotLessThan.html" title="RDF::N3::Algebra::Str::NotLessThan (class)">NotLessThan</a></span>, <span class='object_link'><a href="Str/NotMatches.html" title="RDF::N3::Algebra::Str::NotMatches (class)">NotMatches</a></span>, <span class='object_link'><a href="Str/Replace.html" title="RDF::N3::Algebra::Str::Replace (class)">Replace</a></span>, <span class='object_link'><a href="Str/Scrape.html" title="RDF::N3::Algebra::Str::Scrape (class)">Scrape</a></span>, <span class='object_link'><a href="Str/StartsWith.html" title="RDF::N3::Algebra::Str::StartsWith (class)">StartsWith</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#vocab-class_method" title="vocab (class method)">.<strong>vocab</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="vocab-class_method">
+  
+    .<strong>vocab</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+82</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra.rb', line 82</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_vocab'>vocab</span><span class='semicolon'>;</span> <span class='const'><span class='object_link'><a href="../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Str.html" title="RDF::N3::Str (class)">Str</a></span></span><span class='period'>.</span><span class='id identifier rubyid_to_uri'>to_uri</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Jan 27 23:51:21 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

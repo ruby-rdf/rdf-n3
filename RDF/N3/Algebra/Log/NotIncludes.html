@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: RDF::N3::Algebra::Log::NotIncludes
+  
+    &mdash; Notation-3 and Turtle reader/writer for RDF.rb.
+  
+</title>
+
+  <link rel="stylesheet" href="../../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "RDF::N3::Algebra::Log::NotIncludes";
+  relpath = '../../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../../_index.html">Index (N)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../../RDF.html" title="RDF (module)">RDF</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../../N3.html" title="RDF::N3 (module)">N3</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Algebra.html" title="RDF::N3::Algebra (module)">Algebra</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Log.html" title="RDF::N3::Algebra::Log (module)">Log</a></span></span>
+     &raquo; 
+    <span class="title">NotIncludes</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: RDF::N3::Algebra::Log::NotIncludes
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Includes.html" title="RDF::N3::Algebra::Log::Includes (class)">Includes</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">SPARQL::Algebra::Operator::Binary</li>
+          
+            <li class="next"><span class='object_link'><a href="../ResourceOperator.html" title="RDF::N3::Algebra::ResourceOperator (class)">ResourceOperator</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="Includes.html" title="RDF::N3::Algebra::Log::Includes (class)">Includes</a></span></li>
+          
+            <li class="next">RDF::N3::Algebra::Log::NotIncludes</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/rdf/n3/algebra/log/not_includes.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>The object formula is NOT a subset of subject. True iff log:includes is false. The converse of log:includes. (Understood natively by cwm. The subject formula may contain variables.)</p>
+
+<p>(In cwm, variables must of course end up getting bound before the log:include test can be done, or an infinite result set would result)</p>
+
+<p>Related: See includes</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="NAME-constant" class="">NAME =
+          
+        </dt>
+        <dd><pre class="code"><span class='symbol'>:logNotIncludes</span></pre></dd>
+      
+        <dt id="URI-constant" class="">URI =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="../../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../../N3.html" title="RDF::N3 (module)">N3</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Log.html" title="RDF::N3::Log (class)">Log</a></span></span><span class='period'>.</span><span class='id identifier rubyid_notIncludes'>notIncludes</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="../../../Enumerable.html" title="RDF::Enumerable (module)">Enumerable</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../../Enumerable.html#existentials-instance_method" title="RDF::Enumerable#existentials (method)">#existentials</a></span>, <span class='object_link'><a href="../../../Enumerable.html#universals-instance_method" title="RDF::Enumerable#universals (method)">#universals</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute-instance_method" title="#execute (instance method)">#<strong>execute</strong>(queryable, solutions:, **options)  &#x21d2; RDF::Solutions </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Uses log:includes and returns a solution if log:includes fails.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Includes.html" title="RDF::N3::Algebra::Log::Includes (class)">Includes</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Includes.html#apply-instance_method" title="RDF::N3::Algebra::Log::Includes#apply (method)">#apply</a></span>, <span class='object_link'><a href="Includes.html#input_operand-instance_method" title="RDF::N3::Algebra::Log::Includes#input_operand (method)">#input_operand</a></span>, <span class='object_link'><a href="Includes.html#resolve-instance_method" title="RDF::N3::Algebra::Log::Includes#resolve (method)">#resolve</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../ResourceOperator.html" title="RDF::N3::Algebra::ResourceOperator (class)">ResourceOperator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../ResourceOperator.html#as_literal-instance_method" title="RDF::N3::Algebra::ResourceOperator#as_literal (method)">#as_literal</a></span>, <span class='object_link'><a href="../ResourceOperator.html#input_operand-instance_method" title="RDF::N3::Algebra::ResourceOperator#input_operand (method)">#input_operand</a></span>, <span class='object_link'><a href="../ResourceOperator.html#resolve-instance_method" title="RDF::N3::Algebra::ResourceOperator#resolve (method)">#resolve</a></span>, <span class='object_link'><a href="../ResourceOperator.html#valid%3F-instance_method" title="RDF::N3::Algebra::ResourceOperator#valid? (method)">#valid?</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../Builtin.html" title="RDF::N3::Algebra::Builtin (module)">Builtin</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Builtin.html#each-instance_method" title="RDF::N3::Algebra::Builtin#each (method)">#each</a></span>, <span class='object_link'><a href="../Builtin.html#evaluate-instance_method" title="RDF::N3::Algebra::Builtin#evaluate (method)">#evaluate</a></span>, <span class='object_link'><a href="../Builtin.html#hash-instance_method" title="RDF::N3::Algebra::Builtin#hash (method)">#hash</a></span>, <span class='object_link'><a href="../Builtin.html#input_operand-instance_method" title="RDF::N3::Algebra::Builtin#input_operand (method)">#input_operand</a></span>, <span class='object_link'><a href="../Builtin.html#rank-instance_method" title="RDF::N3::Algebra::Builtin#rank (method)">#rank</a></span>, <span class='object_link'><a href="../Builtin.html#to_uri-instance_method" title="RDF::N3::Algebra::Builtin#to_uri (method)">#to_uri</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="execute-instance_method">
+  
+    #<strong>execute</strong>(queryable, solutions:, **options)  &#x21d2; <tt>RDF::Solutions</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Uses log:includes and returns a solution if log:includes fails</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>queryable</span>
+      
+      
+        <span class='type'>(<tt>RDF::Queryable</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the graph or repository to query</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>any additional keyword options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">solutions</span>
+          <span class="type">(<tt>RDF::Query::Solutions</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>optional initial solutions for chained queries</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>RDF::Solutions</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>distinct solutions</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/rdf/n3/algebra/log/not_includes.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_queryable'>queryable</span><span class='comma'>,</span> <span class='label'>solutions:</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>?</span> <span class='const'><span class='object_link'><a href="../../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../../Query/Solution.html" title="RDF::Query::Solution (class)">Solution</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='const'><span class='object_link'><a href="../../../../RDF.html" title="RDF (module)">RDF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../../Query.html" title="RDF::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'>Solutions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Jan 27 23:51:29 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>
