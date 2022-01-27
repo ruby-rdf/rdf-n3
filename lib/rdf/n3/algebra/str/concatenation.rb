@@ -11,7 +11,7 @@ module RDF::N3::Algebra::Str
     ##
     # The string:concatenation operator takes a list of terms cast to strings and either binds the result of concatenating them to the output variable, removes a solution that does equal the literal object.
     #
-    # List entries are stringified using {SPARQL::Algebra::Expression.cast}.
+    # List entries are stringified using [SPARQL::Algebra::Expression.cast](https://ruby-rdf.github.io/sparql/SPARQL/Algebra/Expression#cast-class_method).
     #
     # @param [RDF::N3::List] list
     # @return [RDF::Term]

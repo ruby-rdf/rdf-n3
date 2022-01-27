@@ -200,7 +200,7 @@ Blank nodes associated with rdf:List statements used as part of a built-in are m
 * [SXP][SXP gem] (~> 1.2)
 
 ## Documentation
-Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-rdf/rdf-n3)
+Full documentation available on [RubyDoc.info](https://ruby-rdf.github.io/rdf-n3)
 
 ### Principle Classes
 * {RDF::N3}
@@ -220,7 +220,7 @@ Full documentation available on [RubyDoc.info](https://rubydoc.info/github/ruby-
 ## Resources
 * [RDF.rb][RDF.rb]
 * [Distiller](http://rdf.greggkellogg.net/distiller)
-* [Documentation](https://rubydoc.info/github/ruby-rdf/rdf-n3/)
+* [Documentation](https://ruby-rdf.github.io/rdf-n3/)
 * [History](file:file.History.html)
 * [Notation-3][N3]
 * [Team Submission][]
@@ -262,7 +262,7 @@ see <https://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 * <https://github.com/ruby-rdf/rdf-n3>
 * <https://lists.w3.org/Archives/Public/public-rdf-ruby/>
 
-[RDF::Turtle]:            https://ruby-rdf.github.com/rdf-turtle/
+[RDF::Turtle]:            https://ruby-rdf.github.io/rdf-turtle/
 [Design Issues]:        https://www.w3.org/DesignIssues/Notation3.html "Notation-3 Design Issues"
 [Team Submission]:  https://www.w3.org/TeamSubmission/n3/
 [Turtle]:                     https://www.w3.org/TR/turtle/
@@ -274,7 +274,7 @@ see <https://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 [W3C N3 Community Group]: https://www.w3.org/community/n3-dev/
 [N3]:                       https://w3c.github.io/N3/spec/
 [PEG]:                    https://en.wikipedia.org/wiki/Parsing_expression_grammar
-[RDF.rb]:                https://ruby-rdf.github.com/rdf
-[EBNF gem]:         https://ruby-rdf.github.com/ebnf
-[SPARQL gem]:     https://ruby-rdf.github.com/sparql
-[SXP gem]:            https://ruby-rdf.github.com/sxp
+[RDF.rb]:                https://ruby-rdf.github.io/rdf
+[EBNF gem]:         https://ruby-rdf.github.io/ebnf
+[SPARQL gem]:     https://ruby-rdf.github.io/sparql
+[SXP gem]:            https://ruby-rdf.github.io/sxp
