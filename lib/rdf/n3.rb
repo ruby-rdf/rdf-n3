@@ -14,7 +14,7 @@ module RDF
   #     end
   #   end
   #
-  # @see http://www.rubydoc.info/github/ruby-rdf/rdf/
+  # @see https://ruby-rdf.github.io/rdf/
   # @see https://www.w3.org/TR/REC-rdf-syntax/
   #
   # @author [Gregg Kellogg](http://greggkellogg.net/)
