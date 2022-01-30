@@ -6,6 +6,7 @@ require 'rdf/trig'
 
 describe RDF::N3::Writer do
   let(:logger) {RDF::Spec.logger}
+  before {logger.level = Logger::INFO if ENV['CI']}
 
   #after(:each) do |example|
   #  puts logger.to_s if

@@ -12,6 +12,7 @@ describe RDF::N3::Reader do
           next if t.approval == 'rdft:Rejected'
           specify "#{t.rel}: #{t.name}: #{t.comment}" do
             t.logger = RDF::Spec.logger
+            t.logger.level = Logger::INFO if ENV['CI']
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
 

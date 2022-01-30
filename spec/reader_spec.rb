@@ -8,6 +8,7 @@ describe "RDF::N3::Reader" do
   let!(:doap_nt) {File.expand_path("../../etc/doap.nt", __FILE__)}
   let!(:doap_count) {File.open(doap_nt).each_line.to_a.length}
   let(:logger) {RDF::Spec.logger}
+  before {logger.level = Logger::INFO if ENV['CI']}
 
   after(:each) do |example|
     puts logger.to_s if
