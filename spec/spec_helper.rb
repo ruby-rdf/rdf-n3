@@ -1,13 +1,12 @@
-$:.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$:.unshift File.dirname(__FILE__)
+$:.unshift(File.expand_path('../../lib', __FILE__))
 
 require "bundler/setup"
 require 'rspec'
-require 'matchers'
 require 'rdf/isomorphic'
 require 'rdf/ntriples'
 require 'rdf/spec'
 require 'rdf/spec/matchers'
+require_relative 'matchers'
 
 begin
   require 'simplecov'

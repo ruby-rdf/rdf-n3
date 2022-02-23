@@ -29,7 +29,7 @@ Gem::Specification.new do |gem|
   gem.requirements          = []
 
   gem.add_dependency             'ebnf',            '~> 2.2'
-  gem.add_dependency             'rdf',             '~> 3.2'
+  gem.add_dependency             'rdf',             '~> 3.2', '>= 3.2.5'
   gem.add_dependency             'sparql',          '~> 3.2'
   gem.add_runtime_dependency     'sxp',             '~> 1.2'
 

@@ -1,5 +1,4 @@
-$:.unshift "."
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe RDF::N3::Reader do
   # W3C Turtle Test suite from http://w3c.github.io/rdf-tests/turtle/manifest.ttl

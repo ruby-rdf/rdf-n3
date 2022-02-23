@@ -21,9 +21,8 @@ module RDF::N3::Algebra::Time
         when RDF::Query::Variable
           resource
         when RDF::Literal
-          resource = resource.as_datetime
           # Subject evaluates to seconds from the epoc
-          RDF::Literal::Integer.new(resource.object.strftime("%s"))
+          RDF::Literal::Integer.new(resource.as_datetime.object.strftime("%s"))
         else
           nil
         end

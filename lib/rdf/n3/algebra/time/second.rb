@@ -18,8 +18,7 @@ module RDF::N3::Algebra::Time
       case position
       when :subject
         return nil unless resource.literal?
-        resource = resource.as_datetime
-        RDF::Literal(resource.object.strftime("%S").to_i)
+        RDF::Literal(resource.as_datetime.seconds.to_i)
       when :object
         return nil unless resource.literal? || resource.variable?
         resource
