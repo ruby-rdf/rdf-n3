@@ -986,16 +986,16 @@ describe "RDF::N3::Reader" do
     describe "iriPropertyList" do
       {
         "not embedded": [
-          %([hasId :s :p :o] .),
+          %([id :s :p :o] .),
           %(:s :p :o .)
         ],
         "with whitespace": [
-          %([ hasId :s :p :o] .),
+          %([ id :s :p :o] .),
           %(:s :p :o .)
         ],
         "with linefeed": [
           %([
-            hasId :s
+            id :s
             :p :o
            ] .),
           %(:s :p :o .)
@@ -1004,7 +1004,7 @@ describe "RDF::N3::Reader" do
           %(
             @prefix a: <http://foo/a#> .
             a:b a:oneRef [
-              hasId a:node0
+              id a:node0
               a:pp "1" ;
               a:qq "2"
             ] .
@@ -1020,9 +1020,9 @@ describe "RDF::N3::Reader" do
             @prefix a: <http://foo/a#> .
 
             a:a a:p [
-              hasId a:node1
+              id a:node1
               a:p2 [
-                hasId a:node0
+                id a:node0
                 a:p3 "v1" , "v2" ;
                 a:p4 "v3" ] ;
               a:p5 "v4" ] .
@@ -1037,15 +1037,15 @@ describe "RDF::N3::Reader" do
           ),
         ],
         "illegal semicolon": [
-          %([ hasId :s ; :p :o]),
+          %([ id :s ; :p :o]),
           :error
         ],
         "illegal subject list": [
-          %([ hasId :s1, :s2 :p :o]),
+          %([ id :s1, :s2 :p :o]),
           :error
         ],
         "illegal bnode subject": [
-          %([ hasId _:bn :p :o]),
+          %([ id _:bn :p :o]),
           :error
         ],
       }.each do |title, (n3, res)|

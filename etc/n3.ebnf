@@ -93,7 +93,7 @@
                                               | STRING_LITERAL_SINGLE_QUOTE
 
     /* Note, this must be matched before '[' */
-    [33] IPLSTART                           ::= '[' WS* 'hasId'
+    [33] IPLSTART                           ::= '[' WS* 'id'
 
     /* borrowed from SPARQL spec, which excludes newlines and other nastiness */
     [139s] IRIREF                           ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR | WS)* '>'

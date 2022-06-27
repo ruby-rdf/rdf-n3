@@ -44,7 +44,7 @@
  (terminal STRING "32"
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
- (terminal IPLSTART "33" (seq "[" (star WS) "hasId"))
+ (terminal IPLSTART "33" (seq "[" (star WS) "id"))
  (terminal IRIREF "139s"
   (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR WS)) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))

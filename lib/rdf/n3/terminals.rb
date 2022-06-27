@@ -65,7 +65,7 @@ module RDF::N3
     STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#{ECHAR}|#{UCHAR}))*"""/um.freeze
 
     # 33
-    IPLSTART             = /\[\s*hasId/um.freeze
+    IPLSTART             = /\[\s*id/um.freeze
 
     # 28t
     PREFIX               = /@?prefix/ui.freeze

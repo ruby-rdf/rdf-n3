@@ -163,16 +163,16 @@ Reasoning is discussed in the [Design Issues][] document.
 
 ### Chaining with `iriPropertyList`
 
-Adds a proposed syntactic extension for _subject embedding_ similar to a `blankNodePropertyList`. An `iriPropertyList` begins with `[ hasId _id_`, instead of a simple `[`. This sets _id_ as the **subject** to be used for the following `propertyList`. This provides a mechanisms similar to [JSON-LD Embedding](https://www.w3.org/TR/json-ld11/#embedding).
+Adds a proposed syntactic extension for _subject embedding_ similar to a `blankNodePropertyList`. An `iriPropertyList` begins with `[ id _id_`, instead of a simple `[`. This sets _id_ as the **subject** to be used for the following `propertyList`. This provides a mechanisms similar to [JSON-LD Embedding](https://www.w3.org/TR/json-ld11/#embedding).
 
     @prefix dc: <http://purl.org/dc/terms/>.
     @prefix : <http://example.org/nd#>.
 
     :SummerReadingList a :OrderedListOfBooks ;
       :toRead (
-        [hasId :mobyDick dc:title "Moby Dick"; :setting :WhaleIntestines ]
+        [id :mobyDick dc:title "Moby Dick"; :setting :WhaleIntestines ]
         [
-          has_id :jaws
+          id :jaws
           dc:title "Jaws";
           :setting :Beach
         ]
