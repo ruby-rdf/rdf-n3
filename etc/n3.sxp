@@ -12,12 +12,9 @@
   (seq verb objectList (star (seq ";" (opt (seq verb objectList))))))
  (rule objectList "11" (seq object (star (seq "," object))))
  (rule verb "12"
-  (alt predicate "a"
-   (seq "has" expression)
-   (seq "is" expression "of")
-   (seq "<-" expression) "<=" "=>" "=" ))
+  (alt predicate "a" (seq "has" expression) (seq "is" expression "of") "=" "<=" "=>"))
  (rule subject "13" (seq expression))
- (rule predicate "14" (seq expression))
+ (rule predicate "14" (alt expression (seq "<-" expression)))
  (rule object "15" (seq expression))
  (rule expression "16" (seq path))
  (rule path "17" (seq pathItem (opt (alt (seq "!" path) (seq "^" path)))))
@@ -46,14 +43,13 @@
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
  (terminal IPLSTART "33" (seq "[" (star WS) "id"))
  (terminal IRIREF "139s"
-  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR WS)) ">"))
+  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR)) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))
  (terminal PNAME_LN "141s" (seq PNAME_NS PN_LOCAL))
  (terminal BLANK_NODE_LABEL "142s"
   (seq "_:" (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
  (terminal LANGTAG "145s"
-  (seq "@"
-   (diff (seq (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))) (alt "is" "has"))) )
+  (seq "@" (seq (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9")))))))
  (terminal INTEGER "146s" (plus (range "0-9")))
  (terminal DECIMAL "147s" (seq (star (range "0-9")) "." (plus (range "0-9"))))
  (terminal DOUBLE "148s"

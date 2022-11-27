@@ -27,14 +27,14 @@
                                               | 'a'
                                               | 'has' expression
                                               | 'is' expression 'of'
-                                              | '<-' expression # Synonym for is expression of
+                                              | '='
                                               | '<='
                                               | '=>'
-                                              | '='
 
     [13] subject                            ::= expression
 
-    [14] predicate                          ::= expression
+    [14] predicate                          ::= (expression | '<-' expression)
+                                                /* allow inverting first predicate in a path */
 
     [15] object                             ::= expression
 
@@ -96,11 +96,11 @@
     [33] IPLSTART                           ::= '[' WS* 'id'
 
     /* borrowed from SPARQL spec, which excludes newlines and other nastiness */
-    [139s] IRIREF                           ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR | WS)* '>'
+    [139s] IRIREF                           ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'
     [140s] PNAME_NS                         ::= PN_PREFIX? ':'
     [141s] PNAME_LN                         ::= PNAME_NS PN_LOCAL
     [142s] BLANK_NODE_LABEL                 ::= '_:' ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
-    [145s] LANGTAG                          ::= "@" ([a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )*) - ("is" | "has")
+    [145s] LANGTAG                          ::= "@" ([a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )*)
     [146s] INTEGER                          ::= [0-9]+
     [147s] DECIMAL                          ::= [0-9]* '.' [0-9]+
     [148s] DOUBLE                           ::= [0-9]+ '.' [0-9]* EXPONENT
@@ -137,5 +137,3 @@
 
     # Ignore all whitespace and comments between non-terminals
     @pass           ( WS | COMMENT )*
-
-
