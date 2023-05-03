@@ -1,7 +1,7 @@
 # RDF::N3 reader/writer and reasoner
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
-[![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
+[![Gem Version](https://badge.fury.io/rb/rdf-n3.svg)](https://badge.fury.io/rb/rdf-n3)
 [![Build Status](https://github.com/ruby-rdf/rdf-n3/workflows/CI/badge.svg?branch=develop)](https://github.com/ruby-rdf/rdf-n3/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/ruby-rdf/rdf-n3/badge.svg?branch=develop)](https://coveralls.io/github/ruby-rdf/rdf-n3?branch=develop)
 [![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
