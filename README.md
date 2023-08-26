@@ -214,9 +214,9 @@ Formulae are typically used to query the knowledge-base, which is set from the b
 Blank nodes associated with rdf:List statements used as part of a built-in are made _non-distinguished_ existential variables, and patters containing these variables become optional. If they are not bound as part of the query, the implicitly are bound as the original blank nodes defined within the formula, which allows for both constant list arguments, list arguments that contain variables, or arguments which are variables expanding to lists.
 
 ## Dependencies
-* [Ruby](https://ruby-lang.org/) (>= 2.6)
-* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.2)
-* [EBNF][EBNF gem] (~> 2.2)
+* [Ruby](https://ruby-lang.org/) (>= 3.0)
+* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.3)
+* [EBNF][EBNF gem] (~> 2.4)
 * [SPARQL][SPARQL gem] (~> 3.1)
 * [SXP][SXP gem] (~> 1.2)
 

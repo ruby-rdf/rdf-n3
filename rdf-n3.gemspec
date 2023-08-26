@@ -25,20 +25,20 @@ Gem::Specification.new do |gem|
   gem.files                 = %w(README.md VERSION UNLICENSE) + Dir.glob('lib/**/*.rb')
   gem.require_paths         = %w(lib)
 
-  gem.required_ruby_version = '>= 2.6'
+  gem.required_ruby_version = '>= 3.0'
   gem.requirements          = []
 
-  gem.add_dependency             'ebnf',            '~> 2.2'
-  gem.add_dependency             'rdf',             '~> 3.2', '>= 3.2.5'
+  gem.add_dependency             'ebnf',            '~> 2.4'
+  gem.add_dependency             'rdf',             '~> 3.3'
   gem.add_dependency             'sparql',          '~> 3.2'
   gem.add_runtime_dependency     'sxp',             '~> 1.2'
 
-  gem.add_development_dependency 'json-ld',         '~> 3.2'
+  gem.add_development_dependency 'json-ld',         '~> 3.3'
   gem.add_development_dependency 'rdf-spec',        '~> 3.2'
-  gem.add_development_dependency 'rdf-isomorphic',  '~> 3.2'
+  gem.add_development_dependency 'rdf-isomorphic',  '~> 3.3'
   gem.add_development_dependency 'rdf-trig',        '~> 3.2'
   gem.add_development_dependency 'rdf-vocab',       '~> 3.2'
-  gem.add_development_dependency 'rspec',           '~> 3.10'
+  gem.add_development_dependency 'rspec',           '~> 3.12'
   gem.add_development_dependency 'rspec-its',       '~> 1.3'
   gem.add_development_dependency 'yard' ,           '~> 0.9'
 
