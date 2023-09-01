@@ -1,7 +1,7 @@
 # RDF::N3 reader/writer and reasoner
 Notation-3 reader/writer for [RDF.rb][RDF.rb] .
 
-[![Gem Version](https://badge.fury.io/rb/rdf-n3.png)](https://badge.fury.io/rb/rdf-n3)
+[![Gem Version](https://badge.fury.io/rb/rdf-n3.svg)](https://badge.fury.io/rb/rdf-n3)
 [![Build Status](https://github.com/ruby-rdf/rdf-n3/workflows/CI/badge.svg?branch=develop)](https://github.com/ruby-rdf/rdf-n3/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/ruby-rdf/rdf-n3/badge.svg?branch=develop)](https://coveralls.io/github/ruby-rdf/rdf-n3?branch=develop)
 [![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
@@ -159,6 +159,27 @@ Reasoning is discussed in the [Design Issues][] document.
   * `time:timeZone`               (See {RDF::N3::Algebra::Time::Timezone})
   * `time:year`                   (See {RDF::N3::Algebra::Time::Year})
 
+## Parser features
+
+### Chaining with `iriPropertyList`
+
+Adds a proposed syntactic extension for _subject embedding_ similar to a `blankNodePropertyList`. An `iriPropertyList` begins with `[ id _id_`, instead of a simple `[`. This sets _id_ as the **subject** to be used for the following `propertyList`. This provides a mechanisms similar to [JSON-LD Embedding](https://www.w3.org/TR/json-ld11/#embedding).
+
+    @prefix dc: <http://purl.org/dc/terms/>.
+    @prefix : <http://example.org/nd#>.
+
+    :SummerReadingList a :OrderedListOfBooks ;
+      :toRead (
+        [id :mobyDick dc:title "Moby Dick"; :setting :WhaleIntestines ]
+        [
+          id :jaws
+          dc:title "Jaws";
+          :setting :Beach
+        ]
+      ).
+  
+Note that the _id_ used in the `iriPropertyList` is not delimited by a `;`
+  
 ### Formulae / Quoted Graphs
 
 N3 Formulae are introduced with the `{ statement-list }` syntax. A given formula is assigned an `RDF::Node` instance, which is also used as the graph_name for `RDF::Statement` instances provided to `RDF::N3::Reader#each_statement`. For example, the following N3 generates the associated statements:
@@ -193,11 +214,11 @@ Formulae are typically used to query the knowledge-base, which is set from the b
 Blank nodes associated with rdf:List statements used as part of a built-in are made _non-distinguished_ existential variables, and patters containing these variables become optional. If they are not bound as part of the query, the implicitly are bound as the original blank nodes defined within the formula, which allows for both constant list arguments, list arguments that contain variables, or arguments which are variables expanding to lists.
 
 ## Dependencies
-* [Ruby](https://ruby-lang.org/) (>= 2.6)
-* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.2)
-* [EBNF][EBNF gem] (~> 2.2)
-* [SPARQL][SPARQL gem] (~> 3.1)
-* [SXP][SXP gem] (~> 1.2)
+* [Ruby](https://ruby-lang.org/) (>= 3.0)
+* [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.3)
+* [EBNF][EBNF gem] (~> 2.4)
+* [SPARQL][SPARQL gem] (~> 3.3)
+* [SXP][SXP gem] (~> 1.3)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](https://ruby-rdf.github.io/rdf-n3)

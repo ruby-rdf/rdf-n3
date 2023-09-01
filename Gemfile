@@ -20,7 +20,7 @@ group :development do
 end
 
 group :development, :test do
-  gem 'simplecov', '~> 0.21',  platforms: :mri
+  gem 'simplecov', '~> 0.22',  platforms: :mri
   gem 'simplecov-lcov', '~> 0.8',  platforms: :mri
 end
 

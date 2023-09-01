@@ -8,6 +8,7 @@ describe "RDF::N3::Reader" do
   let!(:doap_nt) {File.expand_path("../../etc/doap.nt", __FILE__)}
   let!(:doap_count) {File.open(doap_nt).each_line.to_a.length}
   let(:logger) {RDF::Spec.logger}
+  before {logger.level = Logger::INFO if ENV['CI']}
 
   after(:each) do |example|
     puts logger.to_s if
@@ -975,6 +976,85 @@ describe "RDF::N3::Reader" do
           ]
         }.each do |title, (n3, res)|
           it title do
+            expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(res, base_uri: "http://a/b")}
+            expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, logger: logger, format: :n3)
+          end
+        end
+      end
+    end
+
+    describe "iriPropertyList" do
+      {
+        "not embedded": [
+          %([id :s :p :o] .),
+          %(:s :p :o .)
+        ],
+        "with whitespace": [
+          %([ id :s :p :o] .),
+          %(:s :p :o .)
+        ],
+        "with linefeed": [
+          %([
+            id :s
+            :p :o
+           ] .),
+          %(:s :p :o .)
+        ],
+        "as a single object": [
+          %(
+            @prefix a: <http://foo/a#> .
+            a:b a:oneRef [
+              id a:node0
+              a:pp "1" ;
+              a:qq "2"
+            ] .
+          ),
+          %(
+            <http://foo/a#node0> <http://foo/a#pp> "1" .
+            <http://foo/a#node0> <http://foo/a#qq> "2" .
+            <http://foo/a#b> <http://foo/a#oneRef> <http://foo/a#node0> .
+          )
+        ],
+        "nested resources": [
+          %(
+            @prefix a: <http://foo/a#> .
+
+            a:a a:p [
+              id a:node1
+              a:p2 [
+                id a:node0
+                a:p3 "v1" , "v2" ;
+                a:p4 "v3" ] ;
+              a:p5 "v4" ] .
+          ),
+          %(
+            <http://foo/a#node0> <http://foo/a#p3> "v1" .
+            <http://foo/a#node0> <http://foo/a#p3> "v2" .
+            <http://foo/a#node0> <http://foo/a#p4> "v3" .
+            <http://foo/a#node1> <http://foo/a#p2> <http://foo/a#node0> .
+            <http://foo/a#node1> <http://foo/a#p5> "v4" .
+            <http://foo/a#a> <http://foo/a#p> <http://foo/a#node1> .
+          ),
+        ],
+        "illegal semicolon": [
+          %([ id :s ; :p :o]),
+          :error
+        ],
+        "illegal subject list": [
+          %([ id :s1, :s2 :p :o]),
+          :error
+        ],
+        "illegal bnode subject": [
+          %([ id _:bn :p :o]),
+          :error
+        ],
+      }.each do |title, (n3, res)|
+        it title do
+          if res == :error
+            expect {
+              parse(n3, base_uri: "http://a/b", validate: true)
+            }.to raise_error(RDF::ReaderError)
+          else
             expected = RDF::Graph.new {|g| g << RDF::N3::Reader.new(res, base_uri: "http://a/b")}
             expect(parse(n3, base_uri: "http://a/b")).to be_equivalent_graph(expected, logger: logger, format: :n3)
           end

@@ -181,6 +181,7 @@ module RDF::N3
 
     # @!parse none
     terminal(:ANON,                             ANON)
+    terminal(:IPLSTART,                         IPLSTART)
     terminal(:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL)
     terminal(:IRIREF,                           IRIREF, unescape:  true)
     terminal(:DOUBLE,                           DOUBLE)
@@ -311,6 +312,9 @@ module RDF::N3
       prod(:triples, %w{.}) do
         error("read_triples", "Unexpected end of file") unless token = @lexer.first
         subject = case token.type || token.value
+        when IPLSTART
+          # iriPropertyList predicateObjectList? 
+          read_iriPropertyList || error("Failed to parse iriPropertyList", production: :triples, token: @lexer.first)
         when '['
           # blankNodePropertyList predicateObjectList? 
           read_blankNodePropertyList || error("Failed to parse blankNodePropertyList", production: :triples, token: @lexer.first)
@@ -435,6 +439,7 @@ module RDF::N3
             read_quickVar ||
             read_collection ||
             read_blankNodePropertyList ||
+            read_iriPropertyList ||
             read_literal ||
             read_formula
           end
@@ -517,6 +522,28 @@ module RDF::N3
           debug("blankNodePropertyList: subject", depth: options[:depth]) {node.to_sxp}
           read_predicateObjectList(node)
           error("blankNodePropertyList", "Expected closing ']'") unless @lexer.first === ']'
+          @lexer.shift
+          node
+        end
+      end
+    end
+
+    ##
+    # Read a iriPropertyList
+    #
+    #     [21] iriPropertyList ::= IPLSTART iri predicateObjectList ']'
+    #
+    # @return [RDF::Node]
+    def read_iriPropertyList
+      token = @lexer.first
+      if token.type == :IPLSTART
+        prod(:iriPropertyList, %{]}) do
+          @lexer.shift
+          progress("iriPropertyList", depth: options[:depth], token: token)
+          node = read_iri
+          debug("iriPropertyList: subject", depth: options[:depth]) {node.to_sxp}
+          read_predicateObjectList(node)
+          error("iriPropertyList", "Expected closing ']'") unless @lexer.first === ']'
           @lexer.shift
           node
         end

@@ -1,5 +1,4 @@
-$:.unshift "."
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe RDF::N3::Reader do
   # W3C Turtle Test suite from http://w3c.github.io/rdf-tests/turtle/manifest.ttl
@@ -12,6 +11,7 @@ describe RDF::N3::Reader do
           next if t.approval == 'rdft:Rejected'
           specify "#{t.rel}: #{t.name}: #{t.comment}" do
             t.logger = RDF::Spec.logger
+            t.logger.level = Logger::INFO if ENV['CI']
             t.logger.info t.inspect
             t.logger.info "source:\n#{t.input}"
 

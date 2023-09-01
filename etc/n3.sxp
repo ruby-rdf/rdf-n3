@@ -12,45 +12,44 @@
   (seq verb objectList (star (seq ";" (opt (seq verb objectList))))))
  (rule objectList "11" (seq object (star (seq "," object))))
  (rule verb "12"
-  (alt predicate "a"
-   (seq "has" expression)
-   (seq "is" expression "of")
-   (seq "<-" expression) "<=" "=>" "=" ))
+  (alt predicate "a" (seq "has" expression) (seq "is" expression "of") "=" "<=" "=>"))
  (rule subject "13" (seq expression))
- (rule predicate "14" (seq expression))
+ (rule predicate "14" (alt expression (seq "<-" expression)))
  (rule object "15" (seq expression))
  (rule expression "16" (seq path))
  (rule path "17" (seq pathItem (opt (alt (seq "!" path) (seq "^" path)))))
  (rule pathItem "18"
-  (alt iri blankNode quickVar collection blankNodePropertyList literal formula))
+  (alt iri blankNode quickVar collection blankNodePropertyList iriPropertyList
+   literal formula ))
  (rule literal "19" (alt rdfLiteral numericLiteral BOOLEAN_LITERAL))
  (rule blankNodePropertyList "20" (seq "[" predicateObjectList "]"))
- (rule collection "21" (seq "(" (star object) ")"))
- (rule formula "22" (seq "{" (opt formulaContent) "}"))
- (rule formulaContent "23"
+ (rule iriPropertyList "21" (seq IPLSTART iri predicateObjectList "]"))
+ (rule collection "22" (seq "(" (star object) ")"))
+ (rule formula "23" (seq "{" (opt formulaContent) "}"))
+ (rule formulaContent "24"
   (alt
    (seq n3Statement (opt (seq "." (opt formulaContent))))
    (seq sparqlDirective (opt formulaContent))) )
- (rule numericLiteral "24" (alt DOUBLE DECIMAL INTEGER))
- (rule rdfLiteral "25" (seq STRING (opt (alt LANGTAG (seq "^^" iri)))))
- (rule iri "26" (alt IRIREF prefixedName))
- (rule prefixedName "27" (alt PNAME_LN PNAME_NS))
- (rule blankNode "28" (alt BLANK_NODE_LABEL ANON))
- (rule quickVar "29" (seq QUICK_VAR_NAME))
+ (rule numericLiteral "25" (alt DOUBLE DECIMAL INTEGER))
+ (rule rdfLiteral "26" (seq STRING (opt (alt LANGTAG (seq "^^" iri)))))
+ (rule iri "27" (alt IRIREF prefixedName))
+ (rule prefixedName "28" (alt PNAME_LN PNAME_NS))
+ (rule blankNode "29" (alt BLANK_NODE_LABEL ANON))
+ (rule quickVar "30" (seq QUICK_VAR_NAME))
  (terminals _terminals (seq))
- (terminal BOOLEAN_LITERAL "30" (alt "true" "false"))
- (terminal STRING "31"
+ (terminal BOOLEAN_LITERAL "31" (alt "true" "false"))
+ (terminal STRING "32"
   (alt STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE
    STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE ))
+ (terminal IPLSTART "33" (seq "[" (star WS) "id"))
  (terminal IRIREF "139s"
-  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR WS)) ">"))
+  (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR)) ">"))
  (terminal PNAME_NS "140s" (seq (opt PN_PREFIX) ":"))
  (terminal PNAME_LN "141s" (seq PNAME_NS PN_LOCAL))
  (terminal BLANK_NODE_LABEL "142s"
   (seq "_:" (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
  (terminal LANGTAG "145s"
-  (seq "@"
-   (diff (seq (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))) (alt "is" "has"))) )
+  (seq "@" (seq (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9")))))))
  (terminal INTEGER "146s" (plus (range "0-9")))
  (terminal DECIMAL "147s" (seq (star (range "0-9")) "." (plus (range "0-9"))))
  (terminal DOUBLE "148s"

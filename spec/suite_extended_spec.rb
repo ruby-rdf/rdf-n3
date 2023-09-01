@@ -6,6 +6,7 @@ describe RDF::N3::Reader do
   # W3C N3 Test suite from http://www.w3.org/2000/10/swap/test/n3parser.tests
   describe "w3c n3 tests" do
     let(:logger) {RDF::Spec.logger}
+    before {logger.level = Logger::INFO if ENV['CI']}
 
     after(:each) do |example|
       puts logger.to_s if
