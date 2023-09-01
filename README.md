@@ -217,8 +217,8 @@ Blank nodes associated with rdf:List statements used as part of a built-in are m
 * [Ruby](https://ruby-lang.org/) (>= 3.0)
 * [RDF.rb](https://rubygems.org/gems/rdf) (~> 3.3)
 * [EBNF][EBNF gem] (~> 2.4)
-* [SPARQL][SPARQL gem] (~> 3.1)
-* [SXP][SXP gem] (~> 1.2)
+* [SPARQL][SPARQL gem] (~> 3.3)
+* [SXP][SXP gem] (~> 1.3)
 
 ## Documentation
 Full documentation available on [RubyDoc.info](https://ruby-rdf.github.io/rdf-n3)
