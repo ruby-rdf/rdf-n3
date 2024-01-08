@@ -28,11 +28,12 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 3.0'
   gem.requirements          = []
 
-  gem.add_dependency             'ebnf',            '~> 2.5'
-  gem.add_dependency             'rdf',             '~> 3.3'
-  gem.add_dependency             'sparql',          '~> 3.3'
+  gem.add_runtime_dependency     'ebnf',            '~> 2.5'
+  gem.add_runtime_dependency     'rdf',             '~> 3.3'
+  gem.add_runtime_dependency     'sparql',          '~> 3.3'
   gem.add_runtime_dependency     'sxp',             '~> 2.0'
 
+  gem.add_development_dependency 'getoptlong',      '~> 0.2'
   gem.add_development_dependency 'json-ld',         '~> 3.3'
   gem.add_development_dependency 'rdf-spec',        '~> 3.3'
   gem.add_development_dependency 'rdf-isomorphic',  '~> 3.3'
