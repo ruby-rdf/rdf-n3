@@ -826,6 +826,8 @@ module RDF::N3
       namespace(nil, iri("#{base_uri}#")) if prefix.nil? && !prefix(nil)
 
       base = prefix(prefix).to_s
+      suffix = suffix.gsub(PN_LOCAL_ESC) {|esc| esc[1]} if
+        suffix.match?(PN_LOCAL_ESC)
       suffix = suffix.to_s.sub(/^\#/, "") if base.index("#")
       iri(base + suffix.to_s)
     end

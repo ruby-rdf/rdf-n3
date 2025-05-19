@@ -238,6 +238,10 @@ Full documentation available on [RubyDoc.info](https://ruby-rdf.github.io/rdf-n3
 * {RDF::N3::Math}
 * {RDF::N3::Time}
 
+## Change Log
+
+See [Release Notes on GitHub](https://github.com/ruby-rdf/rdf-n3/releases)
+
 ## Resources
 * [RDF.rb][RDF.rb]
 * [Distiller](http://rdf.greggkellogg.net/distiller)
